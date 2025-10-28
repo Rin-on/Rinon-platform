@@ -1,0 +1,942 @@
+import React, {
+    useState, useEffect
+}
+
+from 'react';
+import {
+    createClient
+}
+
+from '@supabase/supabase-js';
+import {
+    Menu, X, Search, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Download, Calendar, Users, Award, Leaf, BookOpen, TrendingUp, Film, Briefcase, Play, MapPin, Clock, LogIn, LogOut, Settings, Send
+}
+
+from 'lucide-react';
+
+// Initialize Supabase
+const supabase = createClient( 'https://hslwkxwarflnvjfytsul.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHdreHdhcmZsbnZqZnl0c3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxNzY5NzcsImV4cCI6MjA3NTc1Mjk3N30.bwAqhvyRaNaec9vkJRytf_ktZRPrbbbViiTGcjWIus4' );
+
+const RinON = () = > {
+    const [language, setLanguage] = useState('al');
+    const [currentPage, setCurrentPage] = useState('home');
+    const [activeCategory, setActiveCategory] = useState('Te Gjitha');
+    const [showAdmin, setShowAdmin] = useState(false);
+    const [showArticleModal, setShowArticleModal] = useState(false);
+    const [selectedArticle, setSelectedArticle] = useState(null);
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [showAddEventForm, setShowAddEventForm] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+    // Auth and Discussion state const [user, setUser] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authMode, setAuthMode] = useState('login');
+    const [showPreferences, setShowPreferences] = useState(false);
+    const [topics, setTopics] = useState([]);
+    const [selectedTopic, setSelectedTopic] = useState(null);
+    const [topicPosts, setTopicPosts] = useState([]);
+    const [newPost, setNewPost] = useState('');
+    const [formData, setFormData] = useState({
+    titleAl: '',
+    titleEn: '',
+    contentAl: '',
+    contentEn: '',
+    category: 'Sport dhe Kulturë',
+    image: '',
+    featured: false
+  });
+    const [eventFormData, setEventFormData] = useState({
+    titleAl: '',
+    titleEn: '',
+    dateAl: '',
+    dateEn: '',
+    type: '',
+    descAl: '',
+    descEn: '',
+    location: '',
+    image: ''
+  });
+    // Translation helper const t = (al, en) => language === 'al' ? al : en;
+    // Initial articles const [articles, setArticles] = useState([
+    {
+      id: 1,
+      titleAl: "Tirana Open 2025: Tenisti shqiptar arrin çerekfinalen",
+      titleEn: "Tirana Open 2025: Albanian tennis player reaches quarterfinals",
+      category: "Sport dhe Kulturë",
+      contentAl: "Në turnirin prestigjioz të tenisit 'Tirana Open 2025', tenisti i ri shqiptar, Luan Krasniqi, arriti të kualifikohet në çerekfinale duke mposhtur kundërshtarin e tij Italian me rezultatin 6-4, 7-5. Kjo është arritja më e madhe e karrierës së tij sportive dhe një shenjë inkurajuese për sportin shqiptar.",
+      contentEn: "In the prestigious tennis tournament 'Tirana Open 2025', young Albanian tennis player Luan Krasniqi qualified for the quarterfinals by defeating his Italian opponent 6-4, 7-5. This is the biggest achievement of his sports career and an encouraging sign for Albanian sports.",
+      image: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800",
+      featured: true,
+      date: "2025-10-07"
+    },
+    {
+      id: 2,
+      titleAl: "Shqipëria dhe rruga drejt BE-së: Çfarë presin të rinjtë?",
+      titleEn: "Albania and the path to the EU: What do young people expect?",
+      category: "Politikë dhe Ekonomi",
+      contentAl: "Në një sondazh të kryer nga RinON me 500 të rinj shqiptarë të moshës 16-25 vjeç, rezulton se 78% e tyre besojnë se anëtarësimi në BE do të sjellë mundësi më të mira arsimore dhe punësimi.",
+      contentEn: "In a survey conducted by RinON with 500 young Albanians aged 16-25, it turns out that 78% of them believe that EU membership will bring better educational and employment opportunities.",
+      image: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=800",
+      featured: true,
+      date: "2025-10-06"
+    }
+  ]);
+    const [otherEvents, setOtherEvents] = useState([
+    {
+      id: 1,
+      titleAl: 'Workshop Fotografie',
+      titleEn: 'Photography Workshop',
+      dateAl: '20-22 Tetor 2025',
+      dateEn: 'October 20-22, 2025',
+      type: 'Art & Kulturë',
+      descAl: '3 ditë me fotografë profesionistë për të mësuar teknika të fotografisë',
+      descEn: '3 days with professional photographers to learn photography techniques',
+      location: 'Tirana Art Gallery',
+      image: 'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=800'
+    },
+    {
+      id: 2,
+      titleAl: 'Tech Meetup Tirana',
+      titleEn: 'Tech Meetup Tirana',
+      dateAl: '25 Tetor 2025',
+      dateEn: 'October 25, 2025',
+      type: 'Teknologji',
+      descAl: 'Networking për profesionistë dhe studentë tech',
+      descEn: 'Networking for tech professionals and students',
+      location: 'Innovation Hub Tirana',
+      image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800'
+    },
+    {
+      id: 3,
+      titleAl: 'Career Fair 2025',
+      titleEn: 'Career Fair 2025',
+      dateAl: '15 Nëntor 2025',
+      dateEn: 'November 15, 2025',
+      type: 'Karrierë',
+      descAl: 'Kompani që kërkojnë talente të reja',
+      descEn: 'Companies looking for new talent',
+      location: 'Pallati i Kongreseve',
+      image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800'
+    }
+  ]);
+    // Supabase auth listener useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) loadUserProfile(session.user.id);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) loadUserProfile(session.user.id);
+      else setUserProfile(null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+    // Load data from Supabase useEffect(() => {
+    loadArticles();
+    loadTopics();
+  }, []);
+    useEffect(() => {
+    if (selectedTopic && user) loadPosts(selectedTopic.id);
+  }, [selectedTopic, user]);
+    // Supabase functions const loadUserProfile = async (userId) =>
+
+{
+    try
+
+{
+    const
+
+{
+    data
+}
+
+= await supabase.from('user_profiles').select('*').eq('id', userId).single();
+if (data) setUserProfile(data);
+}
+
+catch (err) {
+    console .error('Error loading profile:', err);
+}
+
+}
+
+;
+
+const loadArticles = async () = > {
+    try
+
+{
+    const
+
+{
+    data
+}
+
+= await supabase.from('articles').select('*').order('created_at', { ascending: false });
+if (data && data.length > 0) {
+    const formattedArticles = data.map(a => ({
+          id: a.id,
+          titleAl: a.title_al,
+          titleEn: a.title_en,
+          contentAl: a.content_al,
+          contentEn: a.content_en,
+          category: a.category,
+          image: a.image,
+          featured: a.featured,
+          date: new Date(a.created_at).toISOString().split('T')[0]
+        }));
+    setArticles(formattedArticles);
+}
+
+}
+
+catch (err) {
+    console .error('Error loading articles:', err);
+}
+
+}
+
+;
+
+const loadTopics = async () = > {
+    try
+
+{
+    const
+
+{
+    data
+}
+
+= await supabase.from('topics').select('*').order('created_at', { ascending: false });
+setTopics(data || []);
+}
+
+catch (err) {
+    console .error('Error loading topics:', err);
+}
+
+}
+
+;
+
+const loadPosts = async (topicId) = > {
+    try
+
+{
+    const
+
+{
+    data
+}
+
+= await supabase.from('posts').select('*').eq('topic_id', topicId).order('created_at', { ascending: false });
+setTopicPosts(data || []);
+}
+
+catch (err) {
+    console .error('Error loading posts:', err);
+}
+
+}
+
+;
+
+const handleSignup = async (email, password, displayName) = > {
+    const
+
+{
+    data, error
+}
+
+= await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: displayName } }
+    });
+
+if (!error && data.user) {
+    await supabase.from('user_profiles').insert([{
+        id: data.user.id,
+        display_name: displayName,
+        preferences: []
+      }]);
+    setShowPreferences(true);
+}
+
+return {
+    data, error
+}
+
+;
+}
+
+;
+
+const handleLogin = async (email, password) = > {
+    return await supabase.auth.signInWithPassword({ email, password });
+}
+
+;
+
+const handleLogout = async () = > {
+    await supabase.auth.signOut();
+}
+
+;
+
+const updatePreferences = async (prefs) = > {
+    if (!user) return;
+    await supabase.from('user_profiles').update({ preferences: prefs }).eq('id', user.id);
+    loadUserProfile(user.id);
+}
+
+;
+
+const submitPost = async () = > {
+    if (!newPost.trim() || !selectedTopic || !user) return;
+    await supabase.from('posts').insert([{
+      topic_id: selectedTopic.id,
+      user_id: user.id,
+      user_name: userProfile?.display_name || user.email,
+      content: newPost
+    }]);
+    setNewPost('');
+    loadPosts(selectedTopic.id);
+}
+
+;
+
+const deletePost = async (id) = > {
+    await supabase.from('posts').delete().eq('id', id);
+    if (selectedTopic) loadPosts(selectedTopic.id);
+}
+
+;
+
+const categories = [ {
+    al: 'Te Gjitha', en: 'All', icon: TrendingUp
+}
+
+,
+{
+    al: 'Sport dhe Kulturë', en: 'Sports and Culture', icon: Play
+}
+
+,
+{
+    al: 'Politikë dhe Ekonomi', en: 'Politics and Economics', icon: Users
+}
+
+,
+{
+    al: 'Mjedis', en: 'Environment', icon: Leaf
+}
+
+,
+{
+    al: 'Showbiz', en: 'Entertainment', icon: Film
+}
+
+];
+
+const featuredArticles = articles.filter(a => a.featured);
+const filteredArticles = activeCategory === 'Te Gjitha' || activeCategory === 'All'
+? articles
+: articles.filter(a => a.category === activeCategory);
+
+const nextSlide = () = > setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
+const prevSlide = () = > setCurrentSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
+
+const openArticle = (article) = > {
+    setSelectedArticle(article);
+    setShowArticleModal(true);
+}
+
+;
+
+const deleteArticle = (id) = > {
+    if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë artikull?', 'Are you sure you want to delete this article?')))
+
+{
+    setArticles(prevArticles => prevArticles.filter(a => a.id !== id));
+}
+
+}
+
+;
+
+const handleSubmitArticle = async () = > {
+    if (!formData.titleAl || !formData.contentAl)
+
+{
+    alert(t('Ju lutem plotësoni fushat e detyrueshme', 'Please fill in required fields'));
+    return;
+}
+
+const article = {
+    title_al: formData.titleAl, title_en: formData.titleEn || formData.titleAl, content_al: formData.contentAl, content_en: formData.contentEn || formData.contentAl, category: formData.category, image: formData.image || `https://images.unsplash.com/photo-$
+
+{
+    Math .random().toString(36).substr(2, 9)
+}
+
+?w=800`,
+featured: formData.featured,
+author_id: user?.id
+}
+
+;
+
+const {
+    data, error
+}
+
+= await supabase.from('articles').insert([article]).select();
+
+if (!error && data) {
+    loadArticles();
+    setFormData({
+        titleAl: '',
+        titleEn: '',
+        contentAl: '',
+        contentEn: '',
+        category: 'Sport dhe Kulturë',
+        image: '',
+        featured: false
+      });
+    setShowAddForm(false);
+    alert(t('Artikulli u publikua me sukses!', 'Article published successfully!'));
+}
+
+}
+
+;
+
+// Auth Modal Component
+const AuthModal = () = > {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [displayName, setDisplayName] = useState('');
+    const [error, setError] = useState('');
+    const handleSubmit = async () =>
+
+{
+    setError('');
+    if (authMode === 'signup')
+
+{
+    const
+
+{
+    error
+}
+
+= await handleSignup(email, password, displayName);
+if (error) setError(error.message);
+else setShowAuthModal(false);
+}
+
+else {
+    const
+
+{
+    error
+}
+
+= await handleLogin(email, password);
+if (error) setError(error.message);
+else setShowAuthModal(false);
+}
+}
+;
+
+return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-8 max-w-md w-full">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">{authMode === 'login' ? t('Hyr', 'Login') : t('Regjistrohu', 'Sign Up')}</h2>
+            <button onClick={() => setShowAuthModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {authMode === 'signup' && (
+              <input
+                type="text"
+                placeholder={t('Emri juaj', 'Your name')}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full px-4 py-3 border rounded-lg"
+              />
+            )}
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg"
+            />
+            <input
+              type="password"
+              placeholder={t('Fjalëkalimi', 'Password')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 border rounded-lg"
+            />
+            
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <button onClick={handleSubmit} className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700">
+              {authMode === 'login' ? t('Hyr', 'Login') : t('Regjistrohu', 'Sign Up')}
+            </button>
+          </div>
+
+          <p className="text-center text-sm mt-4">
+            {authMode === 'login' ? t('Nuk keni llogari?', "Don't have an account?") : t('Keni llogari?', 'Have an account?')}
+            <button onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')} className="ml-2 text-green-600 font-medium">
+              {authMode === 'login' ? t('Regjistrohu', 'Sign up') : t('Hyr', 'Login')}
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+}
+
+;
+
+// Preferences Modal
+const PreferencesModal = () = > {
+    const [selected, setSelected] = useState(userProfile?.preferences || []);
+    const toggleCategory = (cat) =>
+
+{
+    setSelected(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
+}
+
+;
+
+return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-8 max-w-md w-full">
+          <h2 className="text-2xl font-bold mb-4">{t('Zgjidhni Preferencat', 'Choose Preferences')}</h2>
+          <p className="text-gray-600 mb-6">{t('Zgjidhni temat që ju interesojnë', 'Select topics that interest you')}</p>
+
+          <div className="space-y-3 mb-6">
+            {categories.filter(c => c.al !== 'Te Gjitha').map(cat => (
+              <button
+                key={cat.al}
+                onClick={() => toggleCategory(cat.al)}
+                className={`w-full px-4 py-3 rounded-lg border-2 transition-all ${
+                  selected.includes(cat.al) ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200'
+                }`}
+              >
+                {language === 'al' ? cat.al : cat.en}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={() => setShowPreferences(false)} className="flex-1 px-4 py-3 border rounded-lg">
+              {t('Anulo', 'Cancel')}
+            </button>
+            <button onClick={() => { updatePreferences(selected); setShowPreferences(false); }} className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg">
+              {t('Ruaj', 'Save')}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+}
+
+;
+
+// Discussion Page
+const DiscussionPage = () = > {
+    if (!selectedTopic)
+
+{
+    return (
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <h1 className="text-3xl font-bold mb-8">{t('Hapësira e Diskutimit', 'Discussion Space')}</h1>
+          <div className="grid gap-4 md:grid-cols-2">
+            {topics.map(topic => (
+              <button
+                key={topic.id}
+                onClick={() => setSelectedTopic(topic)}
+                className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition text-left"
+              >
+                <h3 className="text-xl font-bold mb-2">{language === 'al' ? topic.title_al : topic.title_en || topic.title_al}</h3>
+                <p className="text-gray-600">{language === 'al' ? topic.description_al : topic.description_en || topic.description_al}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+}
+
+return (
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <button onClick={() => setSelectedTopic(null)} className="text-green-600 hover:underline flex items-center gap-2 mb-6">
+          <ChevronLeft className="w-4 h-4" />
+          {t('Kthehu', 'Back')}
+        </button>
+
+        <div className="bg-white p-6 rounded-xl shadow-md mb-6">
+          <h2 className="text-2xl font-bold mb-2">{language === 'al' ? selectedTopic.title_al : selectedTopic.title_en || selectedTopic.title_al}</h2>
+          <p className="text-gray-600">{language === 'al' ? selectedTopic.description_al : selectedTopic.description_en || selectedTopic.description_al}</p>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-md mb-6">
+          <textarea
+            value={newPost}
+            onChange={(e) => setNewPost(e.target.value)}
+            placeholder={t('Shkruani mendimin tuaj...', 'Write your thoughts...')}
+            className="w-full px-4 py-3 border rounded-lg resize-none"
+            rows="4"
+          />
+          <button onClick={submitPost} className="mt-3 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+            <Send className="w-4 h-4" />
+            {t('Posto', 'Post')}
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {topicPosts.map(post => (
+            <div key={post.id} className="bg-white p-6 rounded-xl shadow-md">
+              <div className="flex items-start justify-between mb-3">
+                <p className="font-medium">{post.user_name}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">{new Date(post.created_at).toLocaleDateString()}</span>
+                  {post.user_id === user?.id && (
+                    <button onClick={() => deletePost(post.id)} className="p-1 hover:bg-red-50 rounded text-red-500">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="text-gray-700 whitespace-pre-wrap">{post.content}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+}
+;
+
+return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentPage('home')}>
+              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-xl">R</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">RinON</h1>
+                <p className="text-xs text-green-600 uppercase tracking-wide">
+                  {t('Aktivizo Rininë Tënde', 'Activate Your Youth')}
+                </p>
+              </div>
+            </div>
+
+            <nav className="hidden md:flex items-center space-x-6">
+              <button onClick={() => setCurrentPage('home')} className={`font-medium ${currentPage === 'home' ? 'text-green-600' : 'text-gray-600 hover:text-green-600'}`}>
+                {t('Ballina', 'Home')}
+              </button>
+              {user && (
+                <button onClick={() => setCurrentPage('discussion')} className={`font-medium ${currentPage === 'discussion' ? 'text-green-600' : 'text-gray-600 hover:text-green-600'} flex items-center gap-2`}>
+                  <MessageCircle className="w-4 h-4" />
+                  {t('Diskutim', 'Discussion')}
+                </button>
+              )}
+            </nav>
+
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
+                className="flex items-center space-x-1 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition"
+              >
+                <Globe className="h-4 w-4" />
+                <span className="font-medium text-sm">{language.toUpperCase()}</span>
+              </button>
+              
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600 hidden sm:inline">{userProfile?.display_name || user.email}</span>
+                  <button onClick={() => setShowPreferences(true)} className="p-2 hover:bg-green-50 rounded-lg">
+                    <Settings className="w-5 h-5" />
+                  </button>
+                  <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg">
+                    <LogOut className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t('Dil', 'Logout')}</span>
+                  </button>
+                </div>
+              ) : (
+                <button onClick={() => { setShowAuthModal(true); setAuthMode('login'); }} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg">
+                  <LogIn className="w-4 h-4" />
+                  {t('Hyr', 'Login')}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {showAuthModal && <AuthModal />}
+      {showPreferences && <PreferencesModal />}
+
+      <main>
+        {currentPage === 'home' && (
+          <>
+            {/* Hero Slider */}
+            {featuredArticles.length > 0 && (
+              <div className="relative bg-gray-900 text-white">
+                <div className="max-w-7xl mx-auto">
+                  <div className="relative h-[500px] overflow-hidden">
+                    {featuredArticles.map((article, index) => (
+                      <div
+                        key={article.id}
+                        className={`absolute inset-0 transition-opacity duration-500 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10"></div>
+                        <img src={article.image} alt={article.titleAl} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 z-20 flex items-center">
+                          <div className="max-w-3xl mx-auto px-4 md:px-8">
+                            <span className="inline-block px-3 py-1 bg-green-600 text-white text-sm font-semibold rounded-full mb-4">
+                              {article.category}
+                            </span>
+                            <h2 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+                              {language === 'al' ? article.titleAl : article.titleEn}
+                            </h2>
+                            <p className="text-xl text-gray-200 mb-6 line-clamp-2">
+                              {language === 'al' ? article.contentAl : article.contentEn}
+                            </p>
+                            <button 
+                              onClick={() => openArticle(article)}
+                              className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition"
+                            >
+                              {t('Lexo më shumë', 'Read more')}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {featuredArticles.length > 1 && (
+                      <>
+                        <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/30 p-3 rounded-full backdrop-blur-sm">
+                          <ChevronLeft className="h-6 w-6 text-white" />
+                        </button>
+                        <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/20 hover:bg-white/30 p-3 rounded-full backdrop-blur-sm">
+                          <ChevronRight className="h-6 w-6 text-white" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Categories */}
+            <div className="bg-white border-b sticky top-[72px] z-40">
+              <div className="max-w-7xl mx-auto px-4 py-4">
+                <div className="flex items-center space-x-2 overflow-x-auto">
+                  {categories.map((cat) => {
+                    const Icon = cat.icon;
+                    const catName = language === 'al' ? cat.al : cat.en;
+                    const isActive = activeCategory === cat.al || activeCategory === cat.en;
+                    return (
+                      <button
+                        key={cat.al}
+                        onClick={() => setActiveCategory(catName)}
+                        className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium whitespace-nowrap transition ${
+                          isActive ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span>{catName}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Articles Grid */}
+            <div className="max-w-7xl mx-auto px-4 py-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredArticles.map((article) => (
+                  <div key={article.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg transition overflow-hidden cursor-pointer group" onClick={() => openArticle(article)}>
+                    <div className="relative h-48 overflow-hidden">
+                      <img src={article.image} alt={article.titleAl} className="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                      <span className="absolute top-3 left-3 px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">
+                        {article.category}
+                      </span>
+                      {showAdmin && (
+                        <button
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            deleteArticle(article.id); 
+                          }}
+                          className="absolute top-3 right-3 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition z-10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="p-5">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-green-600 transition">
+                        {language === 'al' ? article.titleAl : article.titleEn}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+                        {language === 'al' ? article.contentAl : article.contentEn}
+                      </p>
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <span>{article.date}</span>
+                        <span className="text-green-600 font-medium group-hover:underline">
+                          {t('Lexo më shumë ?', 'Read more ?')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {currentPage === 'discussion' && user && <DiscussionPage />}
+      </main>
+
+      {/* Article Modal */}
+      {showArticleModal && selectedArticle && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="relative h-80">
+              <img src={selectedArticle.image} alt={selectedArticle.titleAl} className="w-full h-full object-cover" />
+              <button
+                onClick={() => setShowArticleModal(false)}
+                className="absolute top-4 right-4 bg-white/90 hover:bg-white p-2 rounded-full"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                {language === 'al' ? selectedArticle.titleAl : selectedArticle.titleEn}
+              </h2>
+              <div className="prose prose-lg max-w-none">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                  {language === 'al' ? selectedArticle.contentAl : selectedArticle.contentEn}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Article Form */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-8 my-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">
+                {t('Shto Artikull të Ri', 'Add New Article')}
+              </h3>
+              <button onClick={() => setShowAddForm(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={formData.titleAl}
+                onChange={(e) => setFormData({...formData, titleAl: e.target.value})}
+                placeholder={t('Titulli (Shqip)', 'Title (Albanian)')}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={formData.titleEn}
+                onChange={(e) => setFormData({...formData, titleEn: e.target.value})}
+                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <textarea
+                value={formData.contentAl}
+                onChange={(e) => setFormData({...formData, contentAl: e.target.value})}
+                placeholder={t('Përmbajtja (Shqip)', 'Content (Albanian)')}
+                rows="6"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <input
+                type="text"
+                value={formData.image}
+                onChange={(e) => setFormData({...formData, image: e.target.value})}
+                placeholder="Image URL"
+                className="w-full px-4 py-2 border rounded-lg"
+              />
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg"
+              >
+                <option>Sport dhe Kulturë</option>
+                <option>Politikë dhe Ekonomi</option>
+                <option>Mjedis</option>
+                <option>Showbiz</option>
+              </select>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.featured}
+                  onChange={(e) => setFormData({...formData, featured: e.target.checked})}
+                  className="mr-2"
+                />
+                {t('Artikull i veçuar', 'Featured article')}
+              </label>
+              <button onClick={handleSubmitArticle} className="w-full bg-green-600 text-white py-3 rounded-lg">
+                {t('Publiko', 'Publish')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Buttons */}
+      {showAdmin && (
+        <button
+          onClick={() => setShowAddForm(true)}
+          className="fixed bottom-24 right-6 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-700 z-40"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p>© 2025 RinON. {t('Të gjitha të drejtat e rezervuara.', 'All rights reserved.')}</p>
+          <button
+            onClick={() => setShowAdmin(!showAdmin)}
+            className="mt-4 text-sm text-gray-400 hover:text-green-400"
+          >
+            ?? {t('Admin', 'Admin')}
+          </button>
+        </div>
+      </footer>
+    </div>
+  );
+}
+;
+
+export default RinON;
+}
