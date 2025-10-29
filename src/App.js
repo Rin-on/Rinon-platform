@@ -1334,13 +1334,13 @@ const RinON = () => {
                             </button>
 
                             <button
-                                onClick={() => { changePage('partnerships'); setMobileMenuOpen(false); }}
-                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'partnerships'
+                                onClick={() => { changePage('cooperations'); setMobileMenuOpen(false); }}
+                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'cooperations'
                                         ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
                                         : 'text-gray-300 hover:text-white hover:bg-white/10'
                                     }`}
                             >
-                                {t('Evente Bashkëpunimi', 'Partnerships')}
+                                {t('Bashkëpunime', 'Cooperations')}
                             </button>
 
                             <button
