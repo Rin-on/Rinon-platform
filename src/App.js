@@ -1263,79 +1263,197 @@ const RinON = () => {
                 </div>
             </header>
 
+            {/* Mobile Menu Overlay */}
             {mobileMenuOpen && (
-                <div className="md:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
-                    <div
-                        className={`absolute top-[72px] left-0 right-0 transition-colors duration-300 border-b shadow-2xl ${darkMode
-                            ? 'bg-slate-800 border-purple-500/20'
-                            : 'bg-white border-purple-200'
-                            }`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <nav className="flex flex-col p-4 space-y-2">
+                <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+                    onClick={() => setMobileMenuOpen(false)}
+                />
+            )}
+
+            {/* Mobile Menu Panel */}
+            <div className={`fixed top-0 right-0 h-full w-80 bg-slate-900 border-l border-white/10 transform transition-transform duration-300 z-50 md:hidden ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+                }`}>
+                <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-4 border-b border-white/10">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                                <span className="text-white font-bold text-lg">R</span>
+                            </div>
+                            <span className="text-white font-bold text-lg">RinON</span>
+                        </div>
+                        <button
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="p-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all"
+                        >
+                            <X size={20} className="text-white" />
+                        </button>
+                    </div>
+
+                    {/* User Section (if logged in) */}
+                    {user && (
+                        <div className="p-4 border-b border-white/10">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                                    <span className="text-white font-bold">
+                                        {userProfile?.display_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                                    </span>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-white font-medium">
+                                        {userProfile?.display_name || user.email.split('@')[0]}
+                                    </p>
+                                    <p className="text-gray-400 text-sm">{user.email}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Navigation Links */}
+                    <nav className="flex-1 overflow-y-auto p-4">
+                        <div className="space-y-2">
                             <button
                                 onClick={() => { changePage('home'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'home'
-                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
-                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'home'
+                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
+                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
                                     }`}
                             >
                                 {t('Faqja Kryesore', 'Home')}
                             </button>
+
                             <button
                                 onClick={() => { changePage('events'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'events'
-                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
-                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'events'
+                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
+                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
                                     }`}
                             >
                                 {t('Evente', 'Events')}
                             </button>
+
                             <button
-                                onClick={() => { changePage('partners'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentPage === 'partners'
-                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
-                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                                onClick={() => { changePage('partnerships'); setMobileMenuOpen(false); }}
+                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'partnerships'
+                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
+                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
                                     }`}
                             >
-                                <Users className="w-4 h-4" />
-                                {t('Bashkëpunime', 'Cooperations')}
+                                {t('Evente Bashkëpunimi', 'Partnerships')}
                             </button>
-                            {user && (
-                                <button
-                                    onClick={() => { changePage('discussion'); setMobileMenuOpen(false); }}
-                                    className={`text-left px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentPage === 'discussion'
-                                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                                        : darkMode
-                                            ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
-                                            : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
-                                        }`}
-                                >
-                                    <MessageCircle className="w-4 h-4" />
-                                    {t('Bisedim', 'Discussion')}
-                                </button>
-                            )}
+
+                            <button
+                                onClick={() => { changePage('discussion'); setMobileMenuOpen(false); }}
+                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'discussion'
+                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
+                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                {t('Bisedim', 'Discussion')}
+                            </button>
+
                             <button
                                 onClick={() => { changePage('about'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'about'
-                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
-                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'about'
+                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
+                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
                                     }`}
                             >
-                                {t('Rreth Nesh', 'About')}
+                                {t('Rreth Nesh', 'About Us')}
                             </button>
-                        </nav>
+
+                            {/* Admin Panel Link */}
+                            {userProfile?.is_admin && (
+                                <button
+                                    onClick={() => {
+                                        setShowAdmin(true);
+                                        setMobileMenuOpen(false);
+                                    }}
+                                    className="w-full text-left px-4 py-3 rounded-xl text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-all"
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <Settings size={18} />
+                                        {t('Paneli Admin', 'Admin Panel')}
+                                    </span>
+                                </button>
+                            )}
+                        </div>
+                    </nav>
+
+                    {/* Bottom Controls */}
+                    <div className="p-4 border-t border-white/10 space-y-3">
+                        {/* Language Toggle */}
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-400 text-sm">{t('Gjuha', 'Language')}</span>
+                            <button
+                                onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
+                            >
+                                <Globe size={16} className="text-white" />
+                                <span className="text-white text-sm font-medium">
+                                    {language === 'al' ? 'AL' : 'EN'}
+                                </span>
+                            </button>
+                        </div>
+
+                        {/* Dark Mode Toggle */}
+                        <div className="flex items-center justify-between">
+                            <span className="text-gray-400 text-sm">{t('Modaliteti', 'Mode')}</span>
+                            <button
+                                onClick={() => setDarkMode(!darkMode)}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
+                            >
+                                {darkMode ? <Sun size={16} className="text-white" /> : <Moon size={16} className="text-white" />}
+                                <span className="text-white text-sm font-medium">
+                                    {darkMode ? t('Dritë', 'Light') : t('Errët', 'Dark')}
+                                </span>
+                            </button>
+                        </div>
+
+                        {/* User Preferences (if logged in) */}
+                        {user && (
+                            <button
+                                onClick={() => {
+                                    setShowPreferences(true);
+                                    setMobileMenuOpen(false);
+                                }}
+                                className="w-full flex items-center justify-between px-3 py-2 bg-purple-600/20 rounded-lg border border-purple-500/50 hover:bg-purple-600/30 transition-all"
+                            >
+                                <span className="text-purple-300 text-sm">{t('Preferencat', 'Preferences')}</span>
+                                <Settings size={16} className="text-purple-300" />
+                            </button>
+                        )}
+
+                        {/* Auth Button */}
+                        {user ? (
+                            <button
+                                onClick={async () => {
+                                    await supabase.auth.signOut();
+                                    setUser(null);
+                                    setUserProfile(null);
+                                    setMobileMenuOpen(false);
+                                }}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl hover:from-red-500 hover:to-pink-500 transition-all"
+                            >
+                                <LogOut size={18} />
+                                <span className="font-medium">{t('Dil', 'Logout')}</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    setShowAuthModal(true);
+                                    setMobileMenuOpen(false);
+                                }}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all"
+                            >
+                                <LogIn size={18} />
+                                <span className="font-medium">{t('Hyr', 'Login')}</span>
+                            </button>
+                        )}
                     </div>
                 </div>
-            )}
+            </div>
 
             <AuthModal
                 showAuthModal={showAuthModal}
