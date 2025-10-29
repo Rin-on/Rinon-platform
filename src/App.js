@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Search, Bookmark } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Initialize Supabase
@@ -8,6 +8,8 @@ const supabase = createClient(
     'https://hslwkxwarflnvjfytsul.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHdreHdhcmZsbnZqZnl0c3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxNzY5NzcsImV4cCI6MjA3NTc1Mjk3N30.bwAqhvyRaNaec9vkJRytf_ktZRPrbbbViiTGcjWIus4'
 );
+
+
 
 // Validation utilities
 const validateInput = {
@@ -41,9 +43,9 @@ const validateInput = {
         });
     },
 
- 
-    
-};
+
+}
+
 
 // Password validation
 const validatePassword = (password) => {
@@ -301,8 +303,9 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
 };
 
 // Preferences Modal Component
-const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t }) => {
+const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t, user, handleDeleteAccount }) => {
     const [selected, setSelected] = useState(userProfile?.preferences || []);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const toggleCategory = (cat) => {
         setSelected(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -312,7 +315,7 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-purple-500/20">
+            <div className="bg-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-purple-500/20 max-h-[90vh] overflow-y-auto">
                 <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{t('Zgjidhni Preferencat', 'Choose Preferences')}</h2>
                 <p className="text-gray-400 mb-6">{t('Zgjidhni temat që ju interesojnë', 'Select topics that interest you')}</p>
 
@@ -331,9 +334,59 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
                     ))}
                 </div>
 
-                <div className="flex gap-3">
+                {/* Account Info Section */}
+                {user && (
+                    <div className="mb-6 p-4 bg-slate-700/50 rounded-xl border border-slate-600">
+                        <h3 className="text-lg font-semibold text-white mb-3">{t('Informacioni i Llogarisë', 'Account Information')}</h3>
+                        <div className="space-y-2 text-sm">
+                            <p className="text-gray-400">
+                                <span className="font-medium text-gray-300">{t('Emri:', 'Name:')}</span> {userProfile?.display_name || 'N/A'}
+                            </p>
+                            <p className="text-gray-400">
+                                <span className="font-medium text-gray-300">Email:</span> {user.email}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Delete Account Section */}
+                {!showDeleteConfirm ? (
+                    <div className="mt-6 p-4 bg-red-900/20 rounded-xl border border-red-500/30">
+                        <p className="text-red-400 text-sm mb-3 font-semibold">{t('Zona e Rrezikshme', 'Danger Zone')}</p>
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all flex items-center justify-center gap-2"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            {t('Fshi Llogarinë', 'Delete Account')}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="mt-6 p-4 bg-red-900/20 rounded-xl border-2 border-red-500">
+                        <p className="text-red-400 text-sm mb-3 font-bold">{t('A jeni të sigurt?', 'Are you sure?')}</p>
+                        <p className="text-gray-400 text-xs mb-4">
+                            {t('Ky veprim nuk mund të zhbëhet. Të gjitha të dhënat do të fshihen përgjithmonë.', 'This action cannot be undone. All data will be permanently deleted.')}
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="flex-1 px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-all"
+                            >
+                                {t('Anulo', 'Cancel')}
+                            </button>
+                            <button
+                                onClick={handleDeleteAccount}
+                                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all font-semibold"
+                            >
+                                {t('Po, Fshi', 'Yes, Delete')}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex gap-3 mt-6">
                     <button onClick={() => setShowPreferences(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
-                        {t('Anulo', 'Cancel')}
+                        {t('Mbyll', 'Close')}
                     </button>
                     <button onClick={() => { updatePreferences(selected); setShowPreferences(false); }} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
                         {t('Ruaj', 'Save')}
@@ -373,6 +426,12 @@ const RinON = () => {
     const [topicPosts, setTopicPosts] = useState([]);
     const [newPost, setNewPost] = useState('');
 
+    // NEW: Search and reaction states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchCategory, setSearchCategory] = useState('all');
+    const [likedArticles, setLikedArticles] = useState([]);
+    const [savedArticles, setSavedArticles] = useState([]);
+
     const [formData, setFormData] = useState({
         titleAl: '', titleEn: '', contentAl: '', contentEn: '',
         category: 'Sport dhe Kulturë', image: '', source: '', featured: false
@@ -380,7 +439,7 @@ const RinON = () => {
 
     const [eventFormData, setEventFormData] = useState({
         titleAl: '', titleEn: '', dateAl: '', dateEn: '',
-        type: '', descAl: '', descEn: '', location: '', image: ''
+        type: '', descAl: '', descEn: '', location: '', image: '', registration_link: ''
     });
 
     const [topicFormData, setTopicFormData] = useState({
@@ -411,6 +470,65 @@ const RinON = () => {
         { al: 'Showbiz', en: 'Entertainment', icon: Film }
     ];
 
+    // NEW: Toggle like function
+    const toggleLike = async (articleId) => {
+        if (!user) {
+            alert(t('Ju duhet të jeni të kyçur për të pëlqyer artikuj', 'You must be logged in to like articles'));
+            return;
+        }
+
+        try {
+            if (likedArticles.includes(articleId)) {
+                // Unlike
+                await supabase.from('article_likes').delete().match({ article_id: articleId, user_id: user.id });
+                setLikedArticles(prev => prev.filter(id => id !== articleId));
+            } else {
+                // Like
+                await supabase.from('article_likes').insert([{ article_id: articleId, user_id: user.id }]);
+                setLikedArticles(prev => [...prev, articleId]);
+            }
+        } catch (error) {
+            console.error('Error toggling like:', error);
+        }
+    };
+
+    // NEW: Toggle save function
+    const toggleSave = async (articleId) => {
+        if (!user) {
+            alert(t('Ju duhet të jeni të kyçur për të ruajtur artikuj', 'You must be logged in to save articles'));
+            return;
+        }
+
+        try {
+            if (savedArticles.includes(articleId)) {
+                // Unsave
+                await supabase.from('article_saves').delete().match({ article_id: articleId, user_id: user.id });
+                setSavedArticles(prev => prev.filter(id => id !== articleId));
+            } else {
+                // Save
+                await supabase.from('article_saves').insert([{ article_id: articleId, user_id: user.id }]);
+                setSavedArticles(prev => [...prev, articleId]);
+            }
+        } catch (error) {
+            console.error('Error toggling save:', error);
+        }
+    };
+
+    // NEW: Load user reactions
+    const loadUserReactions = async () => {
+        if (!user) return;
+
+        try {
+            const { data: likes } = await supabase.from('article_likes').select('article_id').eq('user_id', user.id);
+            const { data: saves } = await supabase.from('article_saves').select('article_id').eq('user_id', user.id);
+
+            if (likes) setLikedArticles(likes.map(l => l.article_id));
+            if (saves) setSavedArticles(saves.map(s => s.article_id));
+        } catch (error) {
+            console.error('Error loading reactions:', error);
+        }
+    };
+
     const changePage = (page) => {
         setPageTransition(true);
         setHasPageLoaded(false);
@@ -430,13 +548,22 @@ const RinON = () => {
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
-            if (session?.user) loadUserProfile(session.user.id);
+            if (session?.user) {
+                loadUserProfile(session.user.id);
+                loadUserReactions();
+            }
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
-            if (session?.user) loadUserProfile(session.user.id);
-            else setUserProfile(null);
+            if (session?.user) {
+                loadUserProfile(session.user.id);
+                loadUserReactions();
+            } else {
+                setUserProfile(null);
+                setLikedArticles([]);
+                setSavedArticles([]);
+            }
         });
 
         return () => subscription.unsubscribe();
@@ -453,6 +580,10 @@ const RinON = () => {
     useEffect(() => {
         if (selectedTopic && user) loadPosts(selectedTopic.id);
     }, [selectedTopic, user]);
+
+    useEffect(() => {
+        if (user) loadUserReactions();
+    }, [user]);
 
     const loadUserProfile = async (userId) => {
         try {
@@ -506,7 +637,8 @@ const RinON = () => {
                 const formattedEvents = data.map(e => ({
                     id: e.id, titleAl: e.title_al, titleEn: e.title_en,
                     dateAl: e.date_al, dateEn: e.date_en, type: e.type,
-                    descAl: e.desc_al, descEn: e.desc_en, location: e.location, image: e.image
+                    descAl: e.desc_al, descEn: e.desc_en, location: e.location,
+                    image: e.image, registration_link: e.registration_link
                 }));
                 setOtherEvents(formattedEvents);
             }
@@ -592,6 +724,43 @@ const RinON = () => {
         }
     };
 
+    // NEW: Delete account function
+    const handleDeleteAccount = async () => {
+        if (!user) return;
+
+        const finalConfirm = window.confirm(
+            t(
+                'KONFIRMIM I FUNDIT: Të gjitha të dhënat tuaja do të fshihen përgjithmonë. Vazhdoni?',
+                'FINAL CONFIRMATION: All your data will be permanently deleted. Continue?'
+            )
+        );
+
+        if (!finalConfirm) return;
+
+        try {
+            // Delete user profile (this will cascade delete related data due to foreign keys)
+            const { error: profileError } = await supabase
+                .from('user_profiles')
+                .delete()
+                .eq('id', user.id);
+
+            if (profileError) throw profileError;
+
+            // Sign out
+            await supabase.auth.signOut();
+
+            alert(t('Llogaria u fshi me sukses.', 'Account deleted successfully.'));
+            setShowPreferences(false);
+            changePage('home');
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            alert(t(
+                'Gabim gjatë fshirjes së llogarisë. Ju lutemi provoni përsëri.',
+                'Error deleting account. Please try again.'
+            ));
+        }
+    };
+
     const updatePreferences = async (prefs) => {
         if (!user) return;
         try {
@@ -603,17 +772,15 @@ const RinON = () => {
         }
     };
 
+    // FIXED: Submit post function
     const submitPost = async () => {
-        if (!newPost.trim() || !selectedTopic || !user) return;
-
-        if (!validateInput.text(newPost, 2000)) {
-            alert(t('Postimi duhet të jetë 1-2000 karaktere', 'Post must be 1-2000 characters'));
+        if (!newPost.trim() || !selectedTopic || !user) {
+            alert(t('Ju lutem shkruani një koment', 'Please write a comment'));
             return;
         }
 
-        // Check for profanity
-        if (validateInput.containsProfanity(newPost)) {
-            alert(t('Ju lutem mos përdorni gjuhë ofenduese', 'Please do not use offensive language'));
+        if (!validateInput.text(newPost, 2000)) {
+            alert(t('Postimi duhet të jetë 1-2000 karaktere', 'Post must be 1-2000 characters'));
             return;
         }
 
@@ -628,8 +795,9 @@ const RinON = () => {
             if (error) throw error;
 
             setNewPost('');
-            loadPosts(selectedTopic.id);
+            await loadPosts(selectedTopic.id);
         } catch (err) {
+            console.error('Error submitting post:', err);
             alert(handleError(err, 'submitPost'));
         }
     };
@@ -772,6 +940,11 @@ const RinON = () => {
             return;
         }
 
+        if (eventFormData.registration_link && !validateInput.url(eventFormData.registration_link)) {
+            alert(t('URL e regjistrimit është e pavlefshme', 'Invalid registration URL'));
+            return;
+        }
+
         try {
             const event = {
                 title_al: validateInput.sanitizeHtml(eventFormData.titleAl),
@@ -782,7 +955,8 @@ const RinON = () => {
                 desc_al: validateInput.sanitizeHtml(eventFormData.descAl),
                 desc_en: validateInput.sanitizeHtml(eventFormData.descEn || eventFormData.descAl),
                 location: validateInput.sanitizeHtml(eventFormData.location),
-                image: eventFormData.image || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`
+                image: eventFormData.image || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`,
+                registration_link: eventFormData.registration_link || null
             };
 
             const { data, error } = await supabase.from('events').insert([event]).select();
@@ -793,7 +967,7 @@ const RinON = () => {
                 loadEvents();
                 setEventFormData({
                     titleAl: '', titleEn: '', dateAl: '', dateEn: '',
-                    type: '', descAl: '', descEn: '', location: '', image: ''
+                    type: '', descAl: '', descEn: '', location: '', image: '', registration_link: ''
                 });
                 setShowAddEventForm(false);
                 alert(t('Eventi u shtua me sukses!', 'Event added successfully!'));
@@ -936,9 +1110,22 @@ const RinON = () => {
     };
 
     const featuredArticles = articles.filter(a => a.featured);
-    const filteredArticles = activeCategory === 'Te Gjitha' || activeCategory === 'All'
-        ? articles
-        : articles.filter(a => a.category === activeCategory);
+
+    // NEW: Filter articles by search query and category
+    const filteredArticles = articles.filter(article => {
+        // Category filter
+        const categoryMatch = activeCategory === 'Te Gjitha' || activeCategory === 'All' || article.category === activeCategory;
+
+        // Search filter
+        const searchMatch = searchQuery === '' ||
+            (language === 'al' ? article.titleAl : article.titleEn).toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (language === 'al' ? article.contentAl : article.contentEn).toLowerCase().includes(searchQuery.toLowerCase());
+
+        // Search category filter (if not 'all')
+        const searchCategoryMatch = searchCategory === 'all' || article.category === searchCategory;
+
+        return categoryMatch && searchMatch && searchCategoryMatch;
+    });
 
     const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
@@ -1003,86 +1190,17 @@ const RinON = () => {
                                     <MapPin className="w-4 h-4 mr-2" />
                                     <span>{event.location}</span>
                                 </div>
-                                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{language === 'al' ? event.descAl : event.descEn}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-
-    const PartnersPage = () => (
-        <div className="max-w-7xl mx-auto px-4 py-12">
-            <div className="text-center mb-12">
-                <h1 className={`text-5xl font-bold mb-4 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>{t('Bashkëpunime', 'Cooperations')}</h1>
-                <p className={`text-xl ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Organizatat partnere të RinON', 'RinON Partner Organizations')}</p>
-            </div>
-
-            {partners.length === 0 ? (
-                <div className="text-center py-20">
-                    <div className="w-20 h-20 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/30">
-                        <Users className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                    </div>
-                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {t('Asnjë partner ende', 'No partners yet')}
-                    </h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                        {t('Partnerët do të shfaqen këtu kur të shtohen', 'Partners will appear here when added')}
-                    </p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {partners.map((partner) => (
-                        <div
-                            key={partner.id}
-                            className={`backdrop-blur-lg rounded-2xl border hover:border-purple-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'
-                                }`}
-                        >
-                            <div className="relative h-64">
-                                <img
-                                    src={partner.image}
-                                    alt={partner.nameAl}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.target.src = 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800';
-                                    }}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                                {showAdmin && (
-                                    <button
-                                        onClick={() => deletePartner(partner.id)}
-                                        className="absolute top-3 right-3 bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
+                                <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{language === 'al' ? event.descAl : event.descEn}</p>
+                                {event.registration_link && (
+                                    <a
+                                        href={event.registration_link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all text-sm font-medium"
+                                        onClick={(e) => e.stopPropagation()}
                                     >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-                                )}
-                            </div>
-                            <div className="p-6">
-                                <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{language === 'al' ? partner.nameAl : partner.nameEn}</h3>
-
-                                <div className="mb-4">
-                                    <h4 className="font-semibold text-purple-400 mb-1">{t('Përshkrimi', 'Description')}</h4>
-                                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.descriptionAl : partner.descriptionEn}</p>
-                                </div>
-
-                                {(partner.visionAl || partner.visionEn) && (
-                                    <div className="mb-4">
-                                        <h4 className="font-semibold text-purple-400 mb-1">{t('Vizioni', 'Vision')}</h4>
-                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.visionAl : partner.visionEn}</p>
-                                    </div>
-                                )}
-
-                                {(partner.goalsAl || partner.goalsEn) && (
-                                    <div className="mb-4">
-                                        <h4 className="font-semibold text-purple-400 mb-1">{t('Qëllimet', 'Goals')}</h4>
-                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.goalsAl : partner.goalsEn}</p>
-                                    </div>
-                                )}
-
-                                {partner.website && (
-                                    <a href={partner.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-medium">
-                                        {t('Vizito faqen', 'Visit website')} →
+                                        {t('Regjistrohu', 'Register')}
+                                        <ChevronRight className="w-4 h-4" />
                                     </a>
                                 )}
                             </div>
@@ -1093,6 +1211,105 @@ const RinON = () => {
         </div>
     );
 
+    // NEW: Partnership Events Page
+    const PartnershipsPage = () => {
+        const partnershipEvents = otherEvents.filter(event => event.type === 'partnership');
+
+        return (
+            <div className="max-w-7xl mx-auto px-4 py-12">
+                <div className="text-center mb-12">
+                    <h1 className={`text-5xl font-bold mb-4 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>
+                        {t('Evente Bashkëpunimi', 'Partnership Events')}
+                    </h1>
+                    <p className={`text-xl ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {t('Bashkëpunimet tona me organizata të ndryshme', 'Our partnerships with various organizations')}
+                    </p>
+                </div>
+
+                {partnershipEvents.length === 0 ? (
+                    <div className="text-center py-20">
+                        <div className="w-20 h-20 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/30">
+                            <Users className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                        </div>
+                        <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {t('Asnjë event bashkëpunimi ende', 'No partnership events yet')}
+                        </h3>
+                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                            {t('Eventet e bashkëpunimit do të shfaqen këtu kur të publikohen', 'Partnership events will appear here when published')}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {partnershipEvents.map((event) => (
+                            <div
+                                key={event.id}
+                                className={`backdrop-blur-lg rounded-2xl border hover:border-purple-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'
+                                    }`}
+                            >
+                                <div className="relative h-48">
+                                    <img
+                                        src={event.image}
+                                        alt={event.titleAl}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                                    {showAdmin && (
+                                        <button
+                                            onClick={() => deleteEvent(event.id)}
+                                            className="absolute top-3 right-3 bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Users className="w-5 h-5 text-purple-400" />
+                                        <span className="text-sm text-purple-400 font-medium">
+                                            {t('Bashkëpunim', 'Partnership')}
+                                        </span>
+                                    </div>
+                                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                        {language === 'al' ? event.titleAl : event.titleEn}
+                                    </h3>
+                                    <div className={`flex items-center text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        <span>{language === 'al' ? event.dateAl : event.dateEn}</span>
+                                    </div>
+                                    {event.location && (
+                                        <div className={`flex items-center text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            <MapPin className="w-4 h-4 mr-2" />
+                                            <span>{event.location}</span>
+                                        </div>
+                                    )}
+                                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {language === 'al' ? event.descAl : event.descEn}
+                                    </p>
+                                    {event.registration_link && (
+                                        <a
+                                            href={event.registration_link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all text-sm font-medium"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            {t('Regjistrohu', 'Register')}
+                                            <ChevronRight className="w-4 h-4" />
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // UPDATED: About Page with Partners Section
     const AboutPage = () => (
         <div className="max-w-6xl mx-auto px-4 py-12">
             <h1 className={`text-5xl font-bold mb-8 text-center ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>{t('Rreth Nesh', 'About Us')}</h1>
@@ -1114,6 +1331,72 @@ const RinON = () => {
                     )}
                 </p>
             </div>
+
+            {/* Partners Section - MOVED HERE */}
+            {partners.length > 0 && (
+                <div className="mb-12">
+                    <h2 className={`text-4xl font-bold mb-6 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {t('Partnerët Tanë', 'Our Partners')}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {partners.map((partner) => (
+                            <div
+                                key={partner.id}
+                                className={`backdrop-blur-lg rounded-2xl border hover:border-purple-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'
+                                    }`}
+                            >
+                                <div className="relative h-64">
+                                    <img
+                                        src={partner.image}
+                                        alt={partner.nameAl}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.src = 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800';
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                                    {showAdmin && (
+                                        <button
+                                            onClick={() => deletePartner(partner.id)}
+                                            className="absolute top-3 right-3 bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="p-6">
+                                    <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{language === 'al' ? partner.nameAl : partner.nameEn}</h3>
+
+                                    <div className="mb-4">
+                                        <h4 className="font-semibold text-purple-400 mb-1">{t('Përshkrimi', 'Description')}</h4>
+                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.descriptionAl : partner.descriptionEn}</p>
+                                    </div>
+
+                                    {(partner.visionAl || partner.visionEn) && (
+                                        <div className="mb-4">
+                                            <h4 className="font-semibold text-purple-400 mb-1">{t('Vizioni', 'Vision')}</h4>
+                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.visionAl : partner.visionEn}</p>
+                                        </div>
+                                    )}
+
+                                    {(partner.goalsAl || partner.goalsEn) && (
+                                        <div className="mb-4">
+                                            <h4 className="font-semibold text-purple-400 mb-1">{t('Qëllimet', 'Goals')}</h4>
+                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.goalsAl : partner.goalsEn}</p>
+                                        </div>
+                                    )}
+
+                                    {partner.website && (
+                                        <a href={partner.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-medium">
+                                            {t('Vizito faqen', 'Visit website')} →
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="mb-12">
                 <h2 className={`text-4xl font-bold mb-6 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Ekipi Ynë', 'Our Team')}</h2>
@@ -1160,7 +1443,7 @@ const RinON = () => {
                     <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/50">
                         <Calendar className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>15+</h3>
+                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>150+</h3>
                     <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Evente të Organizuara', 'Events Organized')}</p>
                 </div>
 
@@ -1168,8 +1451,8 @@ const RinON = () => {
                     <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/50">
                         <Leaf className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>5+</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Projekte', 'Projects')}</p>
+                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>25+</h3>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Projekte Mjedisore', 'Environmental Projects')}</p>
                 </div>
             </div>
         </div>
@@ -1225,6 +1508,21 @@ const RinON = () => {
                         </button>
 
                         <div className="hidden md:flex items-center space-x-4">
+                            {/* NEW: Search Bar */}
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder={t('Kërko...', 'Search...')}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className={`w-48 px-3 py-2 rounded-lg text-sm transition-all ${darkMode
+                                        ? 'bg-slate-700 border border-purple-500/30 text-white placeholder-gray-400'
+                                        : 'bg-gray-100 border border-purple-300 text-gray-900 placeholder-gray-500'
+                                        }`}
+                                />
+                                <Search className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                            </div>
+
                             <button
                                 onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
                                 className="flex items-center space-x-1 px-3 py-1.5 bg-purple-600/20 text-purple-400 rounded-lg hover:bg-purple-600/30 transition-all border border-purple-500/30"
@@ -1263,197 +1561,216 @@ const RinON = () => {
                 </div>
             </header>
 
-            {/* Mobile Menu Overlay */}
             {mobileMenuOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-                    onClick={() => setMobileMenuOpen(false)}
-                />
-            )}
-
-            {/* Mobile Menu Panel */}
-            <div className={`fixed top-0 right-0 h-full w-80 bg-slate-900 border-l border-white/10 transform transition-transform duration-300 z-50 md:hidden ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-                }`}>
-                <div className="flex flex-col h-full">
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-4 border-b border-white/10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">R</span>
-                            </div>
-                            <span className="text-white font-bold text-lg">RinON</span>
-                        </div>
-                        <button
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="p-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all"
-                        >
-                            <X size={20} className="text-white" />
-                        </button>
-                    </div>
-
-                    {/* User Section (if logged in) */}
-                    {user && (
-                        <div className="p-4 border-b border-white/10">
+                <div className="md:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
+                    <div
+                        className={`absolute top-0 right-0 h-full w-80 max-w-[85vw] transition-transform duration-300 ease-out border-l shadow-2xl overflow-y-auto ${darkMode
+                            ? 'bg-slate-800 border-purple-500/20'
+                            : 'bg-white border-purple-200'
+                            }`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Mobile Menu Header */}
+                        <div className={`flex items-center justify-between p-4 border-b ${darkMode ? 'border-purple-500/20' : 'border-purple-200'}`}>
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                                    <span className="text-white font-bold">
-                                        {userProfile?.display_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
-                                    </span>
+                                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/50">
+                                    <span className="text-white font-bold text-xl">R</span>
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-white font-medium">
-                                        {userProfile?.display_name || user.email.split('@')[0]}
-                                    </p>
-                                    <p className="text-gray-400 text-sm">{user.email}</p>
+                                <div>
+                                    <h2 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">RinON</h2>
+                                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Menu</p>
                                 </div>
                             </div>
+                            <button
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`p-2 rounded-lg transition-all ${darkMode ? 'hover:bg-purple-600/20' : 'hover:bg-purple-100'}`}
+                            >
+                                <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                            </button>
                         </div>
-                    )}
 
-                    {/* Navigation Links */}
-                    <nav className="flex-1 overflow-y-auto p-4">
-                        <div className="space-y-2">
+                        {/* NEW: Mobile Search */}
+                        <div className="p-4">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder={t('Kërko...', 'Search...')}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className={`w-full px-3 py-2 rounded-lg text-sm transition-all ${darkMode
+                                        ? 'bg-slate-700 border border-purple-500/30 text-white placeholder-gray-400'
+                                        : 'bg-gray-100 border border-purple-300 text-gray-900 placeholder-gray-500'
+                                        }`}
+                                />
+                                <Search className={`absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                            </div>
+                        </div>
+
+                        <nav className="flex flex-col p-4 space-y-2">
                             <button
                                 onClick={() => { changePage('home'); setMobileMenuOpen(false); }}
-                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'home'
-                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
-                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'home'
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                    : darkMode
+                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
+                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
                                     }`}
                             >
                                 {t('Faqja Kryesore', 'Home')}
                             </button>
-
                             <button
                                 onClick={() => { changePage('events'); setMobileMenuOpen(false); }}
-                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'events'
-                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
-                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'events'
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                    : darkMode
+                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
+                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
                                     }`}
                             >
                                 {t('Evente', 'Events')}
                             </button>
-
                             <button
-                                onClick={() => { changePage('cooperations'); setMobileMenuOpen(false); }}
-                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'cooperations'
-                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
-                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
+                                onClick={() => { changePage('partners'); setMobileMenuOpen(false); }}
+                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentPage === 'partners'
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                    : darkMode
+                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
+                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
                                     }`}
                             >
+                                <Users className="w-4 h-4" />
                                 {t('Bashkëpunime', 'Cooperations')}
                             </button>
-
-                            <button
-                                onClick={() => { changePage('discussion'); setMobileMenuOpen(false); }}
-                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'discussion'
-                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
-                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                                    }`}
-                            >
-                                {t('Bisedim', 'Discussion')}
-                            </button>
-
-                            <button
-                                onClick={() => { changePage('about'); setMobileMenuOpen(false); }}
-                                className={`w-full text-left px-4 py-3 rounded-xl transition-all ${currentPage === 'about'
-                                        ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white border border-purple-500/50'
-                                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                                    }`}
-                            >
-                                {t('Rreth Nesh', 'About Us')}
-                            </button>
-
-                            {/* Admin Panel Link */}
-                            {userProfile?.is_admin && (
+                            {user && (
                                 <button
-                                    onClick={() => {
-                                        setShowAdmin(true);
-                                        setMobileMenuOpen(false);
-                                    }}
-                                    className="w-full text-left px-4 py-3 rounded-xl text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-all"
+                                    onClick={() => { changePage('discussion'); setMobileMenuOpen(false); }}
+                                    className={`text-left px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentPage === 'discussion'
+                                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                        : darkMode
+                                            ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
+                                            : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                                        }`}
                                 >
-                                    <span className="flex items-center gap-2">
-                                        <Settings size={18} />
-                                        {t('Paneli Admin', 'Admin Panel')}
-                                    </span>
+                                    <MessageCircle className="w-4 h-4" />
+                                    {t('Bisedim', 'Discussion')}
                                 </button>
                             )}
-                        </div>
-                    </nav>
+                            <button
+                                onClick={() => { changePage('about'); setMobileMenuOpen(false); }}
+                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'about'
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                    : darkMode
+                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
+                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                                    }`}
+                            >
+                                {t('Rreth Nesh', 'About')}
+                            </button>
 
-                    {/* Bottom Controls */}
-                    <div className="p-4 border-t border-white/10 space-y-3">
-                        {/* Language Toggle */}
-                        <div className="flex items-center justify-between">
-                            <span className="text-gray-400 text-sm">{t('Gjuha', 'Language')}</span>
-                            <button
-                                onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
-                                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
-                            >
-                                <Globe size={16} className="text-white" />
-                                <span className="text-white text-sm font-medium">
-                                    {language === 'al' ? 'AL' : 'EN'}
-                                </span>
-                            </button>
-                        </div>
+                            <div className={`border-t pt-4 mt-4 space-y-3 ${darkMode ? 'border-purple-500/20' : 'border-purple-200'}`}>
+                                {user && (
+                                    <div className={`px-4 py-3 rounded-lg ${darkMode ? 'bg-purple-600/10' : 'bg-purple-100'}`}>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                                                <span className="text-white text-sm font-bold">
+                                                    {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                    {userProfile?.display_name || 'Admin'}
+                                                </p>
+                                                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    {user.email}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
-                        {/* Dark Mode Toggle */}
-                        <div className="flex items-center justify-between">
-                            <span className="text-gray-400 text-sm">{t('Modaliteti', 'Mode')}</span>
-                            <button
-                                onClick={() => setDarkMode(!darkMode)}
-                                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg border border-white/20 hover:bg-white/20 transition-all"
-                            >
-                                {darkMode ? <Sun size={16} className="text-white" /> : <Moon size={16} className="text-white" />}
-                                <span className="text-white text-sm font-medium">
-                                    {darkMode ? t('Dritë', 'Light') : t('Errët', 'Dark')}
-                                </span>
-                            </button>
-                        </div>
+                                <div className="flex items-center justify-between px-4">
+                                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {t('Gjuha', 'Language')}
+                                    </span>
+                                    <button
+                                        onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${darkMode
+                                            ? 'bg-white/10 border-white/20 hover:bg-white/20'
+                                            : 'bg-purple-100 border-purple-300 hover:bg-purple-200'
+                                            }`}
+                                    >
+                                        <Globe className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-purple-600'}`} />
+                                        <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-purple-600'}`}>
+                                            {language === 'al' ? 'AL' : 'EN'}
+                                        </span>
+                                    </button>
+                                </div>
 
-                        {/* User Preferences (if logged in) */}
-                        {user && (
-                            <button
-                                onClick={() => {
-                                    setShowPreferences(true);
-                                    setMobileMenuOpen(false);
-                                }}
-                                className="w-full flex items-center justify-between px-3 py-2 bg-purple-600/20 rounded-lg border border-purple-500/50 hover:bg-purple-600/30 transition-all"
-                            >
-                                <span className="text-purple-300 text-sm">{t('Preferencat', 'Preferences')}</span>
-                                <Settings size={16} className="text-purple-300" />
-                            </button>
-                        )}
+                                <div className="flex items-center justify-between px-4">
+                                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {t('Modaliteti', 'Mode')}
+                                    </span>
+                                    <button
+                                        onClick={() => setDarkMode(!darkMode)}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${darkMode
+                                            ? 'bg-white/10 border-white/20 hover:bg-white/20'
+                                            : 'bg-purple-100 border-purple-300 hover:bg-purple-200'
+                                            }`}
+                                    >
+                                        {darkMode ? <Sun className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-purple-600'}`} /> : <Moon className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-purple-600'}`} />}
+                                        <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-purple-600'}`}>
+                                            {darkMode ? t('Dritë', 'Light') : t('Errët', 'Dark')}
+                                        </span>
+                                    </button>
+                                </div>
 
-                        {/* Auth Button */}
-                        {user ? (
-                            <button
-                                onClick={async () => {
-                                    await supabase.auth.signOut();
-                                    setUser(null);
-                                    setUserProfile(null);
-                                    setMobileMenuOpen(false);
-                                }}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl hover:from-red-500 hover:to-pink-500 transition-all"
-                            >
-                                <LogOut size={18} />
-                                <span className="font-medium">{t('Dil', 'Logout')}</span>
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => {
-                                    setShowAuthModal(true);
-                                    setMobileMenuOpen(false);
-                                }}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all"
-                            >
-                                <LogIn size={18} />
-                                <span className="font-medium">{t('Hyr', 'Login')}</span>
-                            </button>
-                        )}
+                                {user && (
+                                    <button
+                                        onClick={() => {
+                                            setShowPreferences(true);
+                                            setMobileMenuOpen(false);
+                                        }}
+                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border transition-all ${darkMode
+                                            ? 'bg-purple-600/20 border-purple-500/50 hover:bg-purple-600/30'
+                                            : 'bg-purple-100 border-purple-300 hover:bg-purple-200'
+                                            }`}
+                                    >
+                                        <span className={`text-sm ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>
+                                            {t('Preferencat', 'Preferences')}
+                                        </span>
+                                        <Settings className={`w-4 h-4 ${darkMode ? 'text-purple-300' : 'text-purple-700'}`} />
+                                    </button>
+                                )}
+
+                                {user ? (
+                                    <button
+                                        onClick={() => {
+                                            handleLogout();
+                                            setMobileMenuOpen(false);
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl hover:from-red-500 hover:to-pink-500 transition-all"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        <span className="font-medium">{t('Dil', 'Logout')}</span>
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => {
+                                            setShowAuthModal(true);
+                                            setAuthMode('login');
+                                            setMobileMenuOpen(false);
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all"
+                                    >
+                                        <LogIn className="w-4 h-4" />
+                                        <span className="font-medium">{t('Hyr', 'Login')}</span>
+                                    </button>
+                                )}
+                            </div>
+                        </nav>
                     </div>
                 </div>
-            </div>
+            )}
 
             <AuthModal
                 showAuthModal={showAuthModal}
@@ -1476,6 +1793,8 @@ const RinON = () => {
                 language={language}
                 darkMode={darkMode}
                 t={t}
+                user={user}
+                handleDeleteAccount={handleDeleteAccount}
             />
 
             <style>{`
@@ -1620,16 +1939,28 @@ const RinON = () => {
                         </div>
 
                         <div className="max-w-7xl mx-auto px-4 py-12">
+                            {searchQuery && (
+                                <p className={`mb-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {t(`${filteredArticles.length} rezultate për "${searchQuery}"`, `${filteredArticles.length} results for "${searchQuery}"`)}
+                                </p>
+                            )}
+
                             {filteredArticles.length === 0 ? (
                                 <div className="text-center py-20">
                                     <div className="w-20 h-20 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/30">
                                         <TrendingUp className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                                     </div>
                                     <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        {t('Asnjë artikull ende', 'No articles yet')}
+                                        {searchQuery
+                                            ? t('Asnjë rezultat u gjet', 'No results found')
+                                            : t('Asnjë artikull ende', 'No articles yet')
+                                        }
                                     </h3>
                                     <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                        {t('Artikujt do të shfaqen këtu kur të publikohen', 'Articles will appear here when published')}
+                                        {searchQuery
+                                            ? t('Provoni të kërkoni diçka tjetër', 'Try searching for something else')
+                                            : t('Artikujt do të shfaqen këtu kur të publikohen', 'Articles will appear here when published')
+                                        }
                                     </p>
                                 </div>
                             ) : (
@@ -1670,11 +2001,41 @@ const RinON = () => {
                                                     <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-purple-300 transition">
                                                         {language === 'al' ? article.titleAl : article.titleEn}
                                                     </h3>
-                                                    <div className="flex items-center gap-4 text-sm opacity-80">
+                                                    <div className="flex items-center gap-4 text-sm opacity-80 mb-3">
                                                         <span>{article.date}</span>
                                                         <span className="text-purple-300 font-medium group-hover:underline">
                                                             {t('Lexo më shumë →', 'Read more →')}
                                                         </span>
+                                                    </div>
+
+                                                    {/* NEW: Reaction buttons */}
+                                                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleLike(article.id);
+                                                            }}
+                                                            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all ${likedArticles.includes(article.id)
+                                                                    ? 'bg-red-500 text-white'
+                                                                    : 'bg-white/20 text-white hover:bg-red-500/50'
+                                                                }`}
+                                                        >
+                                                            <Heart className={`w-3 h-3 ${likedArticles.includes(article.id) ? 'fill-current' : ''}`} />
+                                                            <span>{t('Pëlqej', 'Like')}</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleSave(article.id);
+                                                            }}
+                                                            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs transition-all ${savedArticles.includes(article.id)
+                                                                    ? 'bg-purple-500 text-white'
+                                                                    : 'bg-white/20 text-white hover:bg-purple-500/50'
+                                                                }`}
+                                                        >
+                                                            <Bookmark className={`w-3 h-3 ${savedArticles.includes(article.id) ? 'fill-current' : ''}`} />
+                                                            <span>{t('Ruaj', 'Save')}</span>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1687,7 +2048,7 @@ const RinON = () => {
                 ) : currentPage === 'events' ? (
                     <EventsPage />
                 ) : currentPage === 'partners' ? (
-                    <PartnersPage />
+                    <PartnershipsPage />
                 ) : currentPage === 'about' ? (
                     <AboutPage />
                 ) : currentPage === 'discussion' && user ? (
@@ -1921,6 +2282,14 @@ const RinON = () => {
                                 placeholder={t('URL Imazhi', 'Image URL')}
                                 value={eventFormData.image}
                                 onChange={(e) => setEventFormData({ ...eventFormData, image: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            {/* NEW: Registration link field */}
+                            <input
+                                type="text"
+                                placeholder={t('URL Regjistrimit (Opsionale)', 'Registration Link (Optional)')}
+                                value={eventFormData.registration_link}
+                                onChange={(e) => setEventFormData({ ...eventFormData, registration_link: e.target.value })}
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                             />
                             <div className="flex gap-3 pt-4">
