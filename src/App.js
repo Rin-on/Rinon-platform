@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Mail } from 'lucide-react';
 import DOMPurify from 'dompurify';
@@ -119,23 +119,23 @@ const DiscussionPageContent = ({
     if (!selectedTopic) {
         return (
             <div className="max-w-6xl mx-auto px-4 py-12">
-                <h1 className={`text-5xl font-bold mb-8 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>{t('Hapësira e Diskutimit', 'Discussion Space')}</h1>
+                <h1 className={`text-5xl font-bold mb-8 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>{t('HapÃ«sira e Diskutimit', 'Discussion Space')}</h1>
                 
                 {!user && (
                     <div className={`backdrop-blur-lg rounded-2xl border p-8 mb-8 text-center ${darkMode ? 'bg-purple-600/10 border-purple-500/30' : 'bg-purple-100 border-purple-300'}`}>
                         <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                         <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {t('Kyçu për të parë diskutimet', 'Sign in to view discussions')}
+                            {t('KyÃ§u pÃ«r tÃ« parÃ« diskutimet', 'Sign in to view discussions')}
                         </h3>
                         <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {t('Duhet të kyçesh për të parë dhe marrë pjesë në diskutime', 'You need to sign in to view and participate in discussions')}
+                            {t('Duhet tÃ« kyÃ§esh pÃ«r tÃ« parÃ« dhe marrÃ« pjesÃ« nÃ« diskutime', 'You need to sign in to view and participate in discussions')}
                         </p>
                         <button 
                             onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
                             className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50 flex items-center gap-2 mx-auto"
                         >
                             <LogIn className="w-5 h-5" />
-                            {t('Kyçu Tani', 'Sign In Now')}
+                            {t('KyÃ§u Tani', 'Sign In Now')}
                         </button>
                     </div>
                 )}
@@ -146,10 +146,10 @@ const DiscussionPageContent = ({
                             <MessageCircle className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                         </div>
                         <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {t('Asnjë temë diskutimi ende', 'No discussion topics yet')}
+                            {t('AsnjÃ« temÃ« diskutimi ende', 'No discussion topics yet')}
                         </h3>
                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Temat do të shfaqen këtu kur të krijohen', 'Topics will appear here when created')}
+                            {t('Temat do tÃ« shfaqen kÃ«tu kur tÃ« krijohen', 'Topics will appear here when created')}
                         </p>
                     </div>
                 ) : (
@@ -194,17 +194,17 @@ const DiscussionPageContent = ({
                 <div className={`backdrop-blur-lg rounded-2xl border p-8 text-center ${darkMode ? 'bg-purple-600/10 border-purple-500/30' : 'bg-purple-100 border-purple-300'}`}>
                     <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {t('Kyçu për të parë diskutimet', 'Sign in to view discussions')}
+                        {t('KyÃ§u pÃ«r tÃ« parÃ« diskutimet', 'Sign in to view discussions')}
                     </h3>
                     <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t('Duhet të kyçesh për të parë dhe marrë pjesë në diskutime', 'You need to sign in to view and participate in discussions')}
+                        {t('Duhet tÃ« kyÃ§esh pÃ«r tÃ« parÃ« dhe marrÃ« pjesÃ« nÃ« diskutime', 'You need to sign in to view and participate in discussions')}
                     </p>
                     <button 
                         onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
                         className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50 flex items-center gap-2 mx-auto"
                     >
                         <LogIn className="w-5 h-5" />
-                        {t('Kyçu Tani', 'Sign In Now')}
+                        {t('KyÃ§u Tani', 'Sign In Now')}
                     </button>
                 </div>
             </div>
@@ -244,10 +244,10 @@ const DiscussionPageContent = ({
                     <div className={`backdrop-blur-lg p-12 rounded-2xl border text-center ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
                         <MessageCircle className={`w-12 h-12 mx-auto mb-4 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                         <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {t('Asnjë koment ende', 'No comments yet')}
+                            {t('AsnjÃ« koment ende', 'No comments yet')}
                         </h3>
                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Bëhu i pari që komenton këtë temë!', 'Be the first to comment on this topic!')}
+                            {t('BÃ«hu i pari qÃ« komenton kÃ«tÃ« temÃ«!', 'Be the first to comment on this topic!')}
                         </p>
                     </div>
                 ) : (
@@ -285,7 +285,7 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
 
         if (authMode === 'signup') {
             if (!validateInput.email(email)) {
-                setError(t('Email i pavlefshëm', 'Invalid email address'));
+                setError(t('Email i pavlefshÃ«m', 'Invalid email address'));
                 return;
             }
 
@@ -296,7 +296,7 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
             }
 
             if (!validateInput.text(displayName, 50)) {
-                setError(t('Emri duhet të jetë 1-50 karaktere', 'Name must be 1-50 characters'));
+                setError(t('Emri duhet tÃ« jetÃ« 1-50 karaktere', 'Name must be 1-50 characters'));
                 return;
             }
 
@@ -305,7 +305,7 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
             else setShowAuthModal(false);
         } else {
             if (!validateInput.email(email)) {
-                setError(t('Email i pavlefshëm', 'Invalid email address'));
+                setError(t('Email i pavlefshÃ«m', 'Invalid email address'));
                 return;
             }
 
@@ -349,7 +349,7 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                     />
                     <input
                         type="password"
-                        placeholder={t('Fjalëkalimi', 'Password')}
+                        placeholder={t('FjalÃ«kalimi', 'Password')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
@@ -388,7 +388,7 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-purple-500/20">
                 <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{t('Zgjidhni Preferencat', 'Choose Preferences')}</h2>
-                <p className="text-gray-400 mb-6">{t('Zgjidhni temat që ju interesojnë', 'Select topics that interest you')}</p>
+                <p className="text-gray-400 mb-6">{t('Zgjidhni temat qÃ« ju interesojnÃ«', 'Select topics that interest you')}</p>
 
                 <div className="space-y-3 mb-6">
                     {categories.filter(c => c.al !== 'Te Gjitha').map(cat => (
@@ -453,7 +453,7 @@ const RinON = () => {
 
     const [formData, setFormData] = useState({
         titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
+        category: 'Sport dhe KulturÃ«', image: '', imageFile: null, source: '', featured: false
     });
 
     const [eventFormData, setEventFormData] = useState({
@@ -484,8 +484,8 @@ const RinON = () => {
     // NEW FEATURE 1: Updated categories with AI and Europe
     const categories = [
         { al: 'Te Gjitha', en: 'All', icon: TrendingUp },
-        { al: 'Sport dhe Kulturë', en: 'Sports and Culture', icon: Play },
-        { al: 'Politikë dhe Ekonomi', en: 'Politics and Economics', icon: Users },
+        { al: 'Sport dhe KulturÃ«', en: 'Sports and Culture', icon: Play },
+        { al: 'PolitikÃ« dhe Ekonomi', en: 'Politics and Economics', icon: Users },
         { al: 'Mjedis', en: 'Environment', icon: Leaf },
         { al: 'Showbiz', en: 'Entertainment', icon: Film },
         { al: 'AI', en: 'AI', icon: Brain },
@@ -688,7 +688,7 @@ const RinON = () => {
         if (!newPost.trim() || !selectedTopic || !user) return;
 
         if (!validateInput.text(newPost, 2000)) {
-            alert(t('Postimi duhet të jetë 1-2000 karaktere', 'Post must be 1-2000 characters'));
+            alert(t('Postimi duhet tÃ« jetÃ« 1-2000 karaktere', 'Post must be 1-2000 characters'));
             return;
         }
 
@@ -720,7 +720,7 @@ const RinON = () => {
     };
 
     const deleteTopic = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë temë?', 'Are you sure you want to delete this topic?'))) {
+        if (window.confirm(t('Jeni i sigurt qÃ« dÃ«shironi tÃ« fshini kÃ«tÃ« temÃ«?', 'Are you sure you want to delete this topic?'))) {
             try {
                 const { error } = await supabase.from('topics').delete().eq('id', id);
                 if (error) throw error;
@@ -732,7 +732,7 @@ const RinON = () => {
     };
 
     const deleteArticle = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë artikull?', 'Are you sure you want to delete this article?'))) {
+        if (window.confirm(t('Jeni i sigurt qÃ« dÃ«shironi tÃ« fshini kÃ«tÃ« artikull?', 'Are you sure you want to delete this article?'))) {
             try {
                 const { error } = await supabase.from('articles').delete().eq('id', id);
                 if (error) throw error;
@@ -744,7 +744,7 @@ const RinON = () => {
     };
 
     const deleteEvent = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë event?', 'Are you sure you want to delete this event?'))) {
+        if (window.confirm(t('Jeni i sigurt qÃ« dÃ«shironi tÃ« fshini kÃ«tÃ« event?', 'Are you sure you want to delete this event?'))) {
             try {
                 const { error } = await supabase.from('events').delete().eq('id', id);
                 if (error) throw error;
@@ -756,7 +756,7 @@ const RinON = () => {
     };
 
     const deletePartner = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë partner?', 'Are you sure you want to delete this partner?'))) {
+        if (window.confirm(t('Jeni i sigurt qÃ« dÃ«shironi tÃ« fshini kÃ«tÃ« partner?', 'Are you sure you want to delete this partner?'))) {
             try {
                 const { error } = await supabase.from('partners').delete().eq('id', id);
                 if (error) throw error;
@@ -768,7 +768,7 @@ const RinON = () => {
     };
 
     const deleteMember = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë anëtar?', 'Are you sure you want to delete this member?'))) {
+        if (window.confirm(t('Jeni i sigurt qÃ« dÃ«shironi tÃ« fshini kÃ«tÃ« anÃ«tar?', 'Are you sure you want to delete this member?'))) {
             try {
                 const { error } = await supabase.from('team_members').delete().eq('id', id);
                 if (error) throw error;
@@ -846,17 +846,17 @@ const RinON = () => {
 
     const handleSubmitArticle = async () => {
         if (!formData.titleAl || !formData.contentAl) {
-            alert(t('Ju lutem plotësoni fushat e detyrueshme në shqip', 'Please fill in required Albanian fields'));
+            alert(t('Ju lutem plotÃ«soni fushat e detyrueshme nÃ« shqip', 'Please fill in required Albanian fields'));
             return;
         }
 
         if (!validateInput.text(formData.titleAl, 200)) {
-            alert(t('Titulli duhet të jetë 1-200 karaktere', 'Title must be 1-200 characters'));
+            alert(t('Titulli duhet tÃ« jetÃ« 1-200 karaktere', 'Title must be 1-200 characters'));
             return;
         }
 
         if (!validateInput.text(formData.contentAl, 10000)) {
-            alert(t('Përmbajtja duhet të jetë 1-10000 karaktere', 'Content must be 1-10000 characters'));
+            alert(t('PÃ«rmbajtja duhet tÃ« jetÃ« 1-10000 karaktere', 'Content must be 1-10000 characters'));
             return;
         }
 
@@ -891,12 +891,12 @@ const RinON = () => {
             loadArticles();
             setFormData({
                 titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
+                category: 'Sport dhe KulturÃ«', image: '', imageFile: null, source: '', featured: false
             });
             setShowAddForm(false);
             setEditMode(false);
             setEditingItem(null);
-            alert(t(editMode ? 'Artikulli u përditësua me sukses!' : 'Artikulli u publikua me sukses!', 
+            alert(t(editMode ? 'Artikulli u pÃ«rditÃ«sua me sukses!' : 'Artikulli u publikua me sukses!', 
                      editMode ? 'Article updated successfully!' : 'Article published successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitArticle'));
@@ -905,12 +905,12 @@ const RinON = () => {
 
     const handleSubmitEvent = async () => {
         if (!eventFormData.titleAl || !eventFormData.dateAl) {
-            alert(t('Ju lutem plotësoni fushat e detyrueshme në shqip', 'Please fill in required Albanian fields'));
+            alert(t('Ju lutem plotÃ«soni fushat e detyrueshme nÃ« shqip', 'Please fill in required Albanian fields'));
             return;
         }
 
         if (!validateInput.text(eventFormData.titleAl, 200)) {
-            alert(t('Titulli duhet të jetë 1-200 karaktere', 'Title must be 1-200 characters'));
+            alert(t('Titulli duhet tÃ« jetÃ« 1-200 karaktere', 'Title must be 1-200 characters'));
             return;
         }
 
@@ -950,7 +950,7 @@ const RinON = () => {
             setShowAddEventForm(false);
             setEditMode(false);
             setEditingItem(null);
-            alert(t(editMode ? 'Eventi u përditësua me sukses!' : 'Eventi u shtua me sukses!',
+            alert(t(editMode ? 'Eventi u pÃ«rditÃ«sua me sukses!' : 'Eventi u shtua me sukses!',
                      editMode ? 'Event updated successfully!' : 'Event added successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitEvent'));
@@ -959,17 +959,17 @@ const RinON = () => {
 
     const handleSubmitTopic = async () => {
         if (!topicFormData.titleAl || !topicFormData.descriptionAl) {
-            alert(t('Ju lutem plotësoni fushat e detyrueshme në shqip', 'Please fill in required Albanian fields'));
+            alert(t('Ju lutem plotÃ«soni fushat e detyrueshme nÃ« shqip', 'Please fill in required Albanian fields'));
             return;
         }
 
         if (!validateInput.text(topicFormData.titleAl, 200)) {
-            alert(t('Titulli duhet të jetë 1-200 karaktere', 'Title must be 1-200 characters'));
+            alert(t('Titulli duhet tÃ« jetÃ« 1-200 karaktere', 'Title must be 1-200 characters'));
             return;
         }
 
         if (!validateInput.text(topicFormData.descriptionAl, 1000)) {
-            alert(t('Përshkrimi duhet të jetë 1-1000 karaktere', 'Description must be 1-1000 characters'));
+            alert(t('PÃ«rshkrimi duhet tÃ« jetÃ« 1-1000 karaktere', 'Description must be 1-1000 characters'));
             return;
         }
 
@@ -1001,17 +1001,17 @@ const RinON = () => {
 
     const handleSubmitPartner = async () => {
         if (!partnerFormData.nameAl || !partnerFormData.nameEn) {
-            alert(t('Ju lutem plotësoni emrin', 'Please fill in the name'));
+            alert(t('Ju lutem plotÃ«soni emrin', 'Please fill in the name'));
             return;
         }
 
         if (!validateInput.text(partnerFormData.nameAl, 100)) {
-            alert(t('Emri duhet të jetë 1-100 karaktere', 'Name must be 1-100 characters'));
+            alert(t('Emri duhet tÃ« jetÃ« 1-100 karaktere', 'Name must be 1-100 characters'));
             return;
         }
 
         if (partnerFormData.website && !validateInput.url(partnerFormData.website)) {
-            alert(t('URL e website është e pavlefshme', 'Invalid website URL'));
+            alert(t('URL e website Ã«shtÃ« e pavlefshme', 'Invalid website URL'));
             return;
         }
 
@@ -1052,7 +1052,7 @@ const RinON = () => {
             setShowAddPartnerForm(false);
             setEditMode(false);
             setEditingItem(null);
-            alert(t(editMode ? 'Partneri u përditësua me sukses!' : 'Partneri u shtua me sukses!',
+            alert(t(editMode ? 'Partneri u pÃ«rditÃ«sua me sukses!' : 'Partneri u shtua me sukses!',
                      editMode ? 'Partner updated successfully!' : 'Partner added successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitPartner'));
@@ -1061,17 +1061,17 @@ const RinON = () => {
 
     const handleSubmitMember = async () => {
         if (!memberFormData.name || !memberFormData.role) {
-            alert(t('Ju lutem plotësoni të gjitha fushat', 'Please fill in all fields'));
+            alert(t('Ju lutem plotÃ«soni tÃ« gjitha fushat', 'Please fill in all fields'));
             return;
         }
 
         if (!validateInput.text(memberFormData.name, 100)) {
-            alert(t('Emri duhet të jetë 1-100 karaktere', 'Name must be 1-100 characters'));
+            alert(t('Emri duhet tÃ« jetÃ« 1-100 karaktere', 'Name must be 1-100 characters'));
             return;
         }
 
         if (!validateInput.text(memberFormData.role, 100)) {
-            alert(t('Roli duhet të jetë 1-100 karaktere', 'Role must be 1-100 characters'));
+            alert(t('Roli duhet tÃ« jetÃ« 1-100 karaktere', 'Role must be 1-100 characters'));
             return;
         }
 
@@ -1095,7 +1095,7 @@ const RinON = () => {
             setShowAddMemberForm(false);
             setEditMode(false);
             setEditingItem(null);
-            alert(t(editMode ? 'Anëtari u përditësua me sukses!' : 'Anëtari u shtua me sukses!',
+            alert(t(editMode ? 'AnÃ«tari u pÃ«rditÃ«sua me sukses!' : 'AnÃ«tari u shtua me sukses!',
                      editMode ? 'Member updated successfully!' : 'Member added successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitMember'));
@@ -1123,10 +1123,10 @@ const EventsPage = () => (
                         <Calendar className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                     </div>
                     <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {t('Asnjë event ende', 'No events yet')}
+                        {t('AsnjÃ« event ende', 'No events yet')}
                     </h3>
                     <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                        {t('Eventet do të shfaqen këtu kur të publikohen', 'Events will appear here when published')}
+                        {t('Eventet do tÃ« shfaqen kÃ«tu kur tÃ« publikohen', 'Events will appear here when published')}
                     </p>
                 </div>
             ) : (
@@ -1192,10 +1192,10 @@ const EventsPage = () => (
             <div className="max-w-7xl mx-auto px-4 py-12">
                 <div className="text-center mb-12">
                     <h1 className={`text-5xl font-bold mb-4 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>
-                        {t('Evente Bashkëpunimi', 'Partnership Events')}
+                        {t('Evente BashkÃ«punimi', 'Partnership Events')}
                     </h1>
                     <p className={`text-xl ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t('Bashkëpunimet tona me organizata të ndryshme', 'Our partnerships with various organizations')}
+                        {t('BashkÃ«punimet tona me organizata tÃ« ndryshme', 'Our partnerships with various organizations')}
                     </p>
                 </div>
 
@@ -1205,10 +1205,10 @@ const EventsPage = () => (
                             <Users className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                         </div>
                         <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                            {t('Asnjë event bashkëpunimi ende', 'No partnership events yet')}
+                            {t('AsnjÃ« event bashkÃ«punimi ende', 'No partnership events yet')}
                         </h3>
                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Eventet e bashkëpunimit do të shfaqen këtu kur të publikohen', 'Partnership events will appear here when published')}
+                            {t('Eventet e bashkÃ«punimit do tÃ« shfaqen kÃ«tu kur tÃ« publikohen', 'Partnership events will appear here when published')}
                         </p>
                     </div>
                 ) : (
@@ -1249,7 +1249,7 @@ const EventsPage = () => (
                                     <div className="flex items-center gap-2 mb-3">
                                         <Users className="w-5 h-5 text-purple-400" />
                                         <span className="text-sm text-purple-400 font-medium">
-                                            {t('Bashkëpunim', 'Partnership')}
+                                            {t('BashkÃ«punim', 'Partnership')}
                                         </span>
                                     </div>
                                     <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -1281,18 +1281,18 @@ const AboutPage = () => (
             <h1 className={`text-5xl font-bold mb-8 text-center ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>{t('Rreth Nesh', 'About Us')}</h1>
 
             <div className={`backdrop-blur-lg rounded-2xl border p-8 mb-8 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
-                <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Përshkrimi', 'Description')}</h2>
+                <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('PÃ«rshkrimi', 'Description')}</h2>
                 <p className={`leading-relaxed mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     {t(
-                        'RinON është një platformë dixhitale e dedikuar për rininë shqiptare, e krijuar për të promovuar aktivizmin, kulturën, edukimin dhe zhvillimin personal të të rinjve. Ne besojmë se të rinjtë janë motori i ndryshimit dhe përparimit të shoqërisë sonë.',
+                        'RinON Ã«shtÃ« njÃ« platformÃ« dixhitale e dedikuar pÃ«r rininÃ« shqiptare, e krijuar pÃ«r tÃ« promovuar aktivizmin, kulturÃ«n, edukimin dhe zhvillimin personal tÃ« tÃ« rinjve. Ne besojmÃ« se tÃ« rinjtÃ« janÃ« motori i ndryshimit dhe pÃ«rparimit tÃ« shoqÃ«risÃ« sonÃ«.',
                         'RinON is a digital platform dedicated to Albanian youth, created to promote activism, culture, education and personal development of young people. We believe that young people are the engine of change and progress in our society.'
                     )}
                 </p>
 
-                <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Vizioni Ynë', 'Our Vision')}</h2>
+                <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Vizioni YnÃ«', 'Our Vision')}</h2>
                 <p className={`leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     {t(
-                        'Të krijojmë një komunitet të fortë dhe aktiv të të rinjve shqiptarë që punojnë së bashku për një të ardhme më të mirë. Ne synojmë të jemi platforma kryesore për lajme, ngjarje dhe diskutime që ndikojnë në jetën e përditshme të të rinjve në Shqipëri.',
+                        'TÃ« krijojmÃ« njÃ« komunitet tÃ« fortÃ« dhe aktiv tÃ« tÃ« rinjve shqiptarÃ« qÃ« punojnÃ« sÃ« bashku pÃ«r njÃ« tÃ« ardhme mÃ« tÃ« mirÃ«. Ne synojmÃ« tÃ« jemi platforma kryesore pÃ«r lajme, ngjarje dhe diskutime qÃ« ndikojnÃ« nÃ« jetÃ«n e pÃ«rditshme tÃ« tÃ« rinjve nÃ« ShqipÃ«ri.',
                         'To create a strong and active community of young Albanians working together for a better future. We aim to be the main platform for news, events and discussions that affect the daily lives of young people in Albania.'
                     )}
                 </p>
@@ -1301,7 +1301,7 @@ const AboutPage = () => (
             {partners.length > 0 && (
                 <div className="mb-12">
                     <h2 className={`text-4xl font-bold mb-6 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {t('Partnerët Tanë', 'Our Partners')}
+                        {t('PartnerÃ«t TanÃ«', 'Our Partners')}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {partners.map((partner) => (
@@ -1340,7 +1340,7 @@ const AboutPage = () => (
                                     <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{language === 'al' ? partner.nameAl : partner.nameEn}</h3>
 
                                     <div className="mb-4">
-                                        <h4 className="font-semibold text-purple-400 mb-1">{t('Përshkrimi', 'Description')}</h4>
+                                        <h4 className="font-semibold text-purple-400 mb-1">{t('PÃ«rshkrimi', 'Description')}</h4>
                                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.descriptionAl : partner.descriptionEn}</p>
                                     </div>
 
@@ -1353,14 +1353,14 @@ const AboutPage = () => (
 
                                     {(partner.goalsAl || partner.goalsEn) && (
                                         <div className="mb-4">
-                                            <h4 className="font-semibold text-purple-400 mb-1">{t('Qëllimet', 'Goals')}</h4>
+                                            <h4 className="font-semibold text-purple-400 mb-1">{t('QÃ«llimet', 'Goals')}</h4>
                                             <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.goalsAl : partner.goalsEn}</p>
                                         </div>
                                     )}
 
                                     {partner.website && (
                                         <a href={partner.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-medium">
-                                            {t('Vizito faqen', 'Visit website')} →
+                                            {t('Vizito faqen', 'Visit website')} â†’
                                         </a>
                                     )}
                                 </div>
@@ -1371,11 +1371,11 @@ const AboutPage = () => (
             )}
 
             <div className="mb-12">
-                <h2 className={`text-4xl font-bold mb-6 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Ekipi Ynë', 'Our Team')}</h2>
+                <h2 className={`text-4xl font-bold mb-6 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Ekipi YnÃ«', 'Our Team')}</h2>
                 {staffMembers.length === 0 ? (
                     <div className="text-center py-12">
                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Anëtarët e ekipit do të shfaqen këtu', 'Team members will appear here')}
+                            {t('AnÃ«tarÃ«t e ekipit do tÃ« shfaqen kÃ«tu', 'Team members will appear here')}
                         </p>
                     </div>
                 ) : (
@@ -1415,7 +1415,7 @@ const AboutPage = () => (
                         <Users className="w-8 h-8 text-white" />
                     </div>
                     <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>5000+</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Anëtarë Aktivë', 'Active Members')}</p>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('AnÃ«tarÃ« AktivÃ«', 'Active Members')}</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-2xl p-6 text-center border border-purple-500/30 backdrop-blur-lg transition-all hover:scale-105">
@@ -1423,7 +1423,7 @@ const AboutPage = () => (
                         <Calendar className="w-8 h-8 text-white" />
                     </div>
                     <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>150+</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Evente të Organizuara', 'Events Organized')}</p>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Evente tÃ« Organizuara', 'Events Organized')}</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-2xl p-6 text-center border border-purple-500/30 backdrop-blur-lg transition-all hover:scale-105">
@@ -1461,7 +1461,7 @@ return (
                             <div>
                                 <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">RinON</h1>
                                 <p className="text-xs text-purple-400 uppercase tracking-wide">
-                                    {t('Aktivizo Rininë Tënde', 'Activate Your Youth')}
+                                    {t('Aktivizo RininÃ« TÃ«nde', 'Activate Your Youth')}
                                 </p>
                             </div>
                         </div>
@@ -1475,7 +1475,7 @@ return (
                             </button>
                             <button onClick={() => changePage('partners')} className={`font-medium flex items-center gap-1 transition-all ${currentPage === 'partners' ? 'text-purple-400' : darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}>
                                 <Users className="w-4 h-4" />
-                                {t('Bashkëpunime', 'Cooperations')}
+                                {t('BashkÃ«punime', 'Cooperations')}
                             </button>
                             <button onClick={() => changePage('discussion')} className={`font-medium flex items-center gap-2 transition-all ${currentPage === 'discussion' ? 'text-purple-400' : darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}>
                                 <MessageCircle className="w-4 h-4" />
@@ -1601,7 +1601,7 @@ return (
                                     }`}
                             >
                                 <Users className="w-4 h-4" />
-                                {t('Bashkëpunime', 'Cooperations')}
+                                {t('BashkÃ«punime', 'Cooperations')}
                             </button>
                             <button
                                 onClick={() => { changePage('discussion'); setMobileMenuOpen(false); }}
@@ -1679,7 +1679,7 @@ return (
                                     >
                                         {darkMode ? <Sun className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-purple-600'}`} /> : <Moon className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-purple-600'}`} />}
                                         <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-purple-600'}`}>
-                                            {darkMode ? t('Dritë', 'Light') : t('Errët', 'Dark')}
+                                            {darkMode ? t('DritÃ«', 'Light') : t('ErrÃ«t', 'Dark')}
                                         </span>
                                     </button>
                                 </div>
@@ -1839,7 +1839,7 @@ return (
                                                             onClick={() => openArticle(article)}
                                                             className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-bold hover:from-purple-500 hover:to-pink-500 transform hover:scale-105 transition-all shadow-lg shadow-purple-500/50"
                                                         >
-                                                            {t('Lexo më shumë', 'Read more')}
+                                                            {t('Lexo mÃ« shumÃ«', 'Read more')}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1902,10 +1902,10 @@ return (
                                         <TrendingUp className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                                     </div>
                                     <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        {t('Asnjë artikull ende', 'No articles yet')}
+                                        {t('AsnjÃ« artikull ende', 'No articles yet')}
                                     </h3>
                                     <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                        {t('Artikujt do të shfaqen këtu kur të publikohen', 'Articles will appear here when published')}
+                                        {t('Artikujt do tÃ« shfaqen kÃ«tu kur tÃ« publikohen', 'Articles will appear here when published')}
                                     </p>
                                 </div>
                             ) : (
@@ -1961,7 +1961,7 @@ return (
                                                     <div className="flex items-center gap-4 text-sm opacity-80">
                                                         <span>{article.date}</span>
                                                         <span className="text-purple-300 font-medium group-hover:underline">
-                                                            {t('Lexo më shumë →', 'Read more →')}
+                                                            {t('Lexo mÃ« shumÃ« â†’', 'Read more â†’')}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -2072,7 +2072,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                             />
                             <textarea
-                                placeholder={t('Përmbajtja (Shqip) *', 'Content (Albanian) *')}
+                                placeholder={t('PÃ«rmbajtja (Shqip) *', 'Content (Albanian) *')}
                                 value={formData.contentAl}
                                 onChange={(e) => setFormData({ ...formData, contentAl: e.target.value })}
                                 rows="6"
@@ -2080,7 +2080,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
                             />
                             <textarea
-                                placeholder={t('Përmbajtja (Anglisht)', 'Content (English)')}
+                                placeholder={t('PÃ«rmbajtja (Anglisht)', 'Content (English)')}
                                 value={formData.contentEn}
                                 onChange={(e) => setFormData({ ...formData, contentEn: e.target.value })}
                                 rows="6"
@@ -2118,7 +2118,7 @@ return (
                                     onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                                     className="w-5 h-5 rounded border-purple-500/30 bg-slate-700 text-purple-600 focus:ring-purple-500/20"
                                 />
-                                <span>{t('Artikull i veçantë', 'Featured article')}</span>
+                                <span>{t('Artikull i veÃ§antÃ«', 'Featured article')}</span>
                             </label>
                             <div className="flex gap-3 pt-4">
                                 <button onClick={() => setShowAddForm(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
@@ -2194,7 +2194,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                             />
                             <textarea
-                                placeholder={t('Përshkrimi (Shqip)', 'Description (Albanian)')}
+                                placeholder={t('PÃ«rshkrimi (Shqip)', 'Description (Albanian)')}
                                 value={eventFormData.descAl}
                                 onChange={(e) => setEventFormData({ ...eventFormData, descAl: e.target.value })}
                                 rows="4"
@@ -2202,7 +2202,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
                             />
                             <textarea
-                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
+                                placeholder={t('PÃ«rshkrimi (Anglisht)', 'Description (English)')}
                                 value={eventFormData.descEn}
                                 onChange={(e) => setEventFormData({ ...eventFormData, descEn: e.target.value })}
                                 rows="4"
@@ -2234,7 +2234,7 @@ return (
                     <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                {t('Shto Temë Diskutimi', 'Add Discussion Topic')}
+                                {t('Shto TemÃ« Diskutimi', 'Add Discussion Topic')}
                             </h2>
                             <button onClick={() => setShowAddTopicForm(false)} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
                                 <X className="w-5 h-5 text-gray-400" />
@@ -2258,7 +2258,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                             />
                             <textarea
-                                placeholder={t('Përshkrimi (Shqip) *', 'Description (Albanian) *')}
+                                placeholder={t('PÃ«rshkrimi (Shqip) *', 'Description (Albanian) *')}
                                 value={topicFormData.descriptionAl}
                                 onChange={(e) => setTopicFormData({ ...topicFormData, descriptionAl: e.target.value })}
                                 rows="4"
@@ -2266,7 +2266,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
                             />
                             <textarea
-                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
+                                placeholder={t('PÃ«rshkrimi (Anglisht)', 'Description (English)')}
                                 value={topicFormData.descriptionEn}
                                 onChange={(e) => setTopicFormData({ ...topicFormData, descriptionEn: e.target.value })}
                                 rows="4"
@@ -2315,7 +2315,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                             />
                             <textarea
-                                placeholder={t('Përshkrimi (Shqip)', 'Description (Albanian)')}
+                                placeholder={t('PÃ«rshkrimi (Shqip)', 'Description (Albanian)')}
                                 value={partnerFormData.descriptionAl}
                                 onChange={(e) => setPartnerFormData({ ...partnerFormData, descriptionAl: e.target.value })}
                                 rows="3"
@@ -2323,7 +2323,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
                             />
                             <textarea
-                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
+                                placeholder={t('PÃ«rshkrimi (Anglisht)', 'Description (English)')}
                                 value={partnerFormData.descriptionEn}
                                 onChange={(e) => setPartnerFormData({ ...partnerFormData, descriptionEn: e.target.value })}
                                 rows="3"
@@ -2347,7 +2347,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
                             />
                             <textarea
-                                placeholder={t('Qëllimet (Shqip)', 'Goals (Albanian)')}
+                                placeholder={t('QÃ«llimet (Shqip)', 'Goals (Albanian)')}
                                 value={partnerFormData.goalsAl}
                                 onChange={(e) => setPartnerFormData({ ...partnerFormData, goalsAl: e.target.value })}
                                 rows="3"
@@ -2355,7 +2355,7 @@ return (
                                 className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
                             />
                             <textarea
-                                placeholder={t('Qëllimet (Anglisht)', 'Goals (English)')}
+                                placeholder={t('QÃ«llimet (Anglisht)', 'Goals (English)')}
                                 value={partnerFormData.goalsEn}
                                 onChange={(e) => setPartnerFormData({ ...partnerFormData, goalsEn: e.target.value })}
                                 rows="3"
@@ -2394,7 +2394,7 @@ return (
                     <div className="bg-slate-800 rounded-3xl max-w-md w-full border border-purple-500/20 shadow-2xl p-8">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                {t('Shto Anëtar Ekipi', 'Add Team Member')}
+                                {t('Shto AnÃ«tar Ekipi', 'Add Team Member')}
                             </h2>
                             <button onClick={() => setShowAddMemberForm(false)} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
                                 <X className="w-5 h-5 text-gray-400" />
@@ -2450,7 +2450,7 @@ return (
                     <button
                         onClick={() => setShowAddTopicForm(true)}
                         className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 rounded-full shadow-2xl hover:from-purple-500 hover:to-indigo-500 transform hover:scale-110 transition-all duration-300 animate-pulse-glow"
-                        title={t('Shto Temë Diskutimi', 'Add Discussion Topic')}
+                        title={t('Shto TemÃ« Diskutimi', 'Add Discussion Topic')}
                         style={{ animationDelay: '1s' }}
                     >
                         <MessageCircle className="h-6 w-6" />
@@ -2466,7 +2466,7 @@ return (
                     <button
                         onClick={() => setShowAddMemberForm(true)}
                         className="bg-gradient-to-r from-pink-600 to-red-600 text-white p-4 rounded-full shadow-2xl hover:from-pink-500 hover:to-red-500 transform hover:scale-110 transition-all duration-300 animate-pulse-glow"
-                        title={t('Shto Anëtar Ekipi', 'Add Team Member')}
+                        title={t('Shto AnÃ«tar Ekipi', 'Add Team Member')}
                         style={{ animationDelay: '2s' }}
                     >
                         <Award className="h-6 w-6" />
@@ -2483,7 +2483,7 @@ return (
                         <div>
                             <h3 className="text-xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">RinON</h3>
                             <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {t('Platforma dixhitale për rininë shqiptare', 'Digital platform for Albanian youth')}
+                                {t('Platforma dixhitale pÃ«r rininÃ« shqiptare', 'Digital platform for Albanian youth')}
                             </p>
                             <div className="space-y-2">
                             <a
@@ -2509,7 +2509,7 @@ return (
                     <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         <li><button onClick={() => changePage('home')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Faqja Kryesore', 'Home')}</button></li>
                         <li><button onClick={() => changePage('events')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Evente', 'Events')}</button></li>
-                        <li><button onClick={() => changePage('partners')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Bashkëpunime', 'Cooperations')}</button></li>
+                        <li><button onClick={() => changePage('partners')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('BashkÃ«punime', 'Cooperations')}</button></li>
                         <li><button onClick={() => changePage('about')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Rreth Nesh', 'About')}</button></li>
                     </ul>
                 </div>
@@ -2517,7 +2517,7 @@ return (
                 <div>
                     <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Behu Vullnetar', 'Become a Volunteer')}</h3>
                     <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t('Bashkohu me ne dhe kontribuo për një të ardhme më të mirë!', 'Join us and contribute to a better future!')}
+                        {t('Bashkohu me ne dhe kontribuo pÃ«r njÃ« tÃ« ardhme mÃ« tÃ« mirÃ«!', 'Join us and contribute to a better future!')}
                     </p>
                     <a
                     href="https://docs.google.com/forms/d/e/1FAIpQLSd2J3S01v9PhZyQgSLNLmZ5YnDUbQePlta_LXx1D13VLB644A/viewform?usp=dialog"
@@ -2533,14 +2533,14 @@ return (
 
     <div className={`border-t pt-8 text-center transition-colors duration-300 ${darkMode ? 'border-purple-500/20' : 'border-purple-200'}`}>
         <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            © 2025 RinON. {t('Të gjitha të drejtat e rezervuara.', 'All rights reserved.')}
+            Â© 2025 RinON. {t('TÃ« gjitha tÃ« drejtat e rezervuara.', 'All rights reserved.')}
         </p>
         {userProfile?.is_admin && (
             <button
                 onClick={() => setShowAdmin(!showAdmin)}
                 className={`mt-4 text-sm transition-colors ${darkMode ? 'text-gray-500 hover:text-purple-400' : 'text-gray-400 hover:text-purple-600'}`}
             >
-                🔐 {showAdmin ? t('Fsheh Admin', 'Hide Admin') : t('Trego Admin', 'Show Admin')}
+                ðŸ” {showAdmin ? t('Fsheh Admin', 'Hide Admin') : t('Trego Admin', 'Show Admin')}
             </button>
         )}
     </div>
