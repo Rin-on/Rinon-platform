@@ -1533,7 +1533,7 @@ return (
             </header>
 
             {mobileMenuOpen && (
-                <div className="md:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
+                <div className="md:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
                     <div
                         className={`absolute top-0 right-0 h-full w-80 max-w-[85vw] transition-transform duration-300 ease-out border-l shadow-2xl overflow-y-auto ${darkMode
                             ? 'bg-slate-800 border-purple-500/20'
