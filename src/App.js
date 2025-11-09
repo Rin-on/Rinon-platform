@@ -1447,9 +1447,9 @@ return (
                         {/* NEW FEATURE 6: Logo with fallback */}
                         <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => changePage('home')}>
                             <img 
-                            src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png" 
+                            src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png" 
                                 alt="RinON Logo" 
-                                className="w-10 h-10 object-contain group-hover:scale-110 transition-transform"
+                                className="w-20 h-20 object-contain group-hover:scale-110 transition-transform"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextElementSibling.style.display = 'flex';
