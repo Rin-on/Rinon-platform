@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, AlertCircle, Bookmark, Share2, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 
@@ -2070,10 +2070,8 @@ const RinON = () => {
             </div>
         </div>
     );
-const handleFOMORedirect = () => {
-       setShowFOMOPopup(false);
-        changePage('events');
-    };
+
+    
 
     return (
         <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
