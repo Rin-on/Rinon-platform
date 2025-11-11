@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon} from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, AlertCircle, Bookmark, Share2, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 
@@ -26,7 +26,7 @@ const validateInput = {
     },
 
     url: (url) => {
-        if (!url) return true; // Optional field
+        if (!url) return true;
         try {
             new URL(url);
             return true;
@@ -72,7 +72,7 @@ const handleError = (error, context) => {
     return 'An error occurred. Please try again.';
 };
 
-// NEW FEATURE 2: Image upload utility
+// Image upload utility
 const uploadImage = async (file) => {
     try {
         const fileExt = file.name.split('.').pop();
@@ -96,7 +96,554 @@ const uploadImage = async (file) => {
     }
 };
 
-// NEW FEATURE 3: Discussion Page Component - Now accessible to non-logged users
+const FOMOPopup = ({ showPopup, onClose, darkMode, t, onNavigateToEvents }) => {
+    const [attendees, setAttendees] = useState(247);
+
+    useEffect(() => {
+        if (showPopup) {
+            const interval = setInterval(() => {
+                setAttendees(prev => prev + Math.floor(Math.random() * 3));
+            }, 3000);
+            return () => clearInterval(interval);
+        }
+    }, [showPopup]);
+
+    if (!showPopup) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className={`rounded-3xl max-w-md w-full p-8 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-slate-800 border-purple-500/30' : 'bg-white border-purple-300'
+                }`}>
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 hover:bg-purple-500/20 rounded-lg transition-all"
+                >
+                    <X className="w-5 h-5 text-gray-400" />
+                </button>
+
+                <div className="text-center">
+                    <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/50 animate-pulse">
+                        <Calendar className="w-10 h-10 text-white" />
+                    </div>
+
+                    <h3 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'
+                        }`}>
+                        {t('Diçka e Madhe Po Ndodh!', 'Something Big is Happening!')}
+                    </h3>
+
+                    <div className="mb-6">
+                        <p className={`text-xl mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <span className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {attendees}
+                            </span>
+                        </p>
+                        <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {t('të rinj tashmë kanë rezervuar evente këtë javë', 'youth have already booked events this week')}
+                        </p>
+                    </div>
+
+                    <p className={`text-2xl font-bold mb-6 ${darkMode ? 'text-purple-300' : 'text-purple-600'}`}>
+                        {t('Shiko çfarë po humb...', "See what you're missing...")}
+                    </p>
+
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={() => {
+                                onClose();
+                                onNavigateToEvents();
+                            }}
+                            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50 font-semibold"
+                        >
+                            {t('Eksploro Kalendarin', 'Explore Calendar')}
+                        </button>
+
+                        <button
+                            onClick={onClose}
+                            className={`w-full px-6 py-3 rounded-xl border transition-all font-semibold ${darkMode
+                                ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
+                                : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                                }`}
+                        >
+                            {t('Shiko Më Vonë', 'See Later')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+// Event Calendar Component
+const EventCalendar = ({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t }) => {
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [showOnlyFree, setShowOnlyFree] = useState(false);
+    const [savedEvents, setSavedEvents] = useState([]);
+    const [showDayModal, setShowDayModal] = useState(false);
+
+    const categories = [
+        { value: 'all', label: { al: 'Të gjitha', en: 'All' }, icon: TrendingUp, color: 'purple' },
+        { value: 'tech', label: { al: 'Teknologji', en: 'Tech' }, icon: Brain, color: 'blue' },
+        { value: 'culture', label: { al: 'Kulturë', en: 'Culture' }, icon: Film, color: 'pink' },
+        { value: 'career', label: { al: 'Karrierë', en: 'Career' }, icon: Award, color: 'orange' },
+        { value: 'sports', label: { al: 'Sport', en: 'Sports' }, icon: Play, color: 'green' },
+        { value: 'environment', label: { al: 'Mjedis', en: 'Environment' }, icon: Leaf, color: 'emerald' },
+        { value: 'education', label: { al: 'Edukim', en: 'Education' }, icon: Users, color: 'indigo' },
+        { value: 'social', label: { al: 'Social', en: 'Social' }, icon: Heart, color: 'rose' }
+    ];
+
+    // Transform events data to calendar format
+    const transformedEvents = {};
+    events.forEach(event => {
+        const dateKey = event.date || new Date().toISOString().split('T')[0];
+        if (!transformedEvents[dateKey]) {
+            transformedEvents[dateKey] = [];
+        }
+        transformedEvents[dateKey].push({
+            ...event,
+            category: event.category || 'general',
+            is_free: event.is_free !== false,
+            spots_left: event.spots_left || 50,
+            total_spots: event.total_spots || 100,
+            attendees: event.attendees || 0
+        });
+    });
+
+    const getDaysInMonth = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+
+        return { daysInMonth, startingDayOfWeek, year, month };
+    };
+
+    const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate);
+
+    const prevMonth = () => {
+        setCurrentDate(new Date(year, month - 1, 1));
+    };
+
+    const nextMonth = () => {
+        setCurrentDate(new Date(year, month + 1, 1));
+    };
+
+    const getEventsForDay = (day) => {
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        let dayEvents = transformedEvents[dateKey] || [];
+
+        if (selectedCategory !== 'all') {
+            dayEvents = dayEvents.filter(e => e.category === selectedCategory);
+        }
+
+        if (showOnlyFree) {
+            dayEvents = dayEvents.filter(e => e.is_free);
+        }
+
+        return dayEvents;
+    };
+
+    const openDayModal = (day) => {
+        const eventsForDay = getEventsForDay(day);
+        if (eventsForDay.length > 0) {
+            setSelectedDate({ day, events: eventsForDay });
+            setShowDayModal(true);
+        }
+    };
+
+    const exportToCalendar = (event) => {
+        const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${event.titleAl}
+DTSTART:${event.date?.replace(/-/g, '')}T${event.time?.replace(/:/g, '') || '100000'}
+DTEND:${event.date?.replace(/-/g, '')}T${event.endTime?.replace(/:/g, '') || '120000'}
+LOCATION:${event.location || ''}
+DESCRIPTION:${event.descAl || ''}
+END:VEVENT
+END:VCALENDAR`;
+
+        const blob = new Blob([icsContent], { type: 'text/calendar' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${event.titleAl}.ics`;
+        a.click();
+    };
+
+    const toggleSaveEvent = (eventId) => {
+        setSavedEvents(prev =>
+            prev.includes(eventId)
+                ? prev.filter(id => id !== eventId)
+                : [...prev, eventId]
+        );
+    };
+
+    const monthNames = {
+        al: ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor'],
+        en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    };
+
+    const dayNames = {
+        al: ['Diel', 'Hën', 'Mar', 'Mër', 'Enj', 'Pre', 'Sht'],
+        en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    };
+
+    const totalEvents = Object.values(transformedEvents).flat().length;
+    const freeEvents = Object.values(transformedEvents).flat().filter(e => e.is_free).length;
+
+    return (
+        <div className="space-y-6">
+            {/* Stats Bar */}
+            <div className="grid grid-cols-3 gap-4">
+                <div className={`backdrop-blur-lg rounded-xl p-4 border ${darkMode ? 'bg-purple-600/10 border-purple-500/30' : 'bg-purple-100 border-purple-300'
+                    }`}>
+                    <div className="flex items-center gap-3">
+                        <Calendar className="w-8 h-8 text-purple-400" />
+                        <div>
+                            <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{totalEvents}</p>
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Evente Totale', 'Total Events')}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className={`backdrop-blur-lg rounded-xl p-4 border ${darkMode ? 'bg-green-600/10 border-green-500/30' : 'bg-green-100 border-green-300'
+                    }`}>
+                    <div className="flex items-center gap-3">
+                        <Star className="w-8 h-8 text-green-400" />
+                        <div>
+                            <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{freeEvents}</p>
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Evente Falas', 'Free Events')}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className={`backdrop-blur-lg rounded-xl p-4 border ${darkMode ? 'bg-pink-600/10 border-pink-500/30' : 'bg-pink-100 border-pink-300'
+                    }`}>
+                    <div className="flex items-center gap-3">
+                        <Users className="w-8 h-8 text-pink-400" />
+                        <div>
+                            <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>500+</p>
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Të Rinj Aktivë', 'Active Youth')}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4">
+                <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className={`flex-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-purple-500/20 ${darkMode
+                            ? 'bg-slate-700 border-purple-500/30 text-white'
+                            : 'bg-white border-purple-300 text-gray-900'
+                        }`}
+                >
+                    {categories.map(cat => (
+                        <option key={cat.value} value={cat.value}>
+                            {language === 'al' ? cat.label.al : cat.label.en}
+                        </option>
+                    ))}
+                </select>
+
+                <button
+                    onClick={() => setShowOnlyFree(!showOnlyFree)}
+                    className={`px-6 py-3 rounded-xl border transition-all ${showOnlyFree
+                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border-green-500'
+                            : darkMode
+                                ? 'bg-slate-700 border-purple-500/30 text-gray-300 hover:bg-slate-600'
+                                : 'bg-white border-purple-300 text-gray-700 hover:bg-purple-50'
+                        }`}
+                >
+                    <Filter className="w-5 h-5 inline mr-2" />
+                    {t('Vetëm Falas', 'Free Only')}
+                </button>
+            </div>
+
+            {/* Calendar Header */}
+            <div className={`backdrop-blur-lg rounded-2xl border p-6 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'
+                }`}>
+                <div className="flex items-center justify-between mb-6">
+                    <button
+                        onClick={prevMonth}
+                        className={`p-2 rounded-lg transition-all ${darkMode ? 'hover:bg-purple-600/20' : 'hover:bg-purple-100'
+                            }`}
+                    >
+                        <ChevronLeft className="w-6 h-6" />
+                    </button>
+
+                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {monthNames[language][month]} {year}
+                    </h2>
+
+                    <button
+                        onClick={nextMonth}
+                        className={`p-2 rounded-lg transition-all ${darkMode ? 'hover:bg-purple-600/20' : 'hover:bg-purple-100'
+                            }`}
+                    >
+                        <ChevronRight className="w-6 h-6" />
+                    </button>
+                </div>
+
+                {/* Day Names */}
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                    {dayNames[language].map(day => (
+                        <div key={day} className={`text-center font-semibold py-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'
+                            }`}>
+                            {day}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-2">
+                    {/* Empty cells for days before month starts */}
+                    {[...Array(startingDayOfWeek)].map((_, i) => (
+                        <div key={`empty-${i}`} className="aspect-square" />
+                    ))}
+
+                    {/* Days of the month */}
+                    {[...Array(daysInMonth)].map((_, i) => {
+                        const day = i + 1;
+                        const dayEvents = getEventsForDay(day);
+                        const isToday = new Date().getDate() === day &&
+                            new Date().getMonth() === month &&
+                            new Date().getFullYear() === year;
+
+                        return (
+                            <button
+                                key={day}
+                                onClick={() => openDayModal(day)}
+                                className={`aspect-square rounded-xl p-2 transition-all relative ${isToday
+                                        ? 'ring-2 ring-purple-500'
+                                        : ''
+                                    } ${dayEvents.length > 0
+                                        ? darkMode
+                                            ? 'bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30'
+                                            : 'bg-purple-100 hover:bg-purple-200 border border-purple-300'
+                                        : darkMode
+                                            ? 'hover:bg-slate-700'
+                                            : 'hover:bg-gray-100'
+                                    }`}
+                            >
+                                <div className={`text-sm font-semibold ${dayEvents.length > 0
+                                        ? 'text-purple-400'
+                                        : darkMode
+                                            ? 'text-gray-400'
+                                            : 'text-gray-600'
+                                    }`}>
+                                    {day}
+                                </div>
+
+                                {/* Event indicators */}
+                                {dayEvents.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1 justify-center">
+                                        {dayEvents.slice(0, 3).map((event, idx) => {
+                                            const cat = categories.find(c => c.value === event.category);
+                                            const Icon = cat?.icon || Calendar;
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className={`w-6 h-6 rounded-full flex items-center justify-center bg-${cat?.color || 'purple'}-500`}
+                                                    title={event.titleAl}
+                                                >
+                                                    <Icon className="w-3 h-3 text-white" />
+                                                </div>
+                                            );
+                                        })}
+                                        {dayEvents.length > 3 && (
+                                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center text-white text-xs font-bold">
+                                                +{dayEvents.length - 3}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Day Modal */}
+            {showDayModal && selectedDate && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className={`rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-2xl ${darkMode ? 'bg-slate-800 border-purple-500/20' : 'bg-white border-purple-300'
+                        }`}>
+                        <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 p-6 flex justify-between items-center">
+                            <h3 className="text-2xl font-bold text-white">
+                                {selectedDate.day} {monthNames[language][month]} {year}
+                            </h3>
+                            <button
+                                onClick={() => setShowDayModal(false)}
+                                className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                            >
+                                <X className="w-6 h-6 text-white" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            {selectedDate.events.map(event => (
+                                <div
+                                    key={event.id}
+                                    className={`backdrop-blur-lg rounded-2xl border p-6 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'
+                                        }`}
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                {event.is_featured && (
+                                                    <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+                                                        ⭐ {t('I Veçantë', 'Featured')}
+                                                    </span>
+                                                )}
+                                                {event.is_trending && (
+                                                    <span className="px-3 py-1 bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs font-bold rounded-full">
+                                                        🔥 {t('Trending', 'Trending')}
+                                                    </span>
+                                                )}
+                                                {event.is_free && (
+                                                    <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold rounded-full">
+                                                        {t('FALAS', 'FREE')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <h4 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'
+                                                }`}>
+                                                {language === 'al' ? event.titleAl : event.titleEn}
+                                            </h4>
+                                            <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'
+                                                }`}>
+                                                {language === 'al' ? event.descAl : event.descEn}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => toggleSaveEvent(event.id)}
+                                                className={`p-2 rounded-lg transition-all ${savedEvents.includes(event.id)
+                                                        ? 'bg-purple-600 text-white'
+                                                        : darkMode
+                                                            ? 'bg-slate-700 text-gray-400 hover:bg-slate-600'
+                                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    }`}
+                                            >
+                                                {savedEvents.includes(event.id) ? (
+                                                    <BookmarkCheck className="w-5 h-5" />
+                                                ) : (
+                                                    <Bookmark className="w-5 h-5" />
+                                                )}
+                                            </button>
+
+                                            {showAdmin && (
+                                                <>
+                                                    <button
+                                                        onClick={() => editEvent(event)}
+                                                        className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                                    >
+                                                        <Edit className="w-5 h-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => deleteEvent(event.id)}
+                                                        className="p-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-4 h-4 text-purple-400" />
+                                            <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                                {event.time || '10:00'} - {event.endTime || '12:00'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <MapPin className="w-4 h-4 text-purple-400" />
+                                            <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                                {event.location}
+                                            </span>
+                                        </div>
+                                        {event.spots_left !== undefined && (
+                                            <div className="flex items-center gap-2">
+                                                <Users className="w-4 h-4 text-purple-400" />
+                                                <span className={`${event.spots_left < 10 ? 'text-red-400 font-bold' : darkMode ? 'text-gray-300' : 'text-gray-700'
+                                                    }`}>
+                                                    {event.spots_left > 0
+                                                        ? `${event.spots_left} ${t('vende të mbetura', 'spots left')}`
+                                                        : t('MBUSH', 'FULL')
+                                                    }
+                                                </span>
+                                            </div>
+                                        )}
+                                        {event.partner && (
+                                            <div className="flex items-center gap-2">
+                                                <Award className="w-4 h-4 text-purple-400" />
+                                                <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                                    {event.partner}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {event.tags && event.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            {event.tags.map((tag, idx) => (
+                                                <span
+                                                    key={idx}
+                                                    className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-xs"
+                                                >
+                                                    #{tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-3">
+                                        {event.registration_link && (
+                                            <a
+                                                href={event.registration_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-500 hover:to-pink-500 transition-all text-center flex items-center justify-center gap-2"
+                                            >
+                                                <ExternalLink className="w-4 h-4" />
+                                                {t('Regjistrohu', 'Register')}
+                                            </a>
+                                        )}
+                                        <button
+                                            onClick={() => exportToCalendar(event)}
+                                            className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${darkMode
+                                                    ? 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                }`}
+                                        >
+                                            <CalendarIcon className="w-4 h-4" />
+                                            {t('Eksporto', 'Export')}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Discussion Page Component
 const DiscussionPageContent = ({
     selectedTopic,
     setSelectedTopic,
@@ -120,7 +667,7 @@ const DiscussionPageContent = ({
         return (
             <div className="max-w-6xl mx-auto px-4 py-12">
                 <h1 className={`text-5xl font-bold mb-8 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>{t('Hapësira e Diskutimit', 'Discussion Space')}</h1>
-                
+
                 {!user && (
                     <div className={`backdrop-blur-lg rounded-2xl border p-8 mb-8 text-center ${darkMode ? 'bg-purple-600/10 border-purple-500/30' : 'bg-purple-100 border-purple-300'}`}>
                         <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
@@ -130,7 +677,7 @@ const DiscussionPageContent = ({
                         <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                             {t('Duhet të kyçesh për të parë dhe marrë pjesë në diskutime', 'You need to sign in to view and participate in discussions')}
                         </p>
-                        <button 
+                        <button
                             onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
                             className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50 flex items-center gap-2 mx-auto"
                         >
@@ -199,7 +746,7 @@ const DiscussionPageContent = ({
                     <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         {t('Duhet të kyçesh për të parë dhe marrë pjesë në diskutime', 'You need to sign in to view and participate in discussions')}
                     </p>
-                    <button 
+                    <button
                         onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
                         className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50 flex items-center gap-2 mx-auto"
                     >
@@ -372,7 +919,6 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
         </div>
     );
 };
-   
 
 // Preferences Modal Component
 const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t }) => {
@@ -417,7 +963,6 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
         </div>
     );
 };
-
 const RinON = () => {
     const [language, setLanguage] = useState('al');
     const [currentPage, setCurrentPage] = useState('home');
@@ -436,8 +981,10 @@ const RinON = () => {
     const [pageTransition, setPageTransition] = useState(false);
     const [hasPageLoaded, setHasPageLoaded] = useState(false);
     const [loading, setLoading] = useState(true);
-    
-    // NEW FEATURE 4: Edit mode states
+
+    const [showFOMOPopup, setShowFOMOPopup] = useState(false);
+    const [eventViewMode, setEventViewMode] = useState('calendar');
+
     const [editingItem, setEditingItem] = useState(null);
     const [editMode, setEditMode] = useState(false);
 
@@ -458,7 +1005,10 @@ const RinON = () => {
 
     const [eventFormData, setEventFormData] = useState({
         titleAl: '', titleEn: '', dateAl: '', dateEn: '',
-        type: '', descAl: '', descEn: '', location: '', image: '', imageFile: null
+        type: '', descAl: '', descEn: '', location: '', image: '', imageFile: null,
+        date: '', time: '', endTime: '', address: '', category: 'general',
+        spotsLeft: 100, totalSpots: 100, isFree: true, price: '',
+        registrationLink: '', isFeatured: false, tags: []
     });
 
     const [topicFormData, setTopicFormData] = useState({
@@ -481,7 +1031,6 @@ const RinON = () => {
 
     const t = (al, en) => language === 'al' ? al : en;
 
-    // NEW FEATURE 1: Updated categories with AI and Europe
     const categories = [
         { al: 'Te Gjitha', en: 'All', icon: TrendingUp },
         { al: 'Sport dhe Kulturë', en: 'Sports and Culture', icon: Play },
@@ -506,6 +1055,12 @@ const RinON = () => {
 
     useEffect(() => {
         setHasPageLoaded(true);
+
+        const timer = setTimeout(() => {
+            setShowFOMOPopup(true);
+        }, 3000);
+
+        return () => clearTimeout(timer);
     }, []);
 
     useEffect(() => {
@@ -587,7 +1142,12 @@ const RinON = () => {
                 const formattedEvents = data.map(e => ({
                     id: e.id, titleAl: e.title_al, titleEn: e.title_en,
                     dateAl: e.date_al, dateEn: e.date_en, type: e.type,
-                    descAl: e.desc_al, descEn: e.desc_en, location: e.location, image: e.image
+                    descAl: e.desc_al, descEn: e.desc_en, location: e.location, image: e.image,
+                    date: e.date, time: e.time, endTime: e.end_time, address: e.address,
+                    category: e.category, spots_left: e.spots_left, total_spots: e.total_spots,
+                    is_free: e.is_free, price: e.price, attendees: e.attendees,
+                    partner: e.partner, registration_link: e.registration_link,
+                    is_featured: e.is_featured, is_trending: e.is_trending, tags: e.tags
                 }));
                 setOtherEvents(formattedEvents);
             }
@@ -779,7 +1339,6 @@ const RinON = () => {
         }
     };
 
-    // NEW FEATURE 4: Edit functions
     const editArticle = (article) => {
         setEditingItem(article);
         setEditMode(true);
@@ -810,7 +1369,19 @@ const RinON = () => {
             descEn: event.descEn,
             location: event.location,
             image: event.image,
-            imageFile: null
+            imageFile: null,
+            date: event.date || '',
+            time: event.time || '',
+            endTime: event.endTime || '',
+            address: event.address || '',
+            category: event.category || 'general',
+            spotsLeft: event.spots_left || 100,
+            totalSpots: event.total_spots || 100,
+            isFree: event.is_free !== false,
+            price: event.price || '',
+            registrationLink: event.registration_link || '',
+            isFeatured: event.is_featured || false,
+            tags: event.tags || []
         });
         setShowAddEventForm(true);
     };
@@ -862,7 +1433,7 @@ const RinON = () => {
 
         try {
             let imageUrl = formData.image;
-            
+
             if (formData.imageFile) {
                 imageUrl = await uploadImage(formData.imageFile);
             }
@@ -896,8 +1467,8 @@ const RinON = () => {
             setShowAddForm(false);
             setEditMode(false);
             setEditingItem(null);
-            alert(t(editMode ? 'Artikulli u përditësua me sukses!' : 'Artikulli u publikua me sukses!', 
-                     editMode ? 'Article updated successfully!' : 'Article published successfully!'));
+            alert(t(editMode ? 'Artikulli u përditësua me sukses!' : 'Artikulli u publikua me sukses!',
+                editMode ? 'Article updated successfully!' : 'Article published successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitArticle'));
         }
@@ -916,7 +1487,7 @@ const RinON = () => {
 
         try {
             let imageUrl = eventFormData.image;
-            
+
             if (eventFormData.imageFile) {
                 imageUrl = await uploadImage(eventFormData.imageFile);
             }
@@ -930,7 +1501,22 @@ const RinON = () => {
                 desc_al: validateInput.sanitizeHtml(eventFormData.descAl),
                 desc_en: validateInput.sanitizeHtml(eventFormData.descEn || eventFormData.descAl),
                 location: validateInput.sanitizeHtml(eventFormData.location),
-                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`
+                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`,
+                date: eventFormData.date,
+                time: eventFormData.time,
+                end_time: eventFormData.endTime,
+                address: validateInput.sanitizeHtml(eventFormData.address),
+                category: eventFormData.category,
+                spots_left: eventFormData.spotsLeft,
+                total_spots: eventFormData.totalSpots,
+                is_free: eventFormData.isFree,
+                price: eventFormData.price,
+                attendees: 0,
+                partner: validateInput.sanitizeHtml(eventFormData.partner || ''),
+                registration_link: eventFormData.registrationLink,
+                is_featured: eventFormData.isFeatured,
+                is_trending: false,
+                tags: eventFormData.tags
             };
 
             let error;
@@ -945,13 +1531,16 @@ const RinON = () => {
             loadEvents();
             setEventFormData({
                 titleAl: '', titleEn: '', dateAl: '', dateEn: '',
-                type: '', descAl: '', descEn: '', location: '', image: '', imageFile: null
+                type: '', descAl: '', descEn: '', location: '', image: '', imageFile: null,
+                date: '', time: '', endTime: '', address: '', category: 'general',
+                spotsLeft: 100, totalSpots: 100, isFree: true, price: '',
+                registrationLink: '', isFeatured: false, tags: []
             });
             setShowAddEventForm(false);
             setEditMode(false);
             setEditingItem(null);
             alert(t(editMode ? 'Eventi u përditësua me sukses!' : 'Eventi u shtua me sukses!',
-                     editMode ? 'Event updated successfully!' : 'Event added successfully!'));
+                editMode ? 'Event updated successfully!' : 'Event added successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitEvent'));
         }
@@ -1017,7 +1606,7 @@ const RinON = () => {
 
         try {
             let imageUrl = partnerFormData.image;
-            
+
             if (partnerFormData.imageFile) {
                 imageUrl = await uploadImage(partnerFormData.imageFile);
             }
@@ -1053,7 +1642,7 @@ const RinON = () => {
             setEditMode(false);
             setEditingItem(null);
             alert(t(editMode ? 'Partneri u përditësua me sukses!' : 'Partneri u shtua me sukses!',
-                     editMode ? 'Partner updated successfully!' : 'Partner added successfully!'));
+                editMode ? 'Partner updated successfully!' : 'Partner added successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitPartner'));
         }
@@ -1096,7 +1685,7 @@ const RinON = () => {
             setEditMode(false);
             setEditingItem(null);
             alert(t(editMode ? 'Anëtari u përditësua me sukses!' : 'Anëtari u shtua me sukses!',
-                     editMode ? 'Member updated successfully!' : 'Member added successfully!'));
+                editMode ? 'Member updated successfully!' : 'Member added successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitMember'));
         }
@@ -1114,80 +1703,124 @@ const RinON = () => {
         setSelectedArticle(article);
         setShowArticleModal(true);
     };
-const EventsPage = () => (
+    const EventsPage = () => (
         <div className="max-w-7xl mx-auto px-4 py-12">
-            <h1 className={`text-5xl font-bold mb-8 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>{t('Evente', 'Events')}</h1>
-            {otherEvents.length === 0 ? (
-                <div className="text-center py-20">
-                    <div className="w-20 h-20 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/30">
-                        <Calendar className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
-                    </div>
-                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {t('Asnjë event ende', 'No events yet')}
-                    </h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                        {t('Eventet do të shfaqen këtu kur të publikohen', 'Events will appear here when published')}
-                    </p>
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+                <h1 className={`text-5xl font-bold mb-4 md:mb-0 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>
+                    {t('Evente', 'Events')}
+                </h1>
+
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setEventViewMode('calendar')}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${eventViewMode === 'calendar'
+                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                : darkMode
+                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            }`}
+                    >
+                        <Calendar className="w-4 h-4" />
+                        {t('Kalendar', 'Calendar')}
+                    </button>
+                    <button
+                        onClick={() => setEventViewMode('list')}
+                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${eventViewMode === 'list'
+                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                : darkMode
+                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            }`}
+                    >
+                        <List className="w-4 h-4" />
+                        {t('Listë', 'List')}
+                    </button>
                 </div>
+            </div>
+
+            {eventViewMode === 'calendar' ? (
+                <EventCalendar
+                    language={language}
+                    darkMode={darkMode}
+                    events={otherEvents}
+                    showAdmin={showAdmin}
+                    editEvent={editEvent}
+                    deleteEvent={deleteEvent}
+                    t={t}
+                />
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {otherEvents.map((event) => (
-                        <div
-                            key={event.id}
-                            className={`backdrop-blur-lg rounded-2xl border hover:border-purple-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
-                        >
-                            <div className="relative h-48">
-                                <img
-                                    src={event.image}
-                                    alt={event.titleAl}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
-                                    }}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                                {showAdmin && (
-                                    <div className="absolute top-3 right-3 flex gap-2">
-                                        <button
-                                            onClick={() => editEvent(event)}
-                                            className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => deleteEvent(event.id)}
-                                            className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="p-6">
-                                <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-600/30 to-pink-600/30 text-purple-300 text-sm font-semibold rounded-full mb-3 border border-purple-500/30">
-                                    {event.type}
-                                </span>
-                                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{language === 'al' ? event.titleAl : event.titleEn}</h3>
-                                <div className={`flex items-center text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    <Calendar className="w-4 h-4 mr-2" />
-                                    <span>{language === 'al' ? event.dateAl : event.dateEn}</span>
-                                </div>
-                                <div className={`flex items-center text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    <MapPin className="w-4 h-4 mr-2" />
-                                    <span>{event.location}</span>
-                                </div>
-                                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{language === 'al' ? event.descAl : event.descEn}</p>
-                            </div>
+                otherEvents.length === 0 ? (
+                    <div className="text-center py-20">
+                        <div className="w-20 h-20 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/30">
+                            <Calendar className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
                         </div>
-                    ))}
-                </div>
+                        <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {t('Asnjë event ende', 'No events yet')}
+                        </h3>
+                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                            {t('Eventet do të shfaqen këtu kur të publikohen', 'Events will appear here when published')}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {otherEvents.map((event) => (
+                            <div
+                                key={event.id}
+                                className={`backdrop-blur-lg rounded-2xl border hover:border-purple-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
+                            >
+                                <div className="relative h-48">
+                                    <img
+                                        src={event.image}
+                                        alt={event.titleAl}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                                    {showAdmin && (
+                                        <div className="absolute top-3 right-3 flex gap-2">
+                                            <button
+                                                onClick={() => editEvent(event)}
+                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => deleteEvent(event.id)}
+                                                className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-6">
+                                    <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-600/30 to-pink-600/30 text-purple-300 text-sm font-semibold rounded-full mb-3 border border-purple-500/30">
+                                        {event.type}
+                                    </span>
+                                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{language === 'al' ? event.titleAl : event.titleEn}</h3>
+                                    <div className={`flex items-center text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        <span>{language === 'al' ? event.dateAl : event.dateEn}</span>
+                                    </div>
+                                    <div className={`flex items-center text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        <MapPin className="w-4 h-4 mr-2" />
+                                        <span>{event.location}</span>
+                                    </div>
+                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{language === 'al' ? event.descAl : event.descEn}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )
             )}
         </div>
     );
 
     const PartnershipsPage = () => {
         const partnershipEvents = otherEvents.filter(event => event.type === 'partnership');
-        
+
         return (
             <div className="max-w-7xl mx-auto px-4 py-12">
                 <div className="text-center mb-12">
@@ -1276,7 +1909,8 @@ const EventsPage = () => (
             </div>
         );
     };
-const AboutPage = () => (
+
+    const AboutPage = () => (
         <div className="max-w-6xl mx-auto px-4 py-12">
             <h1 className={`text-5xl font-bold mb-8 text-center ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>{t('Rreth Nesh', 'About Us')}</h1>
 
@@ -1360,7 +1994,7 @@ const AboutPage = () => (
 
                                     {partner.website && (
                                         <a href={partner.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 font-medium">
-                                            {t('Vizito faqen', 'Visit website')} →’
+                                            {t('Vizito faqen', 'Visit website')} →
                                         </a>
                                     )}
                                 </div>
@@ -1436,19 +2070,32 @@ const AboutPage = () => (
             </div>
         </div>
     );
-return (
+const handleFOMORedirect = () => {
+       setShowFOMOPopup(false);
+        changePage('events');
+    };
+
+    return (
         <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
+            <FOMOPopup
+                showPopup={showFOMOPopup}
+                onClose={() => setShowFOMOPopup(false)}
+                darkMode={darkMode}
+                t={t}
+                onNavigateToEvents={() => changePage('events')}
+            />
+            />
+
             <header className={`backdrop-blur-lg border-b sticky top-0 z-50 shadow-lg transition-colors duration-300 ${darkMode
                 ? 'bg-slate-800/80 border-purple-500/20 shadow-purple-500/10'
                 : 'bg-white/80 border-purple-200 shadow-purple-200/20'
                 }`}>
                 <div className="max-w-7xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
-                        {/* NEW FEATURE 6: Logo with fallback */}
                         <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => changePage('home')}>
-                            <img 
-                            src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png" 
-                                alt="RinON Logo" 
+                            <img
+                                src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png"
+                                alt="RinON Logo"
                                 className="w-20 h-20 object-contain group-hover:scale-110 transition-transform"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
@@ -1531,7 +2178,508 @@ return (
                     </div>
                 </div>
             </header>
+            {showAddForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {editMode ? t('Ndrysho Artikull', 'Edit Article') : t('Shto Artikull', 'Add Article')}
+                            </h2>
+                            <button onClick={() => { setShowAddForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
+                                value={formData.titleAl}
+                                onChange={(e) => setFormData({ ...formData, titleAl: e.target.value })}
+                                maxLength="200"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
+                                value={formData.titleEn}
+                                onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
+                                maxLength="200"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <textarea
+                                placeholder={t('Përmbajtja (Shqip) *', 'Content (Albanian) *')}
+                                value={formData.contentAl}
+                                onChange={(e) => setFormData({ ...formData, contentAl: e.target.value })}
+                                rows="6"
+                                maxLength="10000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Përmbajtja (Anglisht)', 'Content (English)')}
+                                value={formData.contentEn}
+                                onChange={(e) => setFormData({ ...formData, contentEn: e.target.value })}
+                                rows="6"
+                                maxLength="10000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <select
+                                value={formData.category}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            >
+                                {categories.filter(c => c.al !== 'Te Gjitha').map(cat => (
+                                    <option key={cat.al} value={cat.al}>{language === 'al' ? cat.al : cat.en}</option>
+                                ))}
+                            </select>
+                            <input
+                                type="text"
+                                placeholder={t('URL Imazhi', 'Image URL')}
+                                value={formData.image}
+                                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Burimi', 'Source')}
+                                value={formData.source}
+                                onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                                maxLength="200"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <label className="flex items-center gap-3 text-white">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.featured}
+                                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                                    className="w-5 h-5 rounded border-purple-500/30 bg-slate-700 text-purple-600 focus:ring-purple-500/20"
+                                />
+                                <span>{t('Artikull i veçantë', 'Featured article')}</span>
+                            </label>
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => { setShowAddForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitArticle} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : t('Publiko', 'Publish')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
+            {/* Add Event Modal */}
+            {showAddEventForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {editMode ? t('Ndrysho Event', 'Edit Event') : t('Shto Event', 'Add Event')}
+                            </h2>
+                            <button onClick={() => { setShowAddEventForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
+                                value={eventFormData.titleAl}
+                                onChange={(e) => setEventFormData({ ...eventFormData, titleAl: e.target.value })}
+                                maxLength="200"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
+                                value={eventFormData.titleEn}
+                                onChange={(e) => setEventFormData({ ...eventFormData, titleEn: e.target.value })}
+                                maxLength="200"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+
+                            {/* Calendar Date */}
+                            <input
+                                type="date"
+                                placeholder={t('Data', 'Date')}
+                                value={eventFormData.date}
+                                onChange={(e) => setEventFormData({ ...eventFormData, date: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+
+                            {/* Time Fields */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <input
+                                    type="time"
+                                    placeholder={t('Ora e fillimit', 'Start time')}
+                                    value={eventFormData.time}
+                                    onChange={(e) => setEventFormData({ ...eventFormData, time: e.target.value })}
+                                    className="px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                />
+                                <input
+                                    type="time"
+                                    placeholder={t('Ora e mbarimit', 'End time')}
+                                    value={eventFormData.endTime}
+                                    onChange={(e) => setEventFormData({ ...eventFormData, endTime: e.target.value })}
+                                    className="px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                />
+                            </div>
+
+                            <input
+                                type="text"
+                                placeholder={t('Data (Shqip) *', 'Date (Albanian) *')}
+                                value={eventFormData.dateAl}
+                                onChange={(e) => setEventFormData({ ...eventFormData, dateAl: e.target.value })}
+                                maxLength="100"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Data (Anglisht)', 'Date (English)')}
+                                value={eventFormData.dateEn}
+                                onChange={(e) => setEventFormData({ ...eventFormData, dateEn: e.target.value })}
+                                maxLength="100"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+
+                            <input
+                                type="text"
+                                placeholder={t('Tipi', 'Type')}
+                                value={eventFormData.type}
+                                onChange={(e) => setEventFormData({ ...eventFormData, type: e.target.value })}
+                                maxLength="50"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+
+                            <select
+                                value={eventFormData.category}
+                                onChange={(e) => setEventFormData({ ...eventFormData, category: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            >
+                                <option value="general">{t('Të përgjithshme', 'General')}</option>
+                                <option value="tech">{t('Teknologji', 'Tech')}</option>
+                                <option value="culture">{t('Kulturë', 'Culture')}</option>
+                                <option value="career">{t('Karrierë', 'Career')}</option>
+                                <option value="sports">{t('Sport', 'Sports')}</option>
+                                <option value="environment">{t('Mjedis', 'Environment')}</option>
+                                <option value="education">{t('Edukim', 'Education')}</option>
+                                <option value="social">{t('Social', 'Social')}</option>
+                            </select>
+
+                            <input
+                                type="text"
+                                placeholder={t('Lokacioni', 'Location')}
+                                value={eventFormData.location}
+                                onChange={(e) => setEventFormData({ ...eventFormData, location: e.target.value })}
+                                maxLength="200"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+
+                            <input
+                                type="text"
+                                placeholder={t('Adresa', 'Address')}
+                                value={eventFormData.address}
+                                onChange={(e) => setEventFormData({ ...eventFormData, address: e.target.value })}
+                                maxLength="255"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+
+                            <textarea
+                                placeholder={t('Përshkrimi (Shqip)', 'Description (Albanian)')}
+                                value={eventFormData.descAl}
+                                onChange={(e) => setEventFormData({ ...eventFormData, descAl: e.target.value })}
+                                rows="4"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
+                                value={eventFormData.descEn}
+                                onChange={(e) => setEventFormData({ ...eventFormData, descEn: e.target.value })}
+                                rows="4"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <input
+                                    type="number"
+                                    placeholder={t('Vende të mbetura', 'Spots left')}
+                                    value={eventFormData.spotsLeft}
+                                    onChange={(e) => setEventFormData({ ...eventFormData, spotsLeft: parseInt(e.target.value) || 0 })}
+                                    className="px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                />
+                                <input
+                                    type="number"
+                                    placeholder={t('Vende totale', 'Total spots')}
+                                    value={eventFormData.totalSpots}
+                                    onChange={(e) => setEventFormData({ ...eventFormData, totalSpots: parseInt(e.target.value) || 0 })}
+                                    className="px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                />
+                            </div>
+
+                            <label className="flex items-center gap-3 text-white">
+                                <input
+                                    type="checkbox"
+                                    checked={eventFormData.isFree}
+                                    onChange={(e) => setEventFormData({ ...eventFormData, isFree: e.target.checked })}
+                                    className="w-5 h-5 rounded"
+                                />
+                                <span>{t('Event Falas', 'Free Event')}</span>
+                            </label>
+
+                            {!eventFormData.isFree && (
+                                <input
+                                    type="text"
+                                    placeholder={t('Çmimi', 'Price')}
+                                    value={eventFormData.price}
+                                    onChange={(e) => setEventFormData({ ...eventFormData, price: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                />
+                            )}
+
+                            <input
+                                type="text"
+                                placeholder={t('Link Regjistrimi', 'Registration Link')}
+                                value={eventFormData.registrationLink}
+                                onChange={(e) => setEventFormData({ ...eventFormData, registrationLink: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+
+                            <input
+                                type="text"
+                                placeholder={t('URL Imazhi', 'Image URL')}
+                                value={eventFormData.image}
+                                onChange={(e) => setEventFormData({ ...eventFormData, image: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+
+                            <label className="flex items-center gap-3 text-white">
+                                <input
+                                    type="checkbox"
+                                    checked={eventFormData.isFeatured}
+                                    onChange={(e) => setEventFormData({ ...eventFormData, isFeatured: e.target.checked })}
+                                    className="w-5 h-5 rounded"
+                                />
+                                <span>{t('Event i Veçantë', 'Featured Event')}</span>
+                            </label>
+
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => { setShowAddEventForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitEvent} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : t('Shto', 'Add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Topic Modal */}
+            {showAddTopicForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {t('Shto Temë Diskutimi', 'Add Discussion Topic')}
+                            </h2>
+                            <button onClick={() => setShowAddTopicForm(false)} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
+                                value={topicFormData.titleAl}
+                                onChange={(e) => setTopicFormData({ ...topicFormData, titleAl: e.target.value })}
+                                maxLength="200"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
+                                value={topicFormData.titleEn}
+                                onChange={(e) => setTopicFormData({ ...topicFormData, titleEn: e.target.value })}
+                                maxLength="200"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <textarea
+                                placeholder={t('Përshkrimi (Shqip) *', 'Description (Albanian) *')}
+                                value={topicFormData.descriptionAl}
+                                onChange={(e) => setTopicFormData({ ...topicFormData, descriptionAl: e.target.value })}
+                                rows="4"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
+                                value={topicFormData.descriptionEn}
+                                onChange={(e) => setTopicFormData({ ...topicFormData, descriptionEn: e.target.value })}
+                                rows="4"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => setShowAddTopicForm(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitTopic} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {t('Shto', 'Add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Partner Modal */}
+            {showAddPartnerForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {editMode ? t('Ndrysho Partner', 'Edit Partner') : t('Shto Partner', 'Add Partner')}
+                            </h2>
+                            <button onClick={() => { setShowAddPartnerForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder={t('Emri (Shqip) *', 'Name (Albanian) *')}
+                                value={partnerFormData.nameAl}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, nameAl: e.target.value })}
+                                maxLength="100"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Emri (Anglisht) *', 'Name (English) *')}
+                                value={partnerFormData.nameEn}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, nameEn: e.target.value })}
+                                maxLength="100"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <textarea
+                                placeholder={t('Përshkrimi (Shqip)', 'Description (Albanian)')}
+                                value={partnerFormData.descriptionAl}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, descriptionAl: e.target.value })}
+                                rows="3"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
+                                value={partnerFormData.descriptionEn}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, descriptionEn: e.target.value })}
+                                rows="3"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Vizioni (Shqip)', 'Vision (Albanian)')}
+                                value={partnerFormData.visionAl}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, visionAl: e.target.value })}
+                                rows="3"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Vizioni (Anglisht)', 'Vision (English)')}
+                                value={partnerFormData.visionEn}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, visionEn: e.target.value })}
+                                rows="3"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Qëllimet (Shqip)', 'Goals (Albanian)')}
+                                value={partnerFormData.goalsAl}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, goalsAl: e.target.value })}
+                                rows="3"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Qëllimet (Anglisht)', 'Goals (English)')}
+                                value={partnerFormData.goalsEn}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, goalsEn: e.target.value })}
+                                rows="3"
+                                maxLength="1000"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Website', 'Website')}
+                                value={partnerFormData.website}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, website: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('URL Imazhi', 'Image URL')}
+                                value={partnerFormData.image}
+                                onChange={(e) => setPartnerFormData({ ...partnerFormData, image: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => { setShowAddPartnerForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitPartner} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : t('Shto', 'Add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Member Modal */}
+            {showAddMemberForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-md w-full border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {editMode ? t('Ndrysho Anëtar', 'Edit Member') : t('Shto Anëtar Ekipi', 'Add Team Member')}
+                            </h2>
+                            <button onClick={() => { setShowAddMemberForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder={t('Emri *', 'Name *')}
+                                value={memberFormData.name}
+                                onChange={(e) => setMemberFormData({ ...memberFormData, name: e.target.value })}
+                                maxLength="100"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Roli *', 'Role *')}
+                                value={memberFormData.role}
+                                onChange={(e) => setMemberFormData({ ...memberFormData, role: e.target.value })}
+                                maxLength="100"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => { setShowAddMemberForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitMember} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : t('Shto', 'Add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             {mobileMenuOpen && (
                 <div className="md:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
                     <div
@@ -1543,9 +2691,9 @@ return (
                     >
                         <div className={`flex items-center justify-between p-4 border-b ${darkMode ? 'border-purple-500/20' : 'border-purple-200'}`}>
                             <div className="flex items-center gap-3">
-                                <img 
-                                    src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/images/rinon-logo.png" 
-                                    alt="RinON Logo" 
+                                <img
+                                    src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png"
+                                    alt="RinON Logo"
                                     className="w-10 h-10 object-contain"
                                     onError={(e) => {
                                         e.target.style.display = 'none';
@@ -1626,7 +2774,7 @@ return (
                             >
                                 {t('Rreth Nesh', 'About')}
                             </button>
-                            
+
                             <div className={`border-t pt-4 mt-4 space-y-3 ${darkMode ? 'border-purple-500/20' : 'border-purple-200'}`}>
                                 {user && (
                                     <div className={`px-4 py-3 rounded-lg ${darkMode ? 'bg-purple-600/10' : 'bg-purple-100'}`}>
@@ -1647,17 +2795,17 @@ return (
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 <div className="flex items-center justify-between px-4">
                                     <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                         {t('Gjuha', 'Language')}
                                     </span>
                                     <button
                                         onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${darkMode 
-                                            ? 'bg-white/10 border-white/20 hover:bg-white/20' 
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${darkMode
+                                            ? 'bg-white/10 border-white/20 hover:bg-white/20'
                                             : 'bg-purple-100 border-purple-300 hover:bg-purple-200'
-                                        }`}
+                                            }`}
                                     >
                                         <Globe className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-purple-600'}`} />
                                         <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-purple-600'}`}>
@@ -1672,10 +2820,10 @@ return (
                                     </span>
                                     <button
                                         onClick={() => setDarkMode(!darkMode)}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${darkMode 
-                                            ? 'bg-white/10 border-white/20 hover:bg-white/20' 
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${darkMode
+                                            ? 'bg-white/10 border-white/20 hover:bg-white/20'
                                             : 'bg-purple-100 border-purple-300 hover:bg-purple-200'
-                                        }`}
+                                            }`}
                                     >
                                         {darkMode ? <Sun className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-purple-600'}`} /> : <Moon className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-purple-600'}`} />}
                                         <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-purple-600'}`}>
@@ -1690,10 +2838,10 @@ return (
                                             setShowPreferences(true);
                                             setMobileMenuOpen(false);
                                         }}
-                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border transition-all ${darkMode 
-                                            ? 'bg-purple-600/20 border-purple-500/50 hover:bg-purple-600/30' 
+                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border transition-all ${darkMode
+                                            ? 'bg-purple-600/20 border-purple-500/50 hover:bg-purple-600/30'
                                             : 'bg-purple-100 border-purple-300 hover:bg-purple-200'
-                                        }`}
+                                            }`}
                                     >
                                         <span className={`text-sm ${darkMode ? 'text-purple-300' : 'text-purple-700'}`}>
                                             {t('Preferencat', 'Preferences')}
@@ -1767,6 +2915,17 @@ return (
           }
         }
 
+        @keyframes slideUp {
+          from { 
+            transform: translateY(20px);
+            opacity: 0;
+          }
+          to { 
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
         @keyframes fadeOut {
           from { opacity: 1; }
           to { opacity: 0; }
@@ -1781,6 +2940,14 @@ return (
           }
         }
 
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        .animate-slideUp {
+          animation: slideUp 0.4s ease-out;
+        }
+
         .animate-page-enter {
           animation: fadeIn 0.5s ease-out;
         }
@@ -1793,7 +2960,8 @@ return (
           animation: pulse-glow 3s ease-in-out infinite;
         }
       `}</style>
-<main className={pageTransition ? 'animate-page-exit' : hasPageLoaded ? '' : 'animate-page-enter'}>
+
+            <main className={pageTransition ? 'animate-page-exit' : hasPageLoaded ? '' : 'animate-page-enter'}>
                 {loading ? (
                     <div className="flex items-center justify-center min-h-[60vh]">
                         <div className="text-center">
@@ -1930,7 +3098,6 @@ return (
                                                 <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold backdrop-blur-sm shadow-lg">
                                                     {article.category}
                                                 </span>
-                                                {/* NEW FEATURE 4: Edit button added */}
                                                 {showAdmin && (
                                                     <div className="absolute top-4 right-4 flex gap-2">
                                                         <button
@@ -2040,396 +3207,6 @@ return (
                 </div>
             )}
 
-           
-
-
-            {showAddForm && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                {t('Shto Artikull', 'Add Article')}
-                            </h2>
-                            <button onClick={() => setShowAddForm(false)} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
-                                value={formData.titleAl}
-                                onChange={(e) => setFormData({ ...formData, titleAl: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
-                                value={formData.titleEn}
-                                onChange={(e) => setFormData({ ...formData, titleEn: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <textarea
-                                placeholder={t('Përmbajtja (Shqip) *', 'Content (Albanian) *')}
-                                value={formData.contentAl}
-                                onChange={(e) => setFormData({ ...formData, contentAl: e.target.value })}
-                                rows="6"
-                                maxLength="10000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Përmbajtja (Anglisht)', 'Content (English)')}
-                                value={formData.contentEn}
-                                onChange={(e) => setFormData({ ...formData, contentEn: e.target.value })}
-                                rows="6"
-                                maxLength="10000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <select
-                                value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            >
-                                {categories.filter(c => c.al !== 'Te Gjitha').map(cat => (
-                                    <option key={cat.al} value={cat.al}>{language === 'al' ? cat.al : cat.en}</option>
-                                ))}
-                            </select>
-                            <input
-                                type="text"
-                                placeholder={t('URL Imazhi', 'Image URL')}
-                                value={formData.image}
-                                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Burimi', 'Source')}
-                                value={formData.source}
-                                onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <label className="flex items-center gap-3 text-white">
-                                <input
-                                    type="checkbox"
-                                    checked={formData.featured}
-                                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                                    className="w-5 h-5 rounded border-purple-500/30 bg-slate-700 text-purple-600 focus:ring-purple-500/20"
-                                />
-                                <span>{t('Artikull i veçantë', 'Featured article')}</span>
-                            </label>
-                            <div className="flex gap-3 pt-4">
-                                <button onClick={() => setShowAddForm(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
-                                    {t('Anulo', 'Cancel')}
-                                </button>
-                                <button onClick={handleSubmitArticle} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
-                                    {t('Publiko', 'Publish')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showAddEventForm && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                {t('Shto Event', 'Add Event')}
-                            </h2>
-                            <button onClick={() => setShowAddEventForm(false)} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
-                                value={eventFormData.titleAl}
-                                onChange={(e) => setEventFormData({ ...eventFormData, titleAl: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
-                                value={eventFormData.titleEn}
-                                onChange={(e) => setEventFormData({ ...eventFormData, titleEn: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Data (Shqip) *', 'Date (Albanian) *')}
-                                value={eventFormData.dateAl}
-                                onChange={(e) => setEventFormData({ ...eventFormData, dateAl: e.target.value })}
-                                maxLength="100"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Data (Anglisht)', 'Date (English)')}
-                                value={eventFormData.dateEn}
-                                onChange={(e) => setEventFormData({ ...eventFormData, dateEn: e.target.value })}
-                                maxLength="100"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Tipi', 'Type')}
-                                value={eventFormData.type}
-                                onChange={(e) => setEventFormData({ ...eventFormData, type: e.target.value })}
-                                maxLength="50"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Lokacioni', 'Location')}
-                                value={eventFormData.location}
-                                onChange={(e) => setEventFormData({ ...eventFormData, location: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <textarea
-                                placeholder={t('Përshkrimi (Shqip)', 'Description (Albanian)')}
-                                value={eventFormData.descAl}
-                                onChange={(e) => setEventFormData({ ...eventFormData, descAl: e.target.value })}
-                                rows="4"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
-                                value={eventFormData.descEn}
-                                onChange={(e) => setEventFormData({ ...eventFormData, descEn: e.target.value })}
-                                rows="4"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('URL Imazhi', 'Image URL')}
-                                value={eventFormData.image}
-                                onChange={(e) => setEventFormData({ ...eventFormData, image: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <div className="flex gap-3 pt-4">
-                                <button onClick={() => setShowAddEventForm(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
-                                    {t('Anulo', 'Cancel')}
-                                </button>
-                                <button onClick={handleSubmitEvent} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
-                                    {t('Shto', 'Add')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showAddTopicForm && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                {t('Shto Temë Diskutimi', 'Add Discussion Topic')}
-                            </h2>
-                            <button onClick={() => setShowAddTopicForm(false)} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
-                                value={topicFormData.titleAl}
-                                onChange={(e) => setTopicFormData({ ...topicFormData, titleAl: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
-                                value={topicFormData.titleEn}
-                                onChange={(e) => setTopicFormData({ ...topicFormData, titleEn: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <textarea
-                                placeholder={t('Përshkrimi (Shqip) *', 'Description (Albanian) *')}
-                                value={topicFormData.descriptionAl}
-                                onChange={(e) => setTopicFormData({ ...topicFormData, descriptionAl: e.target.value })}
-                                rows="4"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
-                                value={topicFormData.descriptionEn}
-                                onChange={(e) => setTopicFormData({ ...topicFormData, descriptionEn: e.target.value })}
-                                rows="4"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <div className="flex gap-3 pt-4">
-                                <button onClick={() => setShowAddTopicForm(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
-                                    {t('Anulo', 'Cancel')}
-                                </button>
-                                <button onClick={handleSubmitTopic} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
-                                    {t('Shto', 'Add')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showAddPartnerForm && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                {t('Shto Partner', 'Add Partner')}
-                            </h2>
-                            <button onClick={() => setShowAddPartnerForm(false)} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder={t('Emri (Shqip) *', 'Name (Albanian) *')}
-                                value={partnerFormData.nameAl}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, nameAl: e.target.value })}
-                                maxLength="100"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Emri (Anglisht) *', 'Name (English) *')}
-                                value={partnerFormData.nameEn}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, nameEn: e.target.value })}
-                                maxLength="100"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <textarea
-                                placeholder={t('Përshkrimi (Shqip)', 'Description (Albanian)')}
-                                value={partnerFormData.descriptionAl}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, descriptionAl: e.target.value })}
-                                rows="3"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
-                                value={partnerFormData.descriptionEn}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, descriptionEn: e.target.value })}
-                                rows="3"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Vizioni (Shqip)', 'Vision (Albanian)')}
-                                value={partnerFormData.visionAl}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, visionAl: e.target.value })}
-                                rows="3"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Vizioni (Anglisht)', 'Vision (English)')}
-                                value={partnerFormData.visionEn}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, visionEn: e.target.value })}
-                                rows="3"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Qëllimet (Shqip)', 'Goals (Albanian)')}
-                                value={partnerFormData.goalsAl}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, goalsAl: e.target.value })}
-                                rows="3"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Qëllimet (Anglisht)', 'Goals (English)')}
-                                value={partnerFormData.goalsEn}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, goalsEn: e.target.value })}
-                                rows="3"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Website', 'Website')}
-                                value={partnerFormData.website}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, website: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('URL Imazhi', 'Image URL')}
-                                value={partnerFormData.image}
-                                onChange={(e) => setPartnerFormData({ ...partnerFormData, image: e.target.value })}
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <div className="flex gap-3 pt-4">
-                                <button onClick={() => setShowAddPartnerForm(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
-                                    {t('Anulo', 'Cancel')}
-                                </button>
-                                <button onClick={handleSubmitPartner} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
-                                    {t('Shto', 'Add')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showAddMemberForm && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-slate-800 rounded-3xl max-w-md w-full border border-purple-500/20 shadow-2xl p-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                {t('Shto Anëtar Ekipi', 'Add Team Member')}
-                            </h2>
-                            <button onClick={() => setShowAddMemberForm(false)} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder={t('Emri *', 'Name *')}
-                                value={memberFormData.name}
-                                onChange={(e) => setMemberFormData({ ...memberFormData, name: e.target.value })}
-                                maxLength="100"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Roli *', 'Role *')}
-                                value={memberFormData.role}
-                                onChange={(e) => setMemberFormData({ ...memberFormData, role: e.target.value })}
-                                maxLength="100"
-                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                            />
-                            <div className="flex gap-3 pt-4">
-                                <button onClick={() => setShowAddMemberForm(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
-                                    {t('Anulo', 'Cancel')}
-                                </button>
-                                <button onClick={handleSubmitMember} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
-                                    {t('Shto', 'Add')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {showAdmin && (
                 <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
                     <button
@@ -2486,66 +3263,65 @@ return (
                                 {t('Platforma dixhitale për rininë shqiptare', 'Digital platform for Albanian youth')}
                             </p>
                             <div className="space-y-2">
+                                <a
+                                    href="https://instagram.com/rinon_albania"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`block transition-colors ${darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}
+                                >
+                                    Instagram: @rinon_albania
+                                </a>
+                                <a
+                                    href="mailto:rinonalbania@gmail.com"
+                                    className={`block transition-colors ${darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}
+                                >
+                                    Email: rinonalbania@gmail.com
+                                </a>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Navigim', 'Navigation')}</h3>
+                            <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                <li><button onClick={() => changePage('home')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Faqja Kryesore', 'Home')}</button></li>
+                                <li><button onClick={() => changePage('events')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Evente', 'Events')}</button></li>
+                                <li><button onClick={() => changePage('partners')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Bashkëpunime', 'Cooperations')}</button></li>
+                                <li><button onClick={() => changePage('about')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Rreth Nesh', 'About')}</button></li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Behu Vullnetar', 'Become a Volunteer')}</h3>
+                            <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Bashkohu me ne dhe kontribuo për një të ardhme më të mirë!', 'Join us and contribute to a better future!')}
+                            </p>
                             <a
-                                href="https://instagram.com/rinon_albania"
+                                href="https://docs.google.com/forms/d/e/1FAIpQLSd2J3S01v9PhZyQgSLNLmZ5YnDUbQePlta_LXx1D13VLB644A/viewform?usp=dialog"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className={`block transition-colors ${darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}
-                    >
-                                Instagram: @rinon_albania
-                                </a>
-                          <a
+                                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-lg shadow-purple-500/50"
+                            >
+                                <Heart className="w-4 h-4" />
+                                {t('Apliko Tani', 'Apply Now')}
+                            </a>
+                        </div>
+                    </div>
 
-                            href="mailto:rinonalbania@gmail.com"
-                            className={`block transition-colors ${darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}
-                    >
-                            Email: rinonalbania@gmail.com
-                        </a>
+                    <div className={`border-t pt-8 text-center transition-colors duration-300 ${darkMode ? 'border-purple-500/20' : 'border-purple-200'}`}>
+                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            © 2025 RinON. {t('Të gjitha të drejtat e rezervuara.', 'All rights reserved.')}
+                        </p>
+                        {userProfile?.is_admin && (
+                            <button
+                                onClick={() => setShowAdmin(!showAdmin)}
+                                className={`mt-4 text-sm transition-colors ${darkMode ? 'text-gray-500 hover:text-purple-400' : 'text-gray-400 hover:text-purple-600'}`}
+                            >
+                                🔒 {showAdmin ? t('Fsheh Admin', 'Hide Admin') : t('Trego Admin', 'Show Admin')}
+                            </button>
+                        )}
                     </div>
                 </div>
-
-                <div>
-                    <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Navigim', 'Navigation')}</h3>
-                    <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        <li><button onClick={() => changePage('home')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Faqja Kryesore', 'Home')}</button></li>
-                        <li><button onClick={() => changePage('events')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Evente', 'Events')}</button></li>
-                        <li><button onClick={() => changePage('partners')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Bashkëpunime', 'Cooperations')}</button></li>
-                        <li><button onClick={() => changePage('about')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Rreth Nesh', 'About')}</button></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Behu Vullnetar', 'Become a Volunteer')}</h3>
-                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t('Bashkohu me ne dhe kontribuo për një të ardhme më të mirë!', 'Join us and contribute to a better future!')}
-                    </p>
-                    <a
-                    href="https://docs.google.com/forms/d/e/1FAIpQLSd2J3S01v9PhZyQgSLNLmZ5YnDUbQePlta_LXx1D13VLB644A/viewform?usp=dialog"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-lg shadow-purple-500/50"
-                >
-                    <Heart className="w-4 h-4" />
-                    {t('Apliko Tani', 'Apply Now')}
-                </a>
-        </div>
-        </div >
-
-    <div className={`border-t pt-8 text-center transition-colors duration-300 ${darkMode ? 'border-purple-500/20' : 'border-purple-200'}`}>
-        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Â© 2025 RinON. {t('Të gjitha të drejtat e rezervuara.', 'All rights reserved.')}
-        </p>
-        {userProfile?.is_admin && (
-            <button
-                onClick={() => setShowAdmin(!showAdmin)}
-                className={`mt-4 text-sm transition-colors ${darkMode ? 'text-gray-500 hover:text-purple-400' : 'text-gray-400 hover:text-purple-600'}`}
-            >
-                🔒” {showAdmin ? t('Fsheh Admin', 'Hide Admin') : t('Trego Admin', 'Show Admin')}
-            </button>
-        )}
-    </div>
-    </div >
-</footer >
+            </footer>
         </div>
     );
 };
