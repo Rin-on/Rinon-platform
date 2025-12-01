@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 
@@ -819,8 +819,233 @@ const DiscussionPageContent = ({
         </div>
     );
 };
+const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
+    const [captionCopied, setCaptionCopied] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
 
-// Auth Modal Component
+    if (!isOpen || !item) return null;
+
+    const isArticle = type === 'article';
+    const title = language === 'al' ? item.titleAl : (item.titleEn || item.titleAl);
+    const description = isArticle
+        ? (language === 'al' ? item.contentAl : (item.contentEn || item.contentAl))
+        : (language === 'al' ? item.descAl : (item.descEn || item.descAl));
+
+    // Truncate description for caption
+    const shortDesc = description ? description.substring(0, 150) + (description.length > 150 ? '...' : '') : '';
+
+    // Generate hashtags based on category
+    const getHashtags = () => {
+        const baseHashtags = '#RinON #RiniaShqiptare #AlbanianYouth #Shqipëri';
+        const categoryHashtags = {
+            'Sport dhe Kulturë': '#Sport #Kulturë #Culture',
+            'Politikë dhe Ekonomi': '#Politikë #Ekonomi #Politics',
+            'Vullnetarizëm': '#Vullnetarizëm #Volunteering #Youth',
+            'Lifestyle': '#Lifestyle #Rinor',
+            'AI': '#AI #Technology #Tech',
+            'Rreth Europes': '#Europe #EU #EuropeExplained'
+        };
+        return `${baseHashtags} ${categoryHashtags[item.category] || '#Youth #Albania'}`;
+    };
+
+    // Generate share link
+    const shareLink = `https://rinon.al/${isArticle ? 'article' : 'event'}/${item.id}`;
+
+    // Generate full caption
+    const fullCaption = `${title}\n\n${shortDesc}\n\n🔗 Lexo më shumë: ${shareLink}\n\n${getHashtags()}`;
+
+    const copyCaption = async () => {
+        try {
+            await navigator.clipboard.writeText(fullCaption);
+            setCaptionCopied(true);
+            setTimeout(() => setCaptionCopied(false), 2000);
+        } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = fullCaption;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setCaptionCopied(true);
+            setTimeout(() => setCaptionCopied(false), 2000);
+        }
+    };
+
+    const copyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(shareLink);
+            setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 2000);
+        } catch (err) {
+            const textArea = document.createElement('textarea');
+            textArea.value = shareLink;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            setLinkCopied(true);
+            setTimeout(() => setLinkCopied(false), 2000);
+        }
+    };
+
+    const handleImageDownload = async () => {
+        const imageUrl = item.image;
+
+        // Check if it's a Supabase storage URL (your domain)
+        const isSupabaseImage = imageUrl && imageUrl.includes('hslwkxwarflnvjfytsul.supabase.co');
+
+        if (isSupabaseImage) {
+            // Direct download for Supabase images
+            try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `rinon-${type}-${item.id}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                // Fallback: open in new tab
+                window.open(imageUrl, '_blank');
+            }
+        } else {
+            // For external URLs, open in new tab
+            window.open(imageUrl, '_blank');
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className={`rounded-3xl max-w-lg w-full shadow-2xl border overflow-hidden ${darkMode ? 'bg-slate-800 border-purple-500/30' : 'bg-white border-purple-300'
+                }`}>
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <Instagram className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-white">
+                                {t('Shpërndaj në Instagram', 'Share to Instagram')}
+                            </h3>
+                            <p className="text-white/70 text-sm">
+                                {isArticle ? t('Artikull', 'Article') : t('Event', 'Event')}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-white/20 rounded-full transition-all"
+                    >
+                        <X className="w-5 h-5 text-white" />
+                    </button>
+                </div>
+
+                {/* Image Preview */}
+                <div className="relative">
+                    <img
+                        src={item.image}
+                        alt={title}
+                        className="w-full h-48 object-cover"
+                        onError={(e) => {
+                            e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800';
+                        }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-3 left-3 right-3">
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white ${isArticle ? 'bg-purple-600' : 'bg-pink-600'
+                            }`}>
+                            {item.category || item.type || 'RinON'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-5 space-y-4">
+                    {/* Caption Preview */}
+                    <div>
+                        <label className={`text-sm font-semibold mb-2 block ${darkMode ? 'text-gray-300' : 'text-gray-700'
+                            }`}>
+                            {t('Caption për Instagram:', 'Instagram Caption:')}
+                        </label>
+                        <div className={`p-3 rounded-xl text-sm max-h-32 overflow-y-auto ${darkMode ? 'bg-slate-700/50 text-gray-300' : 'bg-gray-100 text-gray-700'
+                            }`}>
+                            <p className="whitespace-pre-wrap">{fullCaption}</p>
+                        </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            onClick={copyCaption}
+                            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all ${captionCopied
+                                ? 'bg-green-600 text-white'
+                                : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-500 hover:to-pink-500'
+                                }`}
+                        >
+                            {captionCopied ? (
+                                <>
+                                    <Check className="w-4 h-4" />
+                                    {t('U kopjua!', 'Copied!')}
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="w-4 h-4" />
+                                    {t('Kopjo Caption', 'Copy Caption')}
+                                </>
+                            )}
+                        </button>
+
+                        <button
+                            onClick={handleImageDownload}
+                            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all ${darkMode
+                                ? 'bg-slate-700 text-white hover:bg-slate-600 border border-purple-500/30'
+                                : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300'
+                                }`}
+                        >
+                            <Download className="w-4 h-4" />
+                            {t('Shkarko Foto', 'Download Image')}
+                        </button>
+                    </div>
+
+                    {/* Link Section */}
+                    <div className={`flex items-center gap-2 p-3 rounded-xl ${darkMode ? 'bg-slate-700/50' : 'bg-gray-100'
+                        }`}>
+                        <input
+                            type="text"
+                            value={shareLink}
+                            readOnly
+                            className={`flex-1 bg-transparent text-sm outline-none ${darkMode ? 'text-gray-300' : 'text-gray-700'
+                                }`}
+                        />
+                        <button
+                            onClick={copyLink}
+                            className={`p-2 rounded-lg transition-all ${linkCopied
+                                ? 'bg-green-600 text-white'
+                                : 'bg-purple-600 text-white hover:bg-purple-500'
+                                }`}
+                        >
+                            {linkCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                    </div>
+
+                    {/* Instructions */}
+                    <div className={`text-xs space-y-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <p className="font-semibold">{t('Si të postosh:', 'How to post:')}</p>
+                        <p>1. {t('Shkarko foton ose ruaje nga tab-i i ri', 'Download the image or save from new tab')}</p>
+                        <p>2. {t('Kopjo caption-in', 'Copy the caption')}</p>
+                        <p>3. {t('Hap Instagram dhe krijo post të ri', 'Open Instagram and create new post')}</p>
+                        <p>4. {t('Ngjit caption-in dhe posto!', 'Paste the caption and post!')}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 // Auth Modal Component
 const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, handleSignup, handleLogin, setShowPreferences, darkMode, t }) => {
     const [email, setEmail] = useState('');
@@ -829,7 +1054,6 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(true);
-
     const handleSubmit = async () => {
         setError('');
 
@@ -864,7 +1088,6 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
             else setShowAuthModal(false);
         }
     };
-
     if (!showAuthModal) return null;
 
     return (
@@ -1111,6 +1334,8 @@ const RinON = () => {
         achievementAl: '', achievementEn: '', photo: '',
         quoteAl: '', quoteEn: '', teacherCommentAl: '', teacherCommentEn: ''
     });
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareItem, setShareItem] = useState({ item: null, type: null });
     const t = (al, en) => language === 'al' ? al : en;
     // ==========================================
     // SCHOOLS FEATURE - PERMISSION HELPERS
@@ -2225,6 +2450,10 @@ const RinON = () => {
         setSelectedArticle(article);
         setShowArticleModal(true);
     };
+    const openShareModal = (item, type) => {
+    setShareItem({ item, type });
+    setShowShareModal(true);
+};
     const EventsPage = () => (
         <div className="max-w-7xl mx-auto px-4 py-12">
             <div className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -2300,22 +2529,34 @@ const RinON = () => {
                                         }}
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                                    {showAdmin && (
-                                        <div className="absolute top-3 right-3 flex gap-2">
-                                            <button
-                                                onClick={() => editEvent(event)}
-                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => deleteEvent(event.id)}
-                                                className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    )}
+                                    <div className="absolute top-3 right-3 flex gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                openShareModal(event, 'event');
+                                            }}
+                                            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-full hover:from-purple-500 hover:to-pink-500 transition z-10 shadow-lg"
+                                            title={t('Shpërndaj', 'Share')}
+                                        >
+                                            <Share2 className="h-4 w-4" />
+                                        </button>
+                                        {showAdmin && (
+                                            <>
+                                                <button
+                                                    onClick={() => editEvent(event)}
+                                                    className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteEvent(event.id)}
+                                                    className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="p-6">
                                     <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-600/30 to-pink-600/30 text-purple-300 text-sm font-semibold rounded-full mb-3 border border-purple-500/30">
@@ -4325,7 +4566,15 @@ const RinON = () => {
                 t={t}
                 onDeleteAccount={handleDeleteAccount}
             />
-
+            <ShareModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                item={shareItem.item}
+                type={shareItem.type}
+                language={language}
+                darkMode={darkMode}
+                t={t}
+            />
             <style>{`
         @keyframes fadeIn {
           from { 
@@ -4521,28 +4770,40 @@ const RinON = () => {
                                                 <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold backdrop-blur-sm shadow-lg">
                                                     {article.category}
                                                 </span>
-                                                {showAdmin && (
-                                                    <div className="absolute top-4 right-4 flex gap-2">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                editArticle(article);
-                                                            }}
-                                                            className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                deleteArticle(article.id);
-                                                            }}
-                                                            className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                <div className="absolute top-4 right-4 flex gap-2">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openShareModal(article, 'article');
+                                                        }}
+                                                        className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-full hover:from-purple-500 hover:to-pink-500 transition z-10 shadow-lg"
+                                                        title={t('Shpërndaj', 'Share')}
+                                                    >
+                                                        <Share2 className="h-4 w-4" />
+                                                    </button>
+                                                    {showAdmin && (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    editArticle(article);
+                                                                }}
+                                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    deleteArticle(article.id);
+                                                                }}
+                                                                className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
 
                                                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                                                     <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-purple-300 transition">
