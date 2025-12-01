@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 
@@ -344,8 +344,8 @@ END:VCALENDAR`;
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className={`flex-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-purple-500/20 ${darkMode
-                            ? 'bg-slate-700 border-purple-500/30 text-white'
-                            : 'bg-white border-purple-300 text-gray-900'
+                        ? 'bg-slate-700 border-purple-500/30 text-white'
+                        : 'bg-white border-purple-300 text-gray-900'
                         }`}
                 >
                     {categories.map(cat => (
@@ -358,10 +358,10 @@ END:VCALENDAR`;
                 <button
                     onClick={() => setShowOnlyFree(!showOnlyFree)}
                     className={`px-6 py-3 rounded-xl border transition-all ${showOnlyFree
-                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border-green-500'
-                            : darkMode
-                                ? 'bg-slate-700 border-purple-500/30 text-gray-300 hover:bg-slate-600'
-                                : 'bg-white border-purple-300 text-gray-700 hover:bg-purple-50'
+                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border-green-500'
+                        : darkMode
+                            ? 'bg-slate-700 border-purple-500/30 text-gray-300 hover:bg-slate-600'
+                            : 'bg-white border-purple-300 text-gray-700 hover:bg-purple-50'
                         }`}
                 >
                     <Filter className="w-5 h-5 inline mr-2" />
@@ -424,8 +424,8 @@ END:VCALENDAR`;
                                 key={day}
                                 onClick={() => openDayModal(day)}
                                 className={`aspect-square rounded-xl p-2 transition-all relative ${isToday
-                                        ? 'ring-2 ring-purple-500'
-                                        : ''
+                                    ? 'ring-2 ring-purple-500'
+                                    : ''
                                     } ${dayEvents.length > 0
                                         ? darkMode
                                             ? 'bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30'
@@ -436,10 +436,10 @@ END:VCALENDAR`;
                                     }`}
                             >
                                 <div className={`text-sm font-semibold ${dayEvents.length > 0
-                                        ? 'text-purple-400'
-                                        : darkMode
-                                            ? 'text-gray-400'
-                                            : 'text-gray-600'
+                                    ? 'text-purple-400'
+                                    : darkMode
+                                        ? 'text-gray-400'
+                                        : 'text-gray-600'
                                     }`}>
                                     {day}
                                 </div>
@@ -530,10 +530,10 @@ END:VCALENDAR`;
                                             <button
                                                 onClick={() => toggleSaveEvent(event.id)}
                                                 className={`p-2 rounded-lg transition-all ${savedEvents.includes(event.id)
-                                                        ? 'bg-purple-600 text-white'
-                                                        : darkMode
-                                                            ? 'bg-slate-700 text-gray-400 hover:bg-slate-600'
-                                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    ? 'bg-purple-600 text-white'
+                                                    : darkMode
+                                                        ? 'bg-slate-700 text-gray-400 hover:bg-slate-600'
+                                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                     }`}
                                             >
                                                 {savedEvents.includes(event.id) ? (
@@ -625,8 +625,8 @@ END:VCALENDAR`;
                                         <button
                                             onClick={() => exportToCalendar(event)}
                                             className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${darkMode
-                                                    ? 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                ? 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                                 }`}
                                         >
                                             <CalendarIcon className="w-4 h-4" />
@@ -821,11 +821,14 @@ const DiscussionPageContent = ({
 };
 
 // Auth Modal Component
+// Auth Modal Component
 const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, handleSignup, handleLogin, setShowPreferences, darkMode, t }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
 
     const handleSubmit = async () => {
         setError('');
@@ -847,7 +850,7 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                 return;
             }
 
-            const { error } = await handleSignup(email, password, displayName);
+            const { error } = await handleSignup(email, password, displayName, rememberMe);
             if (error) setError(error.message);
             else setShowAuthModal(false);
         } else {
@@ -856,7 +859,7 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                 return;
             }
 
-            const { error } = await handleLogin(email, password);
+            const { error } = await handleLogin(email, password, rememberMe);
             if (error) setError(error.message);
             else setShowAuthModal(false);
         }
@@ -894,13 +897,32 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                     />
-                    <input
-                        type="password"
-                        placeholder={t('Fjalëkalimi', 'Password')}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                    />
+                    <div className="relative">
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder={t('Fjalëkalimi', 'Password')}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-3 pr-12 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-purple-400 transition-colors"
+                        >
+                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                    </div>
+
+                    <label className="flex items-center gap-3 text-gray-300 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={rememberMe}
+                            onChange={(e) => setRememberMe(e.target.checked)}
+                            className="w-4 h-4 rounded border-purple-500/30 bg-slate-700 text-purple-600 focus:ring-purple-500/20"
+                        />
+                        <span className="text-sm">{t('Më mbaj mend', 'Remember me')}</span>
+                    </label>
 
                     {error && <p className="text-pink-400 text-sm">{error}</p>}
 
@@ -921,8 +943,10 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
 };
 
 // Preferences Modal Component
-const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t }) => {
+// Preferences Modal Component
+const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t, onDeleteAccount }) => {
     const [selected, setSelected] = useState(userProfile?.preferences || []);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const toggleCategory = (cat) => {
         setSelected(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -932,7 +956,7 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-purple-500/20">
+            <div className="bg-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-purple-500/20 max-h-[90vh] overflow-y-auto">
                 <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{t('Zgjidhni Preferencat', 'Choose Preferences')}</h2>
                 <p className="text-gray-400 mb-6">{t('Zgjidhni temat që ju interesojnë', 'Select topics that interest you')}</p>
 
@@ -951,12 +975,36 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
                     ))}
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 mb-8">
                     <button onClick={() => setShowPreferences(false)} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
                         {t('Anulo', 'Cancel')}
                     </button>
                     <button onClick={() => { updatePreferences(selected); setShowPreferences(false); }} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
                         {t('Ruaj', 'Save')}
+                    </button>
+                </div>
+
+                {/* Danger Zone - Delete Account */}
+                <div className="border-t border-red-500/30 pt-6">
+                    <h3 className="text-lg font-bold text-red-400 mb-3 flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5" />
+                        {t('Zona e Rrezikshme', 'Danger Zone')}
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-4">
+                        {t(
+                            'Fshirja e llogarisë është e përhershme dhe nuk mund të zhbëhet.',
+                            'Deleting your account is permanent and cannot be undone.'
+                        )}
+                    </p>
+                    <button
+                        onClick={() => {
+                            setShowPreferences(false);
+                            onDeleteAccount();
+                        }}
+                        className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl hover:from-red-500 hover:to-pink-500 transition-all flex items-center justify-center gap-2"
+                    >
+                        <Trash2 className="w-4 h-4" />
+                        {t('Fshi Llogarinë', 'Delete Account')}
                     </button>
                 </div>
             </div>
@@ -1028,15 +1076,129 @@ const RinON = () => {
     const [otherEvents, setOtherEvents] = useState([]);
     const [partners, setPartners] = useState([]);
     const [staffMembers, setStaffMembers] = useState([]);
+    // ==========================================
+    // SCHOOLS FEATURE - STATE VARIABLES
+    // ==========================================
+    const [schools, setSchools] = useState([]);
+    const [selectedSchool, setSelectedSchool] = useState(null);
+    const [schoolPosts, setSchoolPosts] = useState([]);
+    const [schoolCouncil, setSchoolCouncil] = useState([]);
+    const [studentOfMonth, setStudentOfMonth] = useState([]);
+    const [showAddSchoolForm, setShowAddSchoolForm] = useState(false);
+    const [showSchoolPostForm, setShowSchoolPostForm] = useState(false);
+    const [showCouncilForm, setShowCouncilForm] = useState(false);
+    const [showStudentOfMonthForm, setShowStudentOfMonthForm] = useState(false);
 
+    const [schoolFormData, setSchoolFormData] = useState({
+        nameAl: '', nameEn: '', descriptionAl: '', descriptionEn: '',
+        slug: '', logo: '', coverImage: '', address: '',
+        contactEmail: '', contactPhone: '', website: ''
+    });
+
+    const [schoolPostFormData, setSchoolPostFormData] = useState({
+        titleAl: '', titleEn: '', contentAl: '', contentEn: '',
+        type: 'news', image: '', imageFile: null,
+        eventDate: '', eventTime: '', eventLocation: '', isFeatured: false
+    });
+
+    const [councilFormData, setCouncilFormData] = useState({
+        studentName: '', position: '', academicYear: '', grade: '',
+        photo: '', bioAl: '', bioEn: '', email: '', displayOrder: 0
+    });
+
+    const [studentOfMonthFormData, setStudentOfMonthFormData] = useState({
+        studentName: '', grade: '', monthYear: '',
+        achievementAl: '', achievementEn: '', photo: '',
+        quoteAl: '', quoteEn: '', teacherCommentAl: '', teacherCommentEn: ''
+    });
     const t = (al, en) => language === 'al' ? al : en;
+    // ==========================================
+    // SCHOOLS FEATURE - PERMISSION HELPERS
+    // ==========================================
+    const canEditSchool = (schoolId) => {
+        if (!user || !userProfile) return false;
+        if (userProfile.role === 'super_admin') return true;
+        if (userProfile.role === 'school_admin' && userProfile.school_id === schoolId) return true;
+        return false;
+    };
 
+    const isSuperAdmin = () => {
+        return userProfile?.role === 'super_admin';
+    };
+
+    const isSchoolAdmin = () => {
+        return userProfile?.role === 'school_admin';
+    };
+
+    const getUserSchoolId = () => {
+        return userProfile?.school_id || null;
+    };
+
+    // ==========================================
+    // SCHOOLS FEATURE - LOAD FUNCTIONS
+    // ==========================================
+    const loadSchools = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('schools')
+                .select('*')
+                .eq('is_active', true)
+                .order('name_al', { ascending: true });
+            if (error) throw error;
+            setSchools(data || []);
+        } catch (err) {
+            console.error(handleError(err, 'loadSchools'));
+        }
+    };
+
+    const loadSchoolPosts = async (schoolId) => {
+        try {
+            const { data, error } = await supabase
+                .from('school_posts')
+                .select('*')
+                .eq('school_id', schoolId)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            setSchoolPosts(data || []);
+        } catch (err) {
+            console.error(handleError(err, 'loadSchoolPosts'));
+        }
+    };
+
+    const loadSchoolCouncil = async (schoolId) => {
+        try {
+            const { data, error } = await supabase
+                .from('school_council')
+                .select('*')
+                .eq('school_id', schoolId)
+                .order('display_order', { ascending: true });
+            if (error) throw error;
+            setSchoolCouncil(data || []);
+        } catch (err) {
+            console.error(handleError(err, 'loadSchoolCouncil'));
+        }
+    };
+
+    const loadStudentOfMonth = async (schoolId) => {
+        try {
+            const { data, error } = await supabase
+                .from('student_of_month')
+                .select('*')
+                .eq('school_id', schoolId)
+                .order('created_at', { ascending: false })
+                .limit(6);
+            if (error) throw error;
+            setStudentOfMonth(data || []);
+        } catch (err) {
+            console.error(handleError(err, 'loadStudentOfMonth'));
+        }
+    };
     const categories = [
         { al: 'Te Gjitha', en: 'All', icon: TrendingUp },
         { al: 'Sport dhe Kulturë', en: 'Sports and Culture', icon: Play },
         { al: 'Politikë dhe Ekonomi', en: 'Politics and Economics', icon: Users },
-        { al: 'Mjedis', en: 'Environment', icon: Leaf },
-        { al: 'Showbiz', en: 'Entertainment', icon: Film },
+        { al: 'Vullnetarizëm', en: 'Volunteering', icon: Leaf },
+        { al: 'Lifestyle', en: 'Lifestyle', icon: Film },
         { al: 'AI', en: 'AI', icon: Brain },
         { al: 'Rreth Europes', en: 'Europe Explained', icon: GlobeIcon }
     ];
@@ -1048,6 +1210,10 @@ const RinON = () => {
         setTimeout(() => {
             setCurrentPage(page);
             setPageTransition(false);
+            // Reset selectedSchool when leaving school-portal
+            if (page !== 'school-portal') {
+                setSelectedSchool(null);
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => setHasPageLoaded(true), 100);
         }, 350);
@@ -1084,8 +1250,15 @@ const RinON = () => {
         loadEvents();
         loadPartners();
         loadTeamMembers();
+        loadSchools();
     }, []);
-
+    useEffect(() => {
+        if (selectedSchool) {
+            loadSchoolPosts(selectedSchool.id);
+            loadSchoolCouncil(selectedSchool.id);
+            loadStudentOfMonth(selectedSchool.id);
+        }
+    }, [selectedSchool]);
     useEffect(() => {
         if (selectedTopic && user) loadPosts(selectedTopic.id);
     }, [selectedTopic, user]);
@@ -1195,11 +1368,14 @@ const RinON = () => {
         }
     };
 
-    const handleSignup = async (email, password, displayName) => {
+    const handleSignup = async (email, password, displayName, rememberMe = true) => {
         try {
             const { data, error } = await supabase.auth.signUp({
                 email, password,
-                options: { data: { display_name: validateInput.sanitizeHtml(displayName) } }
+                options: {
+                    data: { display_name: validateInput.sanitizeHtml(displayName) },
+                    emailRedirectTo: window.location.origin
+                }
             });
 
             if (!error && data.user) {
@@ -1208,6 +1384,14 @@ const RinON = () => {
                     display_name: validateInput.sanitizeHtml(displayName),
                     preferences: []
                 }]);
+
+                // Set session persistence based on rememberMe
+                if (rememberMe) {
+                    localStorage.setItem('rememberMe', 'true');
+                } else {
+                    localStorage.removeItem('rememberMe');
+                }
+
                 setShowPreferences(true);
             }
 
@@ -1217,9 +1401,21 @@ const RinON = () => {
         }
     };
 
-    const handleLogin = async (email, password) => {
+    const handleLogin = async (email, password, rememberMe = true) => {
         try {
-            return await supabase.auth.signInWithPassword({ email, password });
+            const result = await supabase.auth.signInWithPassword({ email, password });
+
+            if (!result.error) {
+                // Set session persistence based on rememberMe
+                if (rememberMe) {
+                    localStorage.setItem('rememberMe', 'true');
+                } else {
+                    localStorage.removeItem('rememberMe');
+                    // If not remember me, session will be cleared on browser close
+                }
+            }
+
+            return result;
         } catch (err) {
             return { error: { message: handleError(err, 'handleLogin') } };
         }
@@ -1227,12 +1423,53 @@ const RinON = () => {
 
     const handleLogout = async () => {
         try {
+            localStorage.removeItem('rememberMe');
             await supabase.auth.signOut();
         } catch (err) {
             console.error(handleError(err, 'handleLogout'));
         }
     };
+    const handleDeleteAccount = async () => {
+        if (!user) return;
 
+        const confirmDelete = window.confirm(
+            t(
+                'Jeni i sigurt që dëshironi të fshini llogarinë tuaj? Ky veprim nuk mund të zhbëhet dhe të gjitha të dhënat tuaja do të fshihen përgjithmonë.',
+                'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.'
+            )
+        );
+
+        if (!confirmDelete) return;
+
+        const doubleConfirm = window.confirm(
+            t(
+                'Konfirmoni përsëri: A jeni ABSOLUTISHT i sigurt? Kjo do të fshijë llogarinë tuaj përgjithmonë.',
+                'Confirm again: Are you ABSOLUTELY sure? This will delete your account forever.'
+            )
+        );
+
+        if (!doubleConfirm) return;
+
+        try {
+            // Delete user's posts first
+            await supabase.from('posts').delete().eq('user_id', user.id);
+
+            // Delete user profile
+            await supabase.from('user_profiles').delete().eq('id', user.id);
+
+            // Note: Deleting from auth.users requires a server-side function or Supabase Edge Function
+            // For now, we'll sign out and show a message
+            await supabase.auth.signOut();
+
+            alert(t(
+                'Llogaria juaj u fshi me sukses. Ju lutem kontaktoni suportin nëse keni nevojë për ndihmë të mëtejshme.',
+                'Your account has been deleted successfully. Please contact support if you need further assistance.'
+            ));
+
+        } catch (err) {
+            alert(handleError(err, 'handleDeleteAccount'));
+        }
+    };
     const updatePreferences = async (prefs) => {
         if (!user) return;
         try {
@@ -1690,7 +1927,292 @@ const RinON = () => {
             alert(handleError(err, 'handleSubmitMember'));
         }
     };
+    // ==========================================
+    // SCHOOLS FEATURE - SUBMIT FUNCTIONS
+    // ==========================================
+    const handleSubmitSchool = async () => {
+        if (!schoolFormData.nameAl || !schoolFormData.slug) {
+            alert(t('Ju lutem plotësoni fushat e detyrueshme', 'Please fill in required fields'));
+            return;
+        }
+        try {
+            const school = {
+                name_al: validateInput.sanitizeHtml(schoolFormData.nameAl),
+                name_en: validateInput.sanitizeHtml(schoolFormData.nameEn || schoolFormData.nameAl),
+                description_al: validateInput.sanitizeHtml(schoolFormData.descriptionAl),
+                description_en: validateInput.sanitizeHtml(schoolFormData.descriptionEn),
+                slug: schoolFormData.slug.toLowerCase().replace(/\s+/g, '-'),
+                logo: schoolFormData.logo,
+                cover_image: schoolFormData.coverImage,
+                address: validateInput.sanitizeHtml(schoolFormData.address),
+                contact_email: schoolFormData.contactEmail,
+                contact_phone: schoolFormData.contactPhone,
+                website: schoolFormData.website
+            };
+            let error;
+            if (editMode && editingItem) {
+                ({ error } = await supabase.from('schools').update(school).eq('id', editingItem.id));
+            } else {
+                ({ error } = await supabase.from('schools').insert([school]));
+            }
+            if (error) throw error;
+            loadSchools();
+            setSchoolFormData({
+                nameAl: '', nameEn: '', descriptionAl: '', descriptionEn: '',
+                slug: '', logo: '', coverImage: '', address: '',
+                contactEmail: '', contactPhone: '', website: ''
+            });
+            setShowAddSchoolForm(false);
+            setEditMode(false);
+            setEditingItem(null);
+            alert(t(editMode ? 'Shkolla u përditësua!' : 'Shkolla u shtua!', editMode ? 'School updated!' : 'School added!'));
+        } catch (err) {
+            alert(handleError(err, 'handleSubmitSchool'));
+        }
+    };
 
+    const handleSubmitSchoolPost = async () => {
+        if (!schoolPostFormData.titleAl || !schoolPostFormData.contentAl) {
+            alert(t('Ju lutem plotësoni fushat e detyrueshme', 'Please fill in required fields'));
+            return;
+        }
+        if (!selectedSchool) {
+            alert(t('Shkolla nuk është zgjedhur', 'No school selected'));
+            return;
+        }
+        try {
+            let imageUrl = schoolPostFormData.image;
+            if (schoolPostFormData.imageFile) {
+                imageUrl = await uploadImage(schoolPostFormData.imageFile);
+            }
+            const post = {
+                school_id: selectedSchool.id,
+                author_id: user.id,
+                type: schoolPostFormData.type,
+                title_al: validateInput.sanitizeHtml(schoolPostFormData.titleAl),
+                title_en: validateInput.sanitizeHtml(schoolPostFormData.titleEn || schoolPostFormData.titleAl),
+                content_al: validateInput.sanitizeHtml(schoolPostFormData.contentAl),
+                content_en: validateInput.sanitizeHtml(schoolPostFormData.contentEn),
+                image: imageUrl,
+                event_date: schoolPostFormData.eventDate || null,
+                event_time: schoolPostFormData.eventTime || null,
+                event_location: schoolPostFormData.eventLocation || null,
+                is_featured: schoolPostFormData.isFeatured
+            };
+            let error;
+            if (editMode && editingItem) {
+                ({ error } = await supabase.from('school_posts').update(post).eq('id', editingItem.id));
+            } else {
+                ({ error } = await supabase.from('school_posts').insert([post]));
+            }
+            if (error) throw error;
+            loadSchoolPosts(selectedSchool.id);
+            setSchoolPostFormData({
+                titleAl: '', titleEn: '', contentAl: '', contentEn: '',
+                type: 'news', image: '', imageFile: null,
+                eventDate: '', eventTime: '', eventLocation: '', isFeatured: false
+            });
+            setShowSchoolPostForm(false);
+            setEditMode(false);
+            setEditingItem(null);
+            alert(t(editMode ? 'Postimi u përditësua!' : 'Postimi u shtua!', editMode ? 'Post updated!' : 'Post added!'));
+        } catch (err) {
+            alert(handleError(err, 'handleSubmitSchoolPost'));
+        }
+    };
+
+    const handleSubmitCouncil = async () => {
+        if (!councilFormData.studentName || !councilFormData.position) {
+            alert(t('Ju lutem plotësoni fushat e detyrueshme', 'Please fill in required fields'));
+            return;
+        }
+        if (!selectedSchool) {
+            alert(t('Shkolla nuk është zgjedhur', 'No school selected'));
+            return;
+        }
+        try {
+            const member = {
+                school_id: selectedSchool.id,
+                student_name: validateInput.sanitizeHtml(councilFormData.studentName),
+                position: validateInput.sanitizeHtml(councilFormData.position),
+                academic_year: councilFormData.academicYear,
+                grade: councilFormData.grade,
+                photo: councilFormData.photo,
+                bio_al: validateInput.sanitizeHtml(councilFormData.bioAl),
+                bio_en: validateInput.sanitizeHtml(councilFormData.bioEn),
+                email: councilFormData.email,
+                display_order: councilFormData.displayOrder
+            };
+            let error;
+            if (editMode && editingItem) {
+                ({ error } = await supabase.from('school_council').update(member).eq('id', editingItem.id));
+            } else {
+                ({ error } = await supabase.from('school_council').insert([member]));
+            }
+            if (error) throw error;
+            loadSchoolCouncil(selectedSchool.id);
+            setCouncilFormData({
+                studentName: '', position: '', academicYear: '', grade: '',
+                photo: '', bioAl: '', bioEn: '', email: '', displayOrder: 0
+            });
+            setShowCouncilForm(false);
+            setEditMode(false);
+            setEditingItem(null);
+            alert(t(editMode ? 'Anëtari u përditësua!' : 'Anëtari u shtua!', editMode ? 'Member updated!' : 'Member added!'));
+        } catch (err) {
+            alert(handleError(err, 'handleSubmitCouncil'));
+        }
+    };
+
+    const handleSubmitStudentOfMonth = async () => {
+        if (!studentOfMonthFormData.studentName || !studentOfMonthFormData.achievementAl) {
+            alert(t('Ju lutem plotësoni fushat e detyrueshme', 'Please fill in required fields'));
+            return;
+        }
+        if (!selectedSchool) {
+            alert(t('Shkolla nuk është zgjedhur', 'No school selected'));
+            return;
+        }
+        try {
+            const student = {
+                school_id: selectedSchool.id,
+                student_name: validateInput.sanitizeHtml(studentOfMonthFormData.studentName),
+                grade: validateInput.sanitizeHtml(studentOfMonthFormData.grade),
+                month_year: studentOfMonthFormData.monthYear,
+                achievement_al: validateInput.sanitizeHtml(studentOfMonthFormData.achievementAl),
+                achievement_en: validateInput.sanitizeHtml(studentOfMonthFormData.achievementEn),
+                photo: studentOfMonthFormData.photo,
+                quote_al: validateInput.sanitizeHtml(studentOfMonthFormData.quoteAl),
+                quote_en: validateInput.sanitizeHtml(studentOfMonthFormData.quoteEn),
+                teacher_comment_al: validateInput.sanitizeHtml(studentOfMonthFormData.teacherCommentAl),
+                teacher_comment_en: validateInput.sanitizeHtml(studentOfMonthFormData.teacherCommentEn)
+            };
+            let error;
+            if (editMode && editingItem) {
+                ({ error } = await supabase.from('student_of_month').update(student).eq('id', editingItem.id));
+            } else {
+                ({ error } = await supabase.from('student_of_month').insert([student]));
+            }
+            if (error) throw error;
+            loadStudentOfMonth(selectedSchool.id);
+            setStudentOfMonthFormData({
+                studentName: '', grade: '', monthYear: '',
+                achievementAl: '', achievementEn: '', photo: '',
+                quoteAl: '', quoteEn: '', teacherCommentAl: '', teacherCommentEn: ''
+            });
+            setShowStudentOfMonthForm(false);
+            setEditMode(false);
+            setEditingItem(null);
+            alert(t(editMode ? 'Nxënësi u përditësua!' : 'Nxënësi u shtua!', editMode ? 'Student updated!' : 'Student added!'));
+        } catch (err) {
+            alert(handleError(err, 'handleSubmitStudentOfMonth'));
+        }
+    };
+
+    // ==========================================
+    // SCHOOLS FEATURE - DELETE FUNCTIONS
+    // ==========================================
+    const deleteSchool = async (id) => {
+        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë shkollë?', 'Are you sure you want to delete this school?'))) {
+            try {
+                const { error } = await supabase.from('schools').delete().eq('id', id);
+                if (error) throw error;
+                loadSchools();
+            } catch (err) {
+                alert(handleError(err, 'deleteSchool'));
+            }
+        }
+    };
+
+    const deleteSchoolPost = async (id) => {
+        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë postim?', 'Are you sure you want to delete this post?'))) {
+            try {
+                const { error } = await supabase.from('school_posts').delete().eq('id', id);
+                if (error) throw error;
+                if (selectedSchool) loadSchoolPosts(selectedSchool.id);
+            } catch (err) {
+                alert(handleError(err, 'deleteSchoolPost'));
+            }
+        }
+    };
+
+    const deleteCouncilMember = async (id) => {
+        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë anëtar?', 'Are you sure you want to delete this member?'))) {
+            try {
+                const { error } = await supabase.from('school_council').delete().eq('id', id);
+                if (error) throw error;
+                if (selectedSchool) loadSchoolCouncil(selectedSchool.id);
+            } catch (err) {
+                alert(handleError(err, 'deleteCouncilMember'));
+            }
+        }
+    };
+
+    const deleteStudentOfMonth = async (id) => {
+        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë nxënës?', 'Are you sure you want to delete this student?'))) {
+            try {
+                const { error } = await supabase.from('student_of_month').delete().eq('id', id);
+                if (error) throw error;
+                if (selectedSchool) loadStudentOfMonth(selectedSchool.id);
+            } catch (err) {
+                alert(handleError(err, 'deleteStudentOfMonth'));
+            }
+        }
+    };
+
+    // ==========================================
+    // SCHOOLS FEATURE - EDIT FUNCTIONS
+    // ==========================================
+    const editSchool = (school) => {
+        setEditingItem(school);
+        setEditMode(true);
+        setSchoolFormData({
+            nameAl: school.name_al, nameEn: school.name_en,
+            descriptionAl: school.description_al, descriptionEn: school.description_en,
+            slug: school.slug, logo: school.logo, coverImage: school.cover_image,
+            address: school.address, contactEmail: school.contact_email,
+            contactPhone: school.contact_phone, website: school.website
+        });
+        setShowAddSchoolForm(true);
+    };
+
+    const editSchoolPost = (post) => {
+        setEditingItem(post);
+        setEditMode(true);
+        setSchoolPostFormData({
+            titleAl: post.title_al, titleEn: post.title_en,
+            contentAl: post.content_al, contentEn: post.content_en,
+            type: post.type, image: post.image, imageFile: null,
+            eventDate: post.event_date || '', eventTime: post.event_time || '',
+            eventLocation: post.event_location || '', isFeatured: post.is_featured
+        });
+        setShowSchoolPostForm(true);
+    };
+
+    const editCouncilMember = (member) => {
+        setEditingItem(member);
+        setEditMode(true);
+        setCouncilFormData({
+            studentName: member.student_name, position: member.position,
+            academicYear: member.academic_year, grade: member.grade,
+            photo: member.photo, bioAl: member.bio_al, bioEn: member.bio_en,
+            email: member.email, displayOrder: member.display_order
+        });
+        setShowCouncilForm(true);
+    };
+
+    const editStudentOfMonth = (student) => {
+        setEditingItem(student);
+        setEditMode(true);
+        setStudentOfMonthFormData({
+            studentName: student.student_name, grade: student.grade,
+            monthYear: student.month_year, achievementAl: student.achievement_al,
+            achievementEn: student.achievement_en, photo: student.photo,
+            quoteAl: student.quote_al, quoteEn: student.quote_en,
+            teacherCommentAl: student.teacher_comment_al, teacherCommentEn: student.teacher_comment_en
+        });
+        setShowStudentOfMonthForm(true);
+    };
     const featuredArticles = articles.filter(a => a.featured);
     const filteredArticles = activeCategory === 'Te Gjitha' || activeCategory === 'All'
         ? articles
@@ -1714,10 +2236,10 @@ const RinON = () => {
                     <button
                         onClick={() => setEventViewMode('calendar')}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${eventViewMode === 'calendar'
-                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                                : darkMode
-                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                            : darkMode
+                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                             }`}
                     >
                         <Calendar className="w-4 h-4" />
@@ -1726,10 +2248,10 @@ const RinON = () => {
                     <button
                         onClick={() => setEventViewMode('list')}
                         className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${eventViewMode === 'list'
-                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                                : darkMode
-                                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                            : darkMode
+                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                             }`}
                     >
                         <List className="w-4 h-4" />
@@ -2071,7 +2593,502 @@ const RinON = () => {
         </div>
     );
 
-    
+    // ==========================================
+    // SCHOOLS FEATURE - PAGE COMPONENTS
+    // ==========================================
+    const SchoolsOverviewPage = () => (
+        <div className="max-w-7xl mx-auto px-4 py-12">
+            <div className="text-center mb-12">
+                <h1 className={`text-5xl font-bold mb-4 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>
+                    {t('Shkollat', 'Schools')}
+                </h1>
+                <p className={`text-xl ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {t('Eksploro shkollat partnere dhe aktivitetet e tyre', 'Explore partner schools and their activities')}
+                </p>
+            </div>
+
+            {schools.length === 0 ? (
+                <div className="text-center py-20">
+                    <div className="w-20 h-20 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-purple-500/30">
+                        <School className={`w-10 h-10 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                    </div>
+                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {t('Asnjë shkollë ende', 'No schools yet')}
+                    </h3>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                        {t('Shkollat do të shfaqen këtu kur të shtohen', 'Schools will appear here when added')}
+                    </p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {schools.map((school) => (
+                        <div
+                            key={school.id}
+                            className={`backdrop-blur-lg rounded-2xl border overflow-hidden hover:border-purple-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 cursor-pointer ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
+                            onClick={() => {
+                                setSelectedSchool(school);
+                                changePage('school-portal');
+                            }}
+                        >
+                            <div className="relative h-48">
+                                <img
+                                    src={school.cover_image || 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800'}
+                                    alt={school.name_al}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.src = 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800';
+                                    }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                                {school.logo && (
+                                    <div className="absolute bottom-4 left-4 w-16 h-16 rounded-xl bg-white p-2 shadow-lg">
+                                        <img
+                                            src={school.logo}
+                                            alt="Logo"
+                                            className="w-full h-full object-contain"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                                {isSuperAdmin() && showAdmin && (
+                                    <div className="absolute top-3 right-3 flex gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                editSchool(school);
+                                            }}
+                                            className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
+                                        >
+                                            <Edit className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteSchool(school.id);
+                                            }}
+                                            className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="p-6">
+                                <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {language === 'al' ? school.name_al : (school.name_en || school.name_al)}
+                                </h3>
+                                {school.address && (
+                                    <div className={`flex items-center text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        <MapPin className="w-4 h-4 mr-2 text-purple-400" />
+                                        <span>{school.address}</span>
+                                    </div>
+                                )}
+                                <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {language === 'al' ? school.description_al : (school.description_en || school.description_al)}
+                                </p>
+                                <div className="mt-4 flex items-center text-purple-400 text-sm font-medium">
+                                    <span>{t('Shiko portalin', 'View portal')}</span>
+                                    <ChevronRight className="w-4 h-4 ml-1" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    const SchoolPortalPage = () => {
+        if (!selectedSchool) {
+            return (
+                <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                        {t('Asnjë shkollë e zgjedhur', 'No school selected')}
+                    </p>
+                    <button
+                        onClick={() => changePage('schools')}
+                        className="mt-4 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl"
+                    >
+                        {t('Kthehu te shkollat', 'Back to schools')}
+                    </button>
+                </div>
+            );
+        }
+
+        const postTypeLabels = {
+            news: { al: 'Lajm', en: 'News', color: 'blue' },
+            event: { al: 'Event', en: 'Event', color: 'purple' },
+            success_story: { al: 'Sukses', en: 'Success', color: 'green' },
+            school_trip: { al: 'Ekskursion', en: 'Trip', color: 'orange' }
+        };
+
+        return (
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Back Button */}
+                <button
+                    onClick={() => {
+                        setSelectedSchool(null);
+                        changePage('schools');
+                    }}
+                    className="text-purple-400 hover:text-purple-300 flex items-center gap-2 mb-6"
+                >
+                    <ChevronLeft className="w-4 h-4" />
+                    {t('Kthehu te shkollat', 'Back to schools')}
+                </button>
+
+                {/* School Header */}
+                <div className="relative rounded-3xl overflow-hidden mb-8">
+                    <div className="h-64 md:h-80">
+                        <img
+                            src={selectedSchool.cover_image || 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1200'}
+                            alt={selectedSchool.name_al}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1200';
+                            }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-8">
+                        <div className="flex items-end gap-6">
+                            {selectedSchool.logo && (
+                                <div className="w-24 h-24 rounded-2xl bg-white p-3 shadow-xl">
+                                    <img
+                                        src={selectedSchool.logo}
+                                        alt="Logo"
+                                        className="w-full h-full object-contain"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                </div>
+                            )}
+                            <div className="flex-1">
+                                <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
+                                    {language === 'al' ? selectedSchool.name_al : (selectedSchool.name_en || selectedSchool.name_al)}
+                                </h1>
+                                <p className="text-gray-300 text-lg max-w-2xl">
+                                    {language === 'al' ? selectedSchool.description_al : (selectedSchool.description_en || selectedSchool.description_al)}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Contact Info */}
+                <div className={`backdrop-blur-lg rounded-2xl border p-6 mb-8 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {selectedSchool.address && (
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-purple-600/20 flex items-center justify-center">
+                                    <MapPin className="w-5 h-5 text-purple-400" />
+                                </div>
+                                <div>
+                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Adresa', 'Address')}</p>
+                                    <p className={darkMode ? 'text-white' : 'text-gray-900'}>{selectedSchool.address}</p>
+                                </div>
+                            </div>
+                        )}
+                        {selectedSchool.contact_email && (
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-purple-600/20 flex items-center justify-center">
+                                    <Send className="w-5 h-5 text-purple-400" />
+                                </div>
+                                <div>
+                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Email</p>
+                                    <a href={`mailto:${selectedSchool.contact_email}`} className="text-purple-400 hover:text-purple-300">
+                                        {selectedSchool.contact_email}
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                        {selectedSchool.website && (
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-purple-600/20 flex items-center justify-center">
+                                    <GlobeIcon className="w-5 h-5 text-purple-400" />
+                                </div>
+                                <div>
+                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Website</p>
+                                    <a href={selectedSchool.website} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300">
+                                        {t('Vizito faqen', 'Visit website')}
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Admin Panel */}
+                {canEditSchool(selectedSchool.id) && showAdmin && (
+                    <div className={`backdrop-blur-lg rounded-2xl border p-6 mb-8 ${darkMode ? 'bg-purple-600/10 border-purple-500/30' : 'bg-purple-100 border-purple-300'}`}>
+                        <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            {t('Paneli i Administratorit', 'Admin Panel')}
+                        </h3>
+                        <div className="flex flex-wrap gap-3">
+                            <button
+                                onClick={() => setShowSchoolPostForm(true)}
+                                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-500 hover:to-purple-500 flex items-center gap-2"
+                            >
+                                <Plus className="w-4 h-4" />
+                                {t('Shto Postim', 'Add Post')}
+                            </button>
+                            <button
+                                onClick={() => setShowCouncilForm(true)}
+                                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-500 hover:to-pink-500 flex items-center gap-2"
+                            >
+                                <Users className="w-4 h-4" />
+                                {t('Shto Anëtar Këshilli', 'Add Council Member')}
+                            </button>
+                            <button
+                                onClick={() => setShowStudentOfMonthForm(true)}
+                                className="px-4 py-2 bg-gradient-to-r from-orange-600 to-pink-600 text-white rounded-lg hover:from-orange-500 hover:to-pink-500 flex items-center gap-2"
+                            >
+                                <Trophy className="w-4 h-4" />
+                                {t('Shto Nxënës të Muajit', 'Add Student of Month')}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Student of Month Section */}
+                {studentOfMonth.length > 0 && (
+                    <div className="mb-12">
+                        <h2 className={`text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            <Trophy className="w-8 h-8 inline mr-3 text-yellow-500" />
+                            {t('Nxënësit e Muajit', 'Students of the Month')}
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {studentOfMonth.map((student) => (
+                                <div
+                                    key={student.id}
+                                    className={`backdrop-blur-lg rounded-2xl border p-6 relative ${darkMode ? 'bg-gradient-to-br from-yellow-600/10 to-orange-600/10 border-yellow-500/30' : 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300'}`}
+                                >
+                                    {canEditSchool(selectedSchool.id) && showAdmin && (
+                                        <div className="absolute top-3 right-3 flex gap-2">
+                                            <button
+                                                onClick={() => editStudentOfMonth(student)}
+                                                className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition"
+                                            >
+                                                <Edit className="h-3 w-3" />
+                                            </button>
+                                            <button
+                                                onClick={() => deleteStudentOfMonth(student.id)}
+                                                className="bg-pink-600 text-white p-1.5 rounded-full hover:bg-pink-700 transition"
+                                            >
+                                                <Trash2 className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    )}
+                                    <div className="flex items-start gap-4">
+                                        {student.photo ? (
+                                            <img
+                                                src={student.photo}
+                                                alt={student.student_name}
+                                                className="w-20 h-20 rounded-full object-cover border-4 border-yellow-500"
+                                                onError={(e) => {
+                                                    e.target.src = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200';
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center">
+                                                <GraduationCap className="w-10 h-10 text-white" />
+                                            </div>
+                                        )}
+                                        <div className="flex-1">
+                                            <h4 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {student.student_name}
+                                            </h4>
+                                            <p className="text-yellow-500 font-medium">{student.grade}</p>
+                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{student.month_year}</p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4">
+                                        <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            {language === 'al' ? student.achievement_al : (student.achievement_en || student.achievement_al)}
+                                        </p>
+                                        {(student.quote_al || student.quote_en) && (
+                                            <p className={`mt-3 italic text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                "{language === 'al' ? student.quote_al : (student.quote_en || student.quote_al)}"
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* School Council Section */}
+                {schoolCouncil.length > 0 && (
+                    <div className="mb-12">
+                        <h2 className={`text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            <Users className="w-8 h-8 inline mr-3 text-purple-400" />
+                            {t('Këshilli i Nxënësve', 'Student Council')}
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {schoolCouncil.map((member) => (
+                                <div
+                                    key={member.id}
+                                    className={`backdrop-blur-lg rounded-2xl border p-6 text-center relative ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
+                                >
+                                    {canEditSchool(selectedSchool.id) && showAdmin && (
+                                        <div className="absolute top-3 right-3 flex gap-2">
+                                            <button
+                                                onClick={() => editCouncilMember(member)}
+                                                className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition"
+                                            >
+                                                <Edit className="h-3 w-3" />
+                                            </button>
+                                            <button
+                                                onClick={() => deleteCouncilMember(member.id)}
+                                                className="bg-pink-600 text-white p-1.5 rounded-full hover:bg-pink-700 transition"
+                                            >
+                                                <Trash2 className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    )}
+                                    {member.photo ? (
+                                        <img
+                                            src={member.photo}
+                                            alt={member.student_name}
+                                            className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-purple-500"
+                                            onError={(e) => {
+                                                e.target.src = 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200';
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="w-24 h-24 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 flex items-center justify-center mx-auto mb-4">
+                                            <span className="text-3xl font-bold text-white">
+                                                {member.student_name.charAt(0)}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <h4 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                        {member.student_name}
+                                    </h4>
+                                    <p className="text-purple-400 font-medium">{member.position}</p>
+                                    {member.grade && (
+                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            {t('Klasa', 'Grade')}: {member.grade}
+                                        </p>
+                                    )}
+                                    {(member.bio_al || member.bio_en) && (
+                                        <p className={`mt-3 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            {language === 'al' ? member.bio_al : (member.bio_en || member.bio_al)}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* School Posts Section */}
+                <div>
+                    <h2 className={`text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        <MessageCircle className="w-8 h-8 inline mr-3 text-blue-400" />
+                        {t('Lajme & Ngjarje', 'News & Events')}
+                    </h2>
+                    {schoolPosts.length === 0 ? (
+                        <div className={`backdrop-blur-lg rounded-2xl border p-12 text-center ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
+                            <MessageCircle className={`w-12 h-12 mx-auto mb-4 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                            <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {t('Asnjë postim ende', 'No posts yet')}
+                            </h3>
+                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                {t('Postimet do të shfaqen këtu', 'Posts will appear here')}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {schoolPosts.map((post) => {
+                                const typeInfo = postTypeLabels[post.type] || postTypeLabels.news;
+                                return (
+                                    <div
+                                        key={post.id}
+                                        className={`backdrop-blur-lg rounded-2xl border overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
+                                    >
+                                        {post.image && (
+                                            <div className="relative h-48">
+                                                <img
+                                                    src={post.image}
+                                                    alt={post.title_al}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.target.style.display = 'none';
+                                                    }}
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                                            </div>
+                                        )}
+                                        <div className="p-6 relative">
+                                            {canEditSchool(selectedSchool.id) && showAdmin && (
+                                                <div className="absolute top-3 right-3 flex gap-2">
+                                                    <button
+                                                        onClick={() => editSchoolPost(post)}
+                                                        className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 transition"
+                                                    >
+                                                        <Edit className="h-3 w-3" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => deleteSchoolPost(post.id)}
+                                                        className="bg-pink-600 text-white p-1.5 rounded-full hover:bg-pink-700 transition"
+                                                    >
+                                                        <Trash2 className="h-3 w-3" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold text-white bg-${typeInfo.color}-600`}>
+                                                    {language === 'al' ? typeInfo.al : typeInfo.en}
+                                                </span>
+                                                {post.is_featured && (
+                                                    <span className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+                                                        ⭐ {t('I Veçantë', 'Featured')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {language === 'al' ? post.title_al : (post.title_en || post.title_al)}
+                                            </h3>
+                                            <p className={`text-sm mb-4 line-clamp-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {language === 'al' ? post.content_al : (post.content_en || post.content_al)}
+                                            </p>
+                                            {post.type === 'event' && post.event_date && (
+                                                <div className={`flex items-center gap-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    <div className="flex items-center gap-1">
+                                                        <Calendar className="w-4 h-4 text-purple-400" />
+                                                        <span>{post.event_date}</span>
+                                                    </div>
+                                                    {post.event_time && (
+                                                        <div className="flex items-center gap-1">
+                                                            <Clock className="w-4 h-4 text-purple-400" />
+                                                            <span>{post.event_time}</span>
+                                                        </div>
+                                                    )}
+                                                    {post.event_location && (
+                                                        <div className="flex items-center gap-1">
+                                                            <MapPin className="w-4 h-4 text-purple-400" />
+                                                            <span>{post.event_location}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <p className={`text-xs mt-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                {new Date(post.created_at).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-slate-900' : 'bg-gray-50'}`}>
@@ -2082,7 +3099,7 @@ const RinON = () => {
                 t={t}
                 onNavigateToEvents={() => changePage('events')}
             />
-            />
+            
 
             <header className={`backdrop-blur-lg border-b sticky top-0 z-50 shadow-lg transition-colors duration-300 ${darkMode
                 ? 'bg-slate-800/80 border-purple-500/20 shadow-purple-500/10'
@@ -2113,11 +3130,16 @@ const RinON = () => {
 
                         <nav className="hidden md:flex items-center space-x-6">
                             <button onClick={() => changePage('home')} className={`font-medium transition-all ${currentPage === 'home' ? 'text-purple-400' : darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}>
-                                {t('Faqja Kryesore', 'Home')}
+                                {t('Lajme', 'News')}
                             </button>
                             <button onClick={() => changePage('events')} className={`font-medium transition-all ${currentPage === 'events' ? 'text-purple-400' : darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}>
                                 {t('Evente', 'Events')}
                             </button>
+                            <button onClick={() => changePage('schools')} className={`font-medium flex items-center gap-1 transition-all ${currentPage === 'schools' || currentPage === 'school-portal' ? 'text-purple-400' : darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}>
+                                <School className="w-4 h-4" />
+                                {t('Shkollat', 'Schools')}
+                            </button>
+                          
                             <button onClick={() => changePage('partners')} className={`font-medium flex items-center gap-1 transition-all ${currentPage === 'partners' ? 'text-purple-400' : darkMode ? 'text-gray-400 hover:text-purple-400' : 'text-gray-600 hover:text-purple-600'}`}>
                                 <Users className="w-4 h-4" />
                                 {t('Bashkëpunime', 'Cooperations')}
@@ -2678,6 +3700,396 @@ const RinON = () => {
                     </div>
                 </div>
             )}
+            {/* Add School Modal */}
+            {showAddSchoolForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {editMode ? t('Ndrysho Shkollë', 'Edit School') : t('Shto Shkollë', 'Add School')}
+                            </h2>
+                            <button onClick={() => { setShowAddSchoolForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder={t('Emri (Shqip) *', 'Name (Albanian) *')}
+                                value={schoolFormData.nameAl}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, nameAl: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Emri (Anglisht)', 'Name (English)')}
+                                value={schoolFormData.nameEn}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, nameEn: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Slug (URL) *', 'Slug (URL) *')}
+                                value={schoolFormData.slug}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <textarea
+                                placeholder={t('Përshkrimi (Shqip)', 'Description (Albanian)')}
+                                value={schoolFormData.descriptionAl}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, descriptionAl: e.target.value })}
+                                rows="3"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
+                                value={schoolFormData.descriptionEn}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, descriptionEn: e.target.value })}
+                                rows="3"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('URL Logo', 'Logo URL')}
+                                value={schoolFormData.logo}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, logo: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('URL Imazh Kopertine', 'Cover Image URL')}
+                                value={schoolFormData.coverImage}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, coverImage: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Adresa', 'Address')}
+                                value={schoolFormData.address}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, address: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="email"
+                                placeholder={t('Email Kontakti', 'Contact Email')}
+                                value={schoolFormData.contactEmail}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, contactEmail: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Telefon', 'Phone')}
+                                value={schoolFormData.contactPhone}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, contactPhone: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Website"
+                                value={schoolFormData.website}
+                                onChange={(e) => setSchoolFormData({ ...schoolFormData, website: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => { setShowAddSchoolForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitSchool} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : t('Shto', 'Add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add School Post Modal */}
+            {showSchoolPostForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {editMode ? t('Ndrysho Postim', 'Edit Post') : t('Shto Postim', 'Add Post')}
+                            </h2>
+                            <button onClick={() => { setShowSchoolPostForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <select
+                                value={schoolPostFormData.type}
+                                onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, type: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            >
+                                <option value="news">{t('Lajm', 'News')}</option>
+                                <option value="event">{t('Event', 'Event')}</option>
+                                <option value="success_story">{t('Histori Suksesi', 'Success Story')}</option>
+                                <option value="school_trip">{t('Ekskursion', 'School Trip')}</option>
+                            </select>
+                            <input
+                                type="text"
+                                placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
+                                value={schoolPostFormData.titleAl}
+                                onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, titleAl: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
+                                value={schoolPostFormData.titleEn}
+                                onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, titleEn: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <textarea
+                                placeholder={t('Përmbajtja (Shqip) *', 'Content (Albanian) *')}
+                                value={schoolPostFormData.contentAl}
+                                onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, contentAl: e.target.value })}
+                                rows="4"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Përmbajtja (Anglisht)', 'Content (English)')}
+                                value={schoolPostFormData.contentEn}
+                                onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, contentEn: e.target.value })}
+                                rows="4"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('URL Imazhi', 'Image URL')}
+                                value={schoolPostFormData.image}
+                                onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, image: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            {schoolPostFormData.type === 'event' && (
+                                <>
+                                    <input
+                                        type="date"
+                                        value={schoolPostFormData.eventDate}
+                                        onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, eventDate: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                    />
+                                    <input
+                                        type="time"
+                                        value={schoolPostFormData.eventTime}
+                                        onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, eventTime: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder={t('Lokacioni', 'Location')}
+                                        value={schoolPostFormData.eventLocation}
+                                        onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, eventLocation: e.target.value })}
+                                        className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                                    />
+                                </>
+                            )}
+                            <label className="flex items-center gap-3 text-white">
+                                <input
+                                    type="checkbox"
+                                    checked={schoolPostFormData.isFeatured}
+                                    onChange={(e) => setSchoolPostFormData({ ...schoolPostFormData, isFeatured: e.target.checked })}
+                                    className="w-5 h-5 rounded"
+                                />
+                                <span>{t('Postim i veçantë', 'Featured post')}</span>
+                            </label>
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => { setShowSchoolPostForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitSchoolPost} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : t('Shto', 'Add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Council Member Modal */}
+            {showCouncilForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {editMode ? t('Ndrysho Anëtar', 'Edit Member') : t('Shto Anëtar Këshilli', 'Add Council Member')}
+                            </h2>
+                            <button onClick={() => { setShowCouncilForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder={t('Emri i Nxënësit *', 'Student Name *')}
+                                value={councilFormData.studentName}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, studentName: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Pozicioni *', 'Position *')}
+                                value={councilFormData.position}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, position: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Viti Akademik', 'Academic Year')}
+                                value={councilFormData.academicYear}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, academicYear: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Klasa', 'Grade')}
+                                value={councilFormData.grade}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, grade: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('URL Foto', 'Photo URL')}
+                                value={councilFormData.photo}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, photo: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <textarea
+                                placeholder={t('Bio (Shqip)', 'Bio (Albanian)')}
+                                value={councilFormData.bioAl}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, bioAl: e.target.value })}
+                                rows="3"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Bio (Anglisht)', 'Bio (English)')}
+                                value={councilFormData.bioEn}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, bioEn: e.target.value })}
+                                rows="3"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <input
+                                type="email"
+                                placeholder="Email"
+                                value={councilFormData.email}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, email: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="number"
+                                placeholder={t('Renditja', 'Display Order')}
+                                value={councilFormData.displayOrder}
+                                onChange={(e) => setCouncilFormData({ ...councilFormData, displayOrder: parseInt(e.target.value) || 0 })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => { setShowCouncilForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitCouncil} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : t('Shto', 'Add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Student of Month Modal */}
+            {showStudentOfMonthForm && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-slate-800 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-purple-500/20 shadow-2xl p-8">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                {editMode ? t('Ndrysho Nxënës', 'Edit Student') : t('Shto Nxënës të Muajit', 'Add Student of Month')}
+                            </h2>
+                            <button onClick={() => { setShowStudentOfMonthForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-purple-500/20 rounded-lg transition-all">
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder={t('Emri i Nxënësit *', 'Student Name *')}
+                                value={studentOfMonthFormData.studentName}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, studentName: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Klasa', 'Grade')}
+                                value={studentOfMonthFormData.grade}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, grade: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Muaji/Viti (p.sh. Dhjetor 2025)', 'Month/Year (e.g. December 2025)')}
+                                value={studentOfMonthFormData.monthYear}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, monthYear: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <textarea
+                                placeholder={t('Arritja (Shqip) *', 'Achievement (Albanian) *')}
+                                value={studentOfMonthFormData.achievementAl}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, achievementAl: e.target.value })}
+                                rows="3"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Arritja (Anglisht)', 'Achievement (English)')}
+                                value={studentOfMonthFormData.achievementEn}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, achievementEn: e.target.value })}
+                                rows="3"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('URL Foto', 'Photo URL')}
+                                value={studentOfMonthFormData.photo}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, photo: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Citim (Shqip)', 'Quote (Albanian)')}
+                                value={studentOfMonthFormData.quoteAl}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, quoteAl: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
+                                placeholder={t('Citim (Anglisht)', 'Quote (English)')}
+                                value={studentOfMonthFormData.quoteEn}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, quoteEn: e.target.value })}
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                            />
+                            <textarea
+                                placeholder={t('Komenti i Mësuesit (Shqip)', 'Teacher Comment (Albanian)')}
+                                value={studentOfMonthFormData.teacherCommentAl}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, teacherCommentAl: e.target.value })}
+                                rows="2"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <textarea
+                                placeholder={t('Komenti i Mësuesit (Anglisht)', 'Teacher Comment (English)')}
+                                value={studentOfMonthFormData.teacherCommentEn}
+                                onChange={(e) => setStudentOfMonthFormData({ ...studentOfMonthFormData, teacherCommentEn: e.target.value })}
+                                rows="2"
+                                className="w-full px-4 py-3 bg-slate-700 border border-purple-500/30 rounded-xl text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all resize-none"
+                            />
+                            <div className="flex gap-3 pt-4">
+                                <button onClick={() => { setShowStudentOfMonthForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-slate-600 rounded-xl text-gray-400 hover:border-slate-500 transition-all">
+                                    {t('Anulo', 'Cancel')}
+                                </button>
+                                <button onClick={handleSubmitStudentOfMonth} className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg shadow-purple-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : t('Shto', 'Add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             {mobileMenuOpen && (
                 <div className="md:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
                     <div
@@ -2724,7 +4136,7 @@ const RinON = () => {
                                         : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
                                     }`}
                             >
-                                {t('Faqja Kryesore', 'Home')}
+                                {t('Lajme', 'News')}
                             </button>
                             <button
                                 onClick={() => { changePage('events'); setMobileMenuOpen(false); }}
@@ -2736,6 +4148,18 @@ const RinON = () => {
                                     }`}
                             >
                                 {t('Evente', 'Events')}
+                            </button>
+                            <button
+                                onClick={() => { changePage('schools'); setMobileMenuOpen(false); }}
+                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentPage === 'schools' || currentPage === 'school-portal'
+                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                                    : darkMode
+                                        ? 'text-gray-400 hover:bg-purple-600/20 hover:text-purple-400'
+                                        : 'text-gray-600 hover:bg-purple-100 hover:text-purple-600'
+                                    }`}
+                            >
+                                <School className="w-4 h-4" />
+                                {t('Shkollat', 'Schools')}
                             </button>
                             <button
                                 onClick={() => { changePage('partners'); setMobileMenuOpen(false); }}
@@ -2899,6 +4323,7 @@ const RinON = () => {
                 language={language}
                 darkMode={darkMode}
                 t={t}
+                onDeleteAccount={handleDeleteAccount}
             />
 
             <style>{`
@@ -3143,6 +4568,10 @@ const RinON = () => {
                     <PartnershipsPage />
                 ) : currentPage === 'about' ? (
                     <AboutPage />
+                                ) : currentPage === 'schools' ? (
+                                    <SchoolsOverviewPage />
+                                ) : currentPage === 'school-portal' ? (
+                                    <SchoolPortalPage />
                 ) : currentPage === 'discussion' ? (
                     <DiscussionPageContent
                         selectedTopic={selectedTopic}
@@ -3246,6 +4675,16 @@ const RinON = () => {
                     >
                         <Award className="h-6 w-6" />
                     </button>
+                    {isSuperAdmin() && (
+                        <button
+                            onClick={() => setShowAddSchoolForm(true)}
+                            className="bg-gradient-to-r from-green-600 to-teal-600 text-white p-4 rounded-full shadow-2xl hover:from-green-500 hover:to-teal-500 transform hover:scale-110 transition-all duration-300 animate-pulse-glow"
+                            title={t('Shto Shkollë', 'Add School')}
+                            style={{ animationDelay: '2.5s' }}
+                        >
+                            <School className="h-6 w-6" />
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -3281,7 +4720,7 @@ const RinON = () => {
                         <div>
                             <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('Navigim', 'Navigation')}</h3>
                             <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                <li><button onClick={() => changePage('home')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Faqja Kryesore', 'Home')}</button></li>
+                                <li><button onClick={() => changePage('home')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Lajme', 'News')}</button></li>
                                 <li><button onClick={() => changePage('events')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Evente', 'Events')}</button></li>
                                 <li><button onClick={() => changePage('partners')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Bashkëpunime', 'Cooperations')}</button></li>
                                 <li><button onClick={() => changePage('about')} className={`transition-colors ${darkMode ? 'hover:text-purple-400' : 'hover:text-purple-600'}`}>{t('Rreth Nesh', 'About')}</button></li>
