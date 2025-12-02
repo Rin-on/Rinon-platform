@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import { Analytics } from '@vercel/analytics/react';
 
 
 // Initialize Supabase
@@ -1169,7 +1170,6 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
 // Preferences Modal Component
 const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t, onDeleteAccount }) => {
     const [selected, setSelected] = useState(userProfile?.preferences || []);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const toggleCategory = (cat) => {
         setSelected(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -1349,14 +1349,6 @@ const RinON = () => {
 
     const isSuperAdmin = () => {
         return userProfile?.role === 'super_admin';
-    };
-
-    const isSchoolAdmin = () => {
-        return userProfile?.role === 'school_admin';
-    };
-
-    const getUserSchoolId = () => {
-        return userProfile?.school_id || null;
     };
 
     // ==========================================
@@ -5020,6 +5012,7 @@ const RinON = () => {
                     </div>
                 </div>
             </footer>
+            <Analytics />
         </div>
     );
 };
