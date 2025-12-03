@@ -1487,7 +1487,48 @@ const RinON = () => {
     useEffect(() => {
         if (selectedTopic && user) loadPosts(selectedTopic.id);
     }, [selectedTopic, user]);
+    // URL Routing - Handle shared links like /article/123 or /event/456
+    useEffect(() => {
+        const handleRouting = () => {
+            // Get the current URL path (e.g., "/article/5" or "/event/10")
+            const path = window.location.pathname;
 
+            // Check if URL matches /article/[id]
+            const articleMatch = path.match(/^\/article\/(.+)$/);
+            if (articleMatch && articles.length > 0) {
+                const articleId = articleMatch[1];
+                // Find the article with this ID
+                const article = articles.find(a => String(a.id) === articleId);
+                if (article) {
+                    // Open the article modal
+                    setSelectedArticle(article);
+                    setShowArticleModal(true);
+                    setCurrentPage('home');
+                }
+                return;
+            }
+
+            // Check if URL matches /event/[id]
+            const eventMatch = path.match(/^\/event\/(.+)$/);
+            if (eventMatch && otherEvents.length > 0) {
+                const eventId = eventMatch[1];
+                // Find the event with this ID
+                const event = otherEvents.find(e => String(e.id) === eventId);
+                if (event) {
+                    // Go to events page in list view
+                    setCurrentPage('events');
+                    setEventViewMode('list');
+                    // You could also open an event modal here if you have one
+                }
+                return;
+            }
+        };
+
+        // Run routing after data is loaded
+        if (!loading) {
+            handleRouting();
+        }
+    }, [articles, otherEvents, loading]);
     const loadUserProfile = async (userId) => {
         try {
             const { data, error } = await supabase.from('user_profiles').select('*').eq('id', userId).single();
@@ -2449,6 +2490,8 @@ const RinON = () => {
     const openArticle = (article) => {
         setSelectedArticle(article);
         setShowArticleModal(true);
+        // Update browser URL without reloading page
+        window.history.pushState({}, '', `/article/${article.id}`);
     };
     const openShareModal = (item, type) => {
     setShareItem({ item, type });
@@ -4870,7 +4913,11 @@ const RinON = () => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-slate-800 via-transparent to-transparent" />
                             <button
-                                onClick={() => setShowArticleModal(false)}
+                                onClick={() => {
+                                    setShowArticleModal(false);
+                                    // Reset URL back to home
+                                    window.history.pushState({}, '', '/');
+                                }}
                                 className="absolute top-4 right-4 bg-slate-900/80 hover:bg-slate-900 p-2 rounded-full backdrop-blur-lg transition-all"
                             >
                                 <X className="h-6 w-6 text-white" />
