@@ -173,7 +173,7 @@ const FOMOPopup = ({ showPopup, onClose, darkMode, t, onNavigateToEvents }) => {
     );
 };
 // Event Calendar Component
-const EventCalendar = ({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t }) => {
+    const EventCalendar = ({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t, openShareModal, openEvent }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -516,8 +516,13 @@ END:VCALENDAR`;
                                                     </span>
                                                 )}
                                             </div>
-                                            <h4 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'
-                                                }`}>
+                                            <h4
+                                                className={`text-xl font-bold mb-2 cursor-pointer hover:text-purple-400 transition ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                                                onClick={() => {
+                                                    setShowDayModal(false);
+                                                    openEvent(event);
+                                                }}
+                                            >
                                                 {language === 'al' ? event.titleAl : event.titleEn}
                                             </h4>
                                             <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'
@@ -527,6 +532,13 @@ END:VCALENDAR`;
                                         </div>
 
                                         <div className="flex gap-2">
+                                            <button
+                                                onClick={() => openShareModal(event, 'event')}
+                                                className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-500 hover:to-pink-500 transition"
+                                            >
+                                                <Share2 className="w-5 h-5" />
+                                            </button>
+
                                             <button
                                                 onClick={() => toggleSaveEvent(event.id)}
                                                 className={`p-2 rounded-lg transition-all ${savedEvents.includes(event.id)
@@ -1241,6 +1253,8 @@ const RinON = () => {
     const [showAdmin, setShowAdmin] = useState(false);
     const [showArticleModal, setShowArticleModal] = useState(false);
     const [selectedArticle, setSelectedArticle] = useState(null);
+    const [showEventModal, setShowEventModal] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [showAddEventForm, setShowAddEventForm] = useState(false);
     const [showAddTopicForm, setShowAddTopicForm] = useState(false);
@@ -1490,17 +1504,14 @@ const RinON = () => {
     // URL Routing - Handle shared links like /article/123 or /event/456
     useEffect(() => {
         const handleRouting = () => {
-            // Get the current URL path (e.g., "/article/5" or "/event/10")
             const path = window.location.pathname;
 
             // Check if URL matches /article/[id]
             const articleMatch = path.match(/^\/article\/(.+)$/);
             if (articleMatch && articles.length > 0) {
                 const articleId = articleMatch[1];
-                // Find the article with this ID
                 const article = articles.find(a => String(a.id) === articleId);
                 if (article) {
-                    // Open the article modal
                     setSelectedArticle(article);
                     setShowArticleModal(true);
                     setCurrentPage('home');
@@ -1512,19 +1523,16 @@ const RinON = () => {
             const eventMatch = path.match(/^\/event\/(.+)$/);
             if (eventMatch && otherEvents.length > 0) {
                 const eventId = eventMatch[1];
-                // Find the event with this ID
                 const event = otherEvents.find(e => String(e.id) === eventId);
                 if (event) {
-                    // Go to events page in list view
+                    setSelectedEvent(event);
+                    setShowEventModal(true);
                     setCurrentPage('events');
-                    setEventViewMode('list');
-                    // You could also open an event modal here if you have one
                 }
                 return;
             }
         };
 
-        // Run routing after data is loaded
         if (!loading) {
             handleRouting();
         }
@@ -2493,12 +2501,264 @@ const RinON = () => {
         // Update browser URL without reloading page
         window.history.pushState({}, '', `/article/${article.id}`);
     };
+    const openEvent = (event) => {
+        setSelectedEvent(event);
+        setShowEventModal(true);
+        window.history.pushState({}, '', `/event/${event.id}`);
+    };
     const openShareModal = (item, type) => {
     setShareItem({ item, type });
     setShowShareModal(true);
 };
+    // Event Hero Slider Component
+    const EventHeroSlider = ({ events, language, darkMode, t, openEvent, openShareModal }) => {
+        const [currentSlide, setCurrentSlide] = useState(0);
+        const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+        // Filter featured/trending/upcoming events (max 5)
+        const featuredEvents = events
+            .filter(e => e.is_featured || e.is_trending || (e.date && new Date(e.date) >= new Date()))
+            .sort((a, b) => {
+                // Priority: featured first, then trending, then by date
+                if (a.is_featured && !b.is_featured) return -1;
+                if (!a.is_featured && b.is_featured) return 1;
+                if (a.is_trending && !b.is_trending) return -1;
+                if (!a.is_trending && b.is_trending) return 1;
+                return new Date(a.date) - new Date(b.date);
+            })
+            .slice(0, 5);
+
+        // Auto-slide every 5 seconds
+        useEffect(() => {
+            if (!isAutoPlaying || featuredEvents.length <= 1) return;
+
+            const interval = setInterval(() => {
+                setCurrentSlide((prev) => (prev + 1) % featuredEvents.length);
+            }, 5000);
+
+            return () => clearInterval(interval);
+        }, [isAutoPlaying, featuredEvents.length]);
+
+        const nextSlide = () => {
+            setCurrentSlide((prev) => (prev + 1) % featuredEvents.length);
+            setIsAutoPlaying(false);
+            setTimeout(() => setIsAutoPlaying(true), 10000);
+        };
+
+        const prevSlide = () => {
+            setCurrentSlide((prev) => (prev - 1 + featuredEvents.length) % featuredEvents.length);
+            setIsAutoPlaying(false);
+            setTimeout(() => setIsAutoPlaying(true), 10000);
+        };
+
+        const goToSlide = (index) => {
+            setCurrentSlide(index);
+            setIsAutoPlaying(false);
+            setTimeout(() => setIsAutoPlaying(true), 10000);
+        };
+
+        if (featuredEvents.length === 0) return null;
+
+        return (
+            <div className="relative mb-8 rounded-3xl overflow-hidden shadow-2xl shadow-purple-500/20">
+                {/* Main Slider Container */}
+                <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+                    {featuredEvents.map((event, index) => (
+                        <div
+                            key={event.id}
+                            className={`absolute inset-0 transition-all duration-700 ease-in-out ${index === currentSlide
+                                    ? 'opacity-100 translate-x-0'
+                                    : index < currentSlide
+                                        ? 'opacity-0 -translate-x-full'
+                                        : 'opacity-0 translate-x-full'
+                                }`}
+                        >
+                            {/* Background Image */}
+                            <div className="absolute inset-0">
+                                <img
+                                    src={event.image}
+                                    alt={event.titleAl}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200';
+                                    }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                            </div>
+
+                            {/* Content */}
+                            <div className="relative z-10 h-full flex items-center">
+                                <div className="max-w-4xl mx-auto px-6 md:px-12 w-full">
+                                    {/* Badges */}
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {event.type && (
+                                            <span className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold rounded-full shadow-lg">
+                                                {event.type}
+                                            </span>
+                                        )}
+                                        {event.is_featured && (
+                                            <span className="px-4 py-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-1">
+                                                ⭐ {t('I Veçantë', 'Featured')}
+                                            </span>
+                                        )}
+                                        {event.is_trending && (
+                                            <span className="px-4 py-1.5 bg-gradient-to-r from-pink-500 to-red-500 text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-1">
+                                                🔥 {t('Trending', 'Trending')}
+                                            </span>
+                                        )}
+                                        {event.is_free && (
+                                            <span className="px-4 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold rounded-full shadow-lg">
+                                                {t('FALAS', 'FREE')}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Title */}
+                                    <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight">
+                                        {language === 'al' ? event.titleAl : (event.titleEn || event.titleAl)}
+                                    </h2>
+
+                                    {/* Event Details */}
+                                    <div className="flex flex-wrap gap-4 md:gap-6 mb-4 text-white/90">
+                                        {(event.dateAl || event.date) && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                                    <Calendar className="w-4 h-4" />
+                                                </div>
+                                                <span className="text-sm md:text-base font-medium">
+                                                    {language === 'al' ? event.dateAl : (event.dateEn || event.dateAl)}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {event.time && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                                    <Clock className="w-4 h-4" />
+                                                </div>
+                                                <span className="text-sm md:text-base font-medium">
+                                                    {event.time}{event.endTime ? ` - ${event.endTime}` : ''}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {event.location && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                                    <MapPin className="w-4 h-4" />
+                                                </div>
+                                                <span className="text-sm md:text-base font-medium">
+                                                    {event.location}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Description Preview */}
+                                    <p className="text-white/80 text-sm md:text-lg mb-6 line-clamp-2 max-w-2xl">
+                                        {language === 'al' ? event.descAl : (event.descEn || event.descAl)}
+                                    </p>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex flex-wrap gap-3">
+                                        <button
+                                            onClick={() => openEvent(event)}
+                                            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold hover:from-purple-500 hover:to-pink-500 transform hover:scale-105 transition-all shadow-lg shadow-purple-500/50 flex items-center gap-2"
+                                        >
+                                            <Eye className="w-5 h-5" />
+                                            {t('Shiko Detajet', 'View Details')}
+                                        </button>
+
+                                        {event.registration_link && (
+                                            <a
+                                                href={event.registration_link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-6 py-3 bg-white text-purple-600 rounded-xl font-bold hover:bg-purple-50 transform hover:scale-105 transition-all shadow-lg flex items-center gap-2"
+                                            >
+                                                <ExternalLink className="w-5 h-5" />
+                                                {t('Regjistrohu', 'Register')}
+                                            </a>
+                                        )}
+
+                                        <button
+                                            onClick={() => openShareModal(event, 'event')}
+                                            className="px-4 py-3 bg-white/20 text-white rounded-xl font-bold hover:bg-white/30 backdrop-blur-sm transition-all flex items-center gap-2 border border-white/30"
+                                        >
+                                            <Share2 className="w-5 h-5" />
+                                            <span className="hidden md:inline">{t('Shpërndaj', 'Share')}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Navigation Arrows */}
+                {featuredEvents.length > 1 && (
+                    <>
+                        <button
+                            onClick={prevSlide}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-lg border border-white/20 transition-all flex items-center justify-center group"
+                            aria-label="Previous slide"
+                        >
+                            <ChevronLeft className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+                        </button>
+                        <button
+                            onClick={nextSlide}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-lg border border-white/20 transition-all flex items-center justify-center group"
+                            aria-label="Next slide"
+                        >
+                            <ChevronRight className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+                        </button>
+                    </>
+                )}
+
+                {/* Dot Indicators */}
+                {featuredEvents.length > 1 && (
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+                        {featuredEvents.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => goToSlide(index)}
+                                className={`transition-all duration-300 rounded-full ${index === currentSlide
+                                        ? 'w-8 h-3 bg-gradient-to-r from-purple-500 to-pink-500'
+                                        : 'w-3 h-3 bg-white/40 hover:bg-white/60'
+                                    }`}
+                                aria-label={`Go to slide ${index + 1}`}
+                            />
+                        ))}
+                    </div>
+                )}
+
+                {/* Progress Bar */}
+                {featuredEvents.length > 1 && isAutoPlaying && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                        <div
+                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all"
+                            style={{
+                                animation: 'progressBar 5s linear infinite',
+                                width: '100%'
+                            }}
+                        />
+                    </div>
+                )}
+
+                <style>{`
+                @keyframes progressBar {
+                    from { transform: scaleX(0); transform-origin: left; }
+                    to { transform: scaleX(1); transform-origin: left; }
+                }
+            `}</style>
+            </div>
+        );
+    };
+
+
+    // Updated EventsPage Component with Hero Slider
     const EventsPage = () => (
         <div className="max-w-7xl mx-auto px-4 py-12">
+            {/* Page Header */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-8">
                 <h1 className={`text-5xl font-bold mb-4 md:mb-0 ${darkMode ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent' : 'text-gray-900'}`}>
                     {t('Evente', 'Events')}
@@ -2532,6 +2792,17 @@ const RinON = () => {
                 </div>
             </div>
 
+            {/* Hero Slider - Shows on BOTH Calendar and List views */}
+            <EventHeroSlider
+                events={otherEvents}
+                language={language}
+                darkMode={darkMode}
+                t={t}
+                openEvent={openEvent}
+                openShareModal={openShareModal}
+            />
+
+            {/* View Mode Content */}
             {eventViewMode === 'calendar' ? (
                 <EventCalendar
                     language={language}
@@ -2541,6 +2812,8 @@ const RinON = () => {
                     editEvent={editEvent}
                     deleteEvent={deleteEvent}
                     t={t}
+                    openShareModal={openShareModal}
+                    openEvent={openEvent}
                 />
             ) : (
                 otherEvents.length === 0 ? (
@@ -2560,7 +2833,8 @@ const RinON = () => {
                         {otherEvents.map((event) => (
                             <div
                                 key={event.id}
-                                className={`backdrop-blur-lg rounded-2xl border hover:border-purple-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
+                                className={`backdrop-blur-lg rounded-2xl border hover:border-purple-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/20 overflow-hidden cursor-pointer ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
+                                onClick={() => openEvent(event)}
                             >
                                 <div className="relative h-48">
                                     <img
@@ -2586,13 +2860,19 @@ const RinON = () => {
                                         {showAdmin && (
                                             <>
                                                 <button
-                                                    onClick={() => editEvent(event)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        editEvent(event);
+                                                    }}
                                                     className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
                                                 >
                                                     <Edit className="h-4 w-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => deleteEvent(event.id)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        deleteEvent(event.id);
+                                                    }}
                                                     className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition z-10 shadow-lg"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -2600,21 +2880,43 @@ const RinON = () => {
                                             </>
                                         )}
                                     </div>
+                                    {/* Badges on cards */}
+                                    <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+                                        {event.is_featured && (
+                                            <span className="px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
+                                                ⭐
+                                            </span>
+                                        )}
+                                        {event.is_trending && (
+                                            <span className="px-2 py-1 bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs font-bold rounded-full">
+                                                🔥
+                                            </span>
+                                        )}
+                                        {event.is_free && (
+                                            <span className="px-2 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold rounded-full">
+                                                {t('FALAS', 'FREE')}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="p-6">
                                     <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-600/30 to-pink-600/30 text-purple-300 text-sm font-semibold rounded-full mb-3 border border-purple-500/30">
                                         {event.type}
                                     </span>
-                                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{language === 'al' ? event.titleAl : event.titleEn}</h3>
+                                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                        {language === 'al' ? event.titleAl : (event.titleEn || event.titleAl)}
+                                    </h3>
                                     <div className={`flex items-center text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                         <Calendar className="w-4 h-4 mr-2" />
-                                        <span>{language === 'al' ? event.dateAl : event.dateEn}</span>
+                                        <span>{language === 'al' ? event.dateAl : (event.dateEn || event.dateAl)}</span>
                                     </div>
                                     <div className={`flex items-center text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                         <MapPin className="w-4 h-4 mr-2" />
                                         <span>{event.location}</span>
                                     </div>
-                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{language === 'al' ? event.descAl : event.descEn}</p>
+                                    <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {language === 'al' ? event.descAl : (event.descEn || event.descAl)}
+                                    </p>
                                 </div>
                             </div>
                         ))}
@@ -4941,7 +5243,171 @@ const RinON = () => {
                     </div>
                 </div>
             )}
+            {/* Event Modal */}
+            {showEventModal && selectedEvent && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className={`rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-2xl ${darkMode ? 'bg-slate-800 border-purple-500/20' : 'bg-white border-gray-200'}`}>
+                        {/* Header Image */}
+                        <div className="relative h-72">
+                            <img
+                                src={selectedEvent.image}
+                                alt={selectedEvent.titleAl}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
+                                }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-800 via-transparent to-transparent" />
+                            <button
+                                onClick={() => {
+                                    setShowEventModal(false);
+                                    window.history.pushState({}, '', '/events');
+                                }}
+                                className="absolute top-4 right-4 bg-slate-900/80 hover:bg-slate-900 p-2 rounded-full backdrop-blur-lg transition-all"
+                            >
+                                <X className="h-6 w-6 text-white" />
+                            </button>
 
+                            {/* Event Type Badge */}
+                            <div className="absolute top-4 left-4 flex gap-2">
+                                {selectedEvent.type && (
+                                    <span className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold rounded-full shadow-lg">
+                                        {selectedEvent.type}
+                                    </span>
+                                )}
+                                {selectedEvent.is_free && (
+                                    <span className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold rounded-full shadow-lg">
+                                        {t('FALAS', 'FREE')}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-8">
+                            <h2 className={`text-4xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {language === 'al' ? selectedEvent.titleAl : (selectedEvent.titleEn || selectedEvent.titleAl)}
+                            </h2>
+
+                            {/* Event Details Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                {/* Date */}
+                                <div className={`flex items-center gap-3 p-4 rounded-xl ${darkMode ? 'bg-purple-600/10 border border-purple-500/30' : 'bg-purple-100 border border-purple-300'}`}>
+                                    <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                                        <Calendar className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Data', 'Date')}</p>
+                                        <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {language === 'al' ? selectedEvent.dateAl : (selectedEvent.dateEn || selectedEvent.dateAl)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Time */}
+                                {selectedEvent.time && (
+                                    <div className={`flex items-center gap-3 p-4 rounded-xl ${darkMode ? 'bg-blue-600/10 border border-blue-500/30' : 'bg-blue-100 border border-blue-300'}`}>
+                                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                                            <Clock className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Ora', 'Time')}</p>
+                                            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {selectedEvent.time}{selectedEvent.endTime ? ` - ${selectedEvent.endTime}` : ''}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Location */}
+                                {selectedEvent.location && (
+                                    <div className={`flex items-center gap-3 p-4 rounded-xl ${darkMode ? 'bg-pink-600/10 border border-pink-500/30' : 'bg-pink-100 border border-pink-300'}`}>
+                                        <div className="w-12 h-12 bg-gradient-to-r from-pink-600 to-orange-600 rounded-full flex items-center justify-center">
+                                            <MapPin className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Vendndodhja', 'Location')}</p>
+                                            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {selectedEvent.location}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Spots Left */}
+                                {selectedEvent.spots_left !== undefined && (
+                                    <div className={`flex items-center gap-3 p-4 rounded-xl ${darkMode ? 'bg-orange-600/10 border border-orange-500/30' : 'bg-orange-100 border border-orange-300'}`}>
+                                        <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-red-600 rounded-full flex items-center justify-center">
+                                            <Users className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Vende', 'Spots')}</p>
+                                            <p className={`font-semibold ${selectedEvent.spots_left < 10 ? 'text-red-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {selectedEvent.spots_left > 0
+                                                    ? `${selectedEvent.spots_left} ${t('të mbetura', 'left')}`
+                                                    : t('MBUSH', 'FULL')
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Description */}
+                            <div className="mb-6">
+                                <h3 className={`text-xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {t('Përshkrimi', 'Description')}
+                                </h3>
+                                <p className={`leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    {language === 'al' ? selectedEvent.descAl : (selectedEvent.descEn || selectedEvent.descAl)}
+                                </p>
+                            </div>
+
+                            {/* Tags */}
+                            {selectedEvent.tags && selectedEvent.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mb-6">
+                                    {selectedEvent.tags.map((tag, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm"
+                                        >
+                                            #{tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="flex flex-wrap gap-4">
+                                {selectedEvent.registration_link && (
+                           <a 
+                                    href = { selectedEvent.registration_link }
+                            target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-1 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all text-center font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-500/50"
+                        >
+                                <ExternalLink className="w-5 h-5" />
+                                {t('Regjistrohu Tani', 'Register Now')}
+                          </a>
+                    )}
+                            <button
+                                onClick={() => {
+                                    openShareModal(selectedEvent, 'event');
+                                }}
+                                className={`px-6 py-4 rounded-xl transition-all font-bold flex items-center justify-center gap-2 ${darkMode
+                                    ? 'bg-slate-700 text-white hover:bg-slate-600 border border-purple-500/30'
+                                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300'
+                                    }`}
+                            >
+                                <Share2 className="w-5 h-5" />
+                                {t('Shpërndaj', 'Share')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+    </div>
+    )
+}
             {showAdmin && (
                 <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
                     <button
