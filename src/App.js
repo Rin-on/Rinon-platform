@@ -1296,9 +1296,19 @@ const RinON = () => {
     const [topicPosts, setTopicPosts] = useState([]);
     const [newPost, setNewPost] = useState('');
 
+    // User Activity Bank - Saved items & history
+    const [showUserActivity, setShowUserActivity] = useState(false);
+    const [savedEvents, setSavedEvents] = useState([]);
+    const [userActivityTab, setUserActivityTab] = useState('saved'); // 'saved', 'history'
+
+    // Native Share Modal
+    const [showNativeShare, setShowNativeShare] = useState(false);
+    const [nativeShareItem, setNativeShareItem] = useState(null);
+
     const [formData, setFormData] = useState({
         titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
+        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false,
+        isDraft: false // NEW: Draft option
     });
 
     const [eventFormData, setEventFormData] = useState({
@@ -1501,6 +1511,10 @@ const RinON = () => {
         if (saved) {
             setSavedArticles(JSON.parse(saved));
         }
+        const savedEvts = localStorage.getItem('rinon_saved_events');
+        if (savedEvts) {
+            setSavedEvents(JSON.parse(savedEvts));
+        }
     }, []);
 
     // Scroll position listener for scroll-to-top button
@@ -1577,6 +1591,56 @@ const RinON = () => {
         }
 
         return filtered;
+    };
+
+    // Native Share function - opens device share sheet
+    const handleNativeShare = async (item, type) => {
+        const title = language === 'al' ? item.titleAl : item.titleEn;
+        const url = `${window.location.origin}/${type}/${item.id}`;
+        const text = type === 'article'
+            ? t('Lexo këtë artikull në RinON', 'Read this article on RinON')
+            : t('Shiko këtë event në RinON', 'Check out this event on RinON');
+
+        // Check if native share is supported
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: title,
+                    text: text,
+                    url: url
+                });
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    // If share was cancelled, don't show error
+                    console.log('Share failed:', err);
+                }
+            }
+        } else {
+            // Fallback: show custom share modal
+            setNativeShareItem({ item, type, url, title });
+            setShowNativeShare(true);
+        }
+    };
+
+    // Save/Unsave event handler
+    const toggleSaveEvent = (eventId) => {
+        setSavedEvents(prev => {
+            const newSaved = prev.includes(eventId)
+                ? prev.filter(id => id !== eventId)
+                : [...prev, eventId];
+            localStorage.setItem('rinon_saved_events', JSON.stringify(newSaved));
+            return newSaved;
+        });
+    };
+
+    // Get saved articles with full data
+    const getSavedArticlesData = () => {
+        return articles.filter(a => savedArticles.includes(a.id));
+    };
+
+    // Get saved events with full data
+    const getSavedEventsData = () => {
+        return otherEvents.filter(e => savedEvents.includes(e.id));
     };
 
     useEffect(() => {
@@ -2037,7 +2101,7 @@ const RinON = () => {
         setShowAddMemberForm(true);
     };
 
-    const handleSubmitArticle = async () => {
+    const handleSubmitArticle = async (saveAsDraft = false) => {
         if (!formData.titleAl || !formData.contentAl) {
             alert(t('Ju lutem plotësoni fushat e detyrueshme në shqip', 'Please fill in required Albanian fields'));
             return;
@@ -2069,7 +2133,8 @@ const RinON = () => {
                 image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`,
                 source: validateInput.sanitizeHtml(formData.source),
                 featured: formData.featured,
-                author_id: user?.id
+                author_id: user?.id,
+                is_draft: saveAsDraft // NEW: Draft status
             };
 
             let error;
@@ -2084,13 +2149,18 @@ const RinON = () => {
             loadArticles();
             setFormData({
                 titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
+                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false, isDraft: false
             });
             setShowAddForm(false);
             setEditMode(false);
             setEditingItem(null);
-            alert(t(editMode ? 'Artikulli u përditësua me sukses!' : 'Artikulli u publikua me sukses!',
-                editMode ? 'Article updated successfully!' : 'Article published successfully!'));
+
+            if (saveAsDraft) {
+                alert(t('Artikulli u ruajt si draft!', 'Article saved as draft!'));
+            } else {
+                alert(t(editMode ? 'Artikulli u përditësua me sukses!' : 'Artikulli u publikua me sukses!',
+                    editMode ? 'Article updated successfully!' : 'Article published successfully!'));
+            }
         } catch (err) {
             alert(handleError(err, 'handleSubmitArticle'));
         }
@@ -4019,7 +4089,8 @@ const RinON = () => {
                 HORIZONTAL CATEGORY PILLS - Mobile
                 Scrollable category filter below header
                ========================================== */}
-            {(currentPage === 'home' || currentPage === 'events') && (
+            {/* Horizontal Category Pills - Only on Home Page */}
+            {currentPage === 'home' && (
                 <div className={`sticky top-[88px] md:top-[96px] z-40 border-b backdrop-blur-xl transition-colors duration-300 ${darkMode
                         ? 'bg-[#2D2A26]/95 border-amber-500/10'
                         : 'bg-white/95 border-amber-100'
@@ -4157,10 +4228,17 @@ const RinON = () => {
                                 <span>{t('Artikull i veçantë', 'Featured article')}</span>
                             </label>
                             <div className="flex gap-3 pt-4">
-                                <button onClick={() => { setShowAddForm(false); setEditMode(false); setEditingItem(null); }} className="flex-1 px-4 py-3 border border-[#3D3A36] rounded-xl text-gray-400 hover:border-[#4D4A46] transition-all">
+                                <button onClick={() => { setShowAddForm(false); setEditMode(false); setEditingItem(null); }} className="px-4 py-3 border border-[#3D3A36] rounded-xl text-gray-400 hover:border-[#4D4A46] transition-all">
                                     {t('Anulo', 'Cancel')}
                                 </button>
-                                <button onClick={handleSubmitArticle} className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50">
+                                <button
+                                    onClick={() => handleSubmitArticle(true)}
+                                    className="flex-1 px-4 py-3 border border-amber-500/30 text-amber-400 rounded-xl hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    {t('Ruaj Draft', 'Save Draft')}
+                                </button>
+                                <button onClick={() => handleSubmitArticle(false)} className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50">
                                     {editMode ? t('Përditëso', 'Update') : t('Publiko', 'Publish')}
                                 </button>
                             </div>
@@ -4972,213 +5050,148 @@ const RinON = () => {
                 </div>
             )}
             {mobileMenuOpen && (
-                <div className="md:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)}>
+                <div className="md:hidden fixed inset-0 z-50" onClick={() => setMobileMenuOpen(false)}>
+                    {/* Elegant backdrop */}
+                    <div className={`absolute inset-0 ${darkMode ? 'bg-black/60' : 'bg-black/40'} backdrop-blur-sm`} />
+
+                    {/* Minimalist slide-in panel */}
                     <div
-                        className={`absolute top-0 right-0 h-full w-80 max-w-[85vw] transition-transform duration-300 ease-out border-l shadow-2xl overflow-y-auto ${darkMode
-                            ? 'bg-[#2D2A26] border-amber-500/20'
-                            : 'bg-white border-amber-200'
+                        className={`absolute top-0 right-0 h-full w-72 flex flex-col transition-transform duration-300 ease-out ${darkMode ? 'bg-[#1a1918]' : 'bg-[#FEFDFB]'
                             }`}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className={`flex items-center justify-between p-4 border-b ${darkMode ? 'border-amber-500/20' : 'border-amber-200'}`}>
-                            <div className="flex items-center gap-3">
-                                <img
-                                    src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png"
-                                    alt="RinON Logo"
-                                    className="w-10 h-10 object-contain"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextElementSibling.style.display = 'flex';
-                                    }}
-                                />
-                                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full hidden items-center justify-center shadow-lg shadow-amber-500/50">
-                                    <span className="text-white font-bold text-xl">R</span>
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">RinON</h2>
-                                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Menu</p>
-                                </div>
-                            </div>
+                        {/* Clean header */}
+                        <div className="flex items-center justify-between p-6 flex-shrink-0">
+                            <span className={`text-sm font-light tracking-widest uppercase ${darkMode ? 'text-gray-500' : 'text-gray-400'
+                                }`}>
+                                Menu
+                            </span>
                             <button
                                 onClick={() => setMobileMenuOpen(false)}
-                                className={`p-2 rounded-lg transition-all ${darkMode ? 'hover:bg-amber-500/20' : 'hover:bg-amber-50'}`}
+                                className={`p-2 -mr-2 rounded-full transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'
+                                    }`}
                             >
-                                <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                                <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
                             </button>
                         </div>
 
-                        <nav className="flex flex-col p-4 space-y-2">
-                            <button
-                                onClick={() => { changePage('home'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'home'
-                                    ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-amber-500/20 hover:text-amber-500'
-                                        : 'text-gray-600 hover:bg-amber-50 hover:text-amber-600'
-                                    }`}
-                            >
-                                {t('Lajme', 'News')}
-                            </button>
-                            <button
-                                onClick={() => { changePage('events'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'events'
-                                    ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-amber-500/20 hover:text-amber-500'
-                                        : 'text-gray-600 hover:bg-amber-50 hover:text-amber-600'
-                                    }`}
-                            >
-                                {t('Evente', 'Events')}
-                            </button>
-                            <button
-                                onClick={() => { changePage('schools'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentPage === 'schools' || currentPage === 'school-portal'
-                                    ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-amber-500/20 hover:text-amber-500'
-                                        : 'text-gray-600 hover:bg-amber-50 hover:text-amber-600'
-                                    }`}
-                            >
-                                <School className="w-4 h-4" />
-                                {t('Shkollat', 'Schools')}
-                            </button>
-                            <button
-                                onClick={() => { changePage('partners'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentPage === 'partners'
-                                    ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-amber-500/20 hover:text-amber-500'
-                                        : 'text-gray-600 hover:bg-amber-50 hover:text-amber-600'
-                                    }`}
-                            >
-                                <Users className="w-4 h-4" />
-                                {t('Bashkëpunime', 'Cooperations')}
-                            </button>
-                            <button
-                                onClick={() => { changePage('discussion'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all flex items-center gap-2 ${currentPage === 'discussion'
-                                    ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-amber-500/20 hover:text-amber-500'
-                                        : 'text-gray-600 hover:bg-amber-50 hover:text-amber-600'
-                                    }`}
-                            >
-                                <MessageCircle className="w-4 h-4" />
-                                {t('Bisedim', 'Discussion')}
-                            </button>
-                            <button
-                                onClick={() => { changePage('about'); setMobileMenuOpen(false); }}
-                                className={`text-left px-4 py-3 rounded-lg font-medium transition-all ${currentPage === 'about'
-                                    ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white'
-                                    : darkMode
-                                        ? 'text-gray-400 hover:bg-amber-500/20 hover:text-amber-500'
-                                        : 'text-gray-600 hover:bg-amber-50 hover:text-amber-600'
-                                    }`}
-                            >
-                                {t('Rreth Nesh', 'About')}
-                            </button>
+                        {/* Navigation - Scrollable area */}
+                        <div className="flex-1 overflow-y-auto">
+                            <nav className="px-6 py-2">
+                                <div className="space-y-1">
+                                    {[
+                                        { page: 'home', label: t('Lajme', 'News') },
+                                        { page: 'events', label: t('Evente', 'Events') },
+                                        { page: 'schools', label: t('Shkollat', 'Schools') },
+                                        { page: 'partners', label: t('Bashkëpunime', 'Partners') },
+                                        { page: 'discussion', label: t('Forum', 'Forum') },
+                                        { page: 'about', label: t('Rreth Nesh', 'About') },
+                                    ].map(({ page, label }) => (
+                                        <button
+                                            key={page}
+                                            onClick={() => { changePage(page); setMobileMenuOpen(false); }}
+                                            className={`block w-full text-left py-3 text-lg transition-colors ${currentPage === page || (page === 'schools' && currentPage === 'school-portal')
+                                                    ? 'text-amber-500 font-medium'
+                                                    : darkMode
+                                                        ? 'text-gray-300 hover:text-white'
+                                                        : 'text-gray-600 hover:text-gray-900'
+                                                }`}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </nav>
 
-                            <div className={`border-t pt-4 mt-4 space-y-3 ${darkMode ? 'border-amber-500/20' : 'border-amber-200'}`}>
-                                {user && (
-                                    <div className={`px-4 py-3 rounded-lg ${darkMode ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="w-8 h-8 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center">
-                                                <span className="text-white text-sm font-bold">
-                                                    {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <p className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                    {userProfile?.display_name || 'Admin'}
-                                                </p>
-                                                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                    {user.email}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                            {/* Saved Items Button - for logged in users */}
+                            {user && (
+                                <div className="px-6 py-2">
+                                    <button
+                                        onClick={() => { setShowUserActivity(true); setMobileMenuOpen(false); }}
+                                        className={`w-full flex items-center gap-3 py-3 text-left transition-colors ${darkMode ? 'text-amber-400 hover:text-amber-300' : 'text-amber-600 hover:text-amber-700'
+                                            }`}
+                                    >
+                                        <Bookmark className="w-5 h-5" />
+                                        <span className="text-lg">{t('Të ruajturat', 'Saved Items')}</span>
+                                        {(savedArticles.length + savedEvents.length) > 0 && (
+                                            <span className={`ml-auto px-2 py-0.5 text-xs rounded-full ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'
+                                                }`}>
+                                                {savedArticles.length + savedEvents.length}
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
+                            )}
 
-                                <div className="flex items-center justify-between px-4">
-                                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {t('Gjuha', 'Language')}
-                                    </span>
+                            {/* Subtle divider */}
+                            <div className={`mx-6 my-2 border-t ${darkMode ? 'border-white/10' : 'border-black/5'}`} />
+
+                            {/* Settings - Compact */}
+                            <div className="px-6 py-4">
+                                <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${darkMode
-                                            ? 'bg-white/10 border-white/20 hover:bg-white/20'
-                                            : 'bg-amber-50 border-amber-200 hover:bg-[#FFE5D9]'
+                                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-colors ${darkMode
+                                                ? 'bg-white/5 hover:bg-white/10 text-gray-300'
+                                                : 'bg-black/5 hover:bg-black/10 text-gray-600'
                                             }`}
                                     >
-                                        <Globe className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-amber-600'}`} />
-                                        <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-amber-600'}`}>
-                                            {language === 'al' ? 'AL' : 'EN'}
-                                        </span>
+                                        <Globe className="w-4 h-4" />
+                                        <span className="text-sm">{language === 'al' ? 'EN' : 'AL'}</span>
                                     </button>
-                                </div>
-
-                                <div className="flex items-center justify-between px-4">
-                                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {t('Modaliteti', 'Mode')}
-                                    </span>
                                     <button
                                         onClick={() => setDarkMode(!darkMode)}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${darkMode
-                                            ? 'bg-white/10 border-white/20 hover:bg-white/20'
-                                            : 'bg-amber-50 border-amber-200 hover:bg-[#FFE5D9]'
+                                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-colors ${darkMode
+                                                ? 'bg-white/5 hover:bg-white/10 text-gray-300'
+                                                : 'bg-black/5 hover:bg-black/10 text-gray-600'
                                             }`}
                                     >
-                                        {darkMode ? <Sun className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-amber-600'}`} /> : <Moon className={`w-4 h-4 ${darkMode ? 'text-white' : 'text-amber-600'}`} />}
-                                        <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-amber-600'}`}>
-                                            {darkMode ? t('Dritë', 'Light') : t('Errët', 'Dark')}
-                                        </span>
+                                        {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                                        <span className="text-sm">{darkMode ? t('Dritë', 'Light') : t('Errët', 'Dark')}</span>
                                     </button>
                                 </div>
+                            </div>
+                        </div>
 
-                                {user && (
+                        {/* Bottom section - Fixed at bottom */}
+                        <div className={`p-6 flex-shrink-0 border-t ${darkMode ? 'border-white/5' : 'border-black/5'}`}>
+                            {user ? (
+                                <div className="space-y-3">
+                                    <div className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-white/5' : 'bg-black/5'
+                                        }`}>
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-white font-medium">
+                                                {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`text-sm font-medium truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {userProfile?.display_name || 'User'}
+                                            </p>
+                                            <p className={`text-xs truncate ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                {user.email}
+                                            </p>
+                                        </div>
+                                    </div>
                                     <button
-                                        onClick={() => {
-                                            setShowPreferences(true);
-                                            setMobileMenuOpen(false);
-                                        }}
-                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg border transition-all ${darkMode
-                                            ? 'bg-amber-500/20 border-amber-500/50 hover:bg-amber-500/30'
-                                            : 'bg-amber-50 border-amber-200 hover:bg-[#FFE5D9]'
+                                        onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                                        className={`w-full py-2.5 text-sm font-medium rounded-xl transition-colors ${darkMode
+                                                ? 'text-red-400 hover:bg-red-500/10'
+                                                : 'text-red-500 hover:bg-red-50'
                                             }`}
                                     >
-                                        <span className={`text-sm ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>
-                                            {t('Preferencat', 'Preferences')}
-                                        </span>
-                                        <Settings className={`w-4 h-4 ${darkMode ? 'text-amber-400' : 'text-amber-700'}`} />
+                                        {t('Dil nga llogaria', 'Sign out')}
                                     </button>
-                                )}
-
-                                {user ? (
-                                    <button
-                                        onClick={() => {
-                                            handleLogout();
-                                            setMobileMenuOpen(false);
-                                        }}
-                                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-[#FF6B6B] to-[#FF5252] text-white rounded-xl hover:from-[#FF5252] hover:to-[#FF4040] transition-all"
-                                    >
-                                        <LogOut className="w-4 h-4" />
-                                        <span className="font-medium">{t('Dil', 'Logout')}</span>
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={() => {
-                                            setShowAuthModal(true);
-                                            setAuthMode('login');
-                                            setMobileMenuOpen(false);
-                                        }}
-                                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all"
-                                    >
-                                        <LogIn className="w-4 h-4" />
-                                        <span className="font-medium">{t('Hyr', 'Login')}</span>
-                                    </button>
-                                )}
-                            </div>
-                        </nav>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => { setShowAuthModal(true); setAuthMode('login'); setMobileMenuOpen(false); }}
+                                    className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all"
+                                >
+                                    {t('Hyr në llogari', 'Sign in')}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -5215,6 +5228,264 @@ const RinON = () => {
                 darkMode={darkMode}
                 t={t}
             />
+
+            {/* ==========================================
+                USER ACTIVITY BANK - Saved Articles & Events
+               ========================================== */}
+            {showUserActivity && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowUserActivity(false)}>
+                    <div className={`absolute inset-0 ${darkMode ? 'bg-black/70' : 'bg-black/50'} backdrop-blur-sm`} />
+                    <div
+                        className={`relative w-full max-w-lg max-h-[80vh] overflow-hidden rounded-2xl ${darkMode ? 'bg-[#1a1918]' : 'bg-white'
+                            }`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className={`flex items-center justify-between p-5 border-b ${darkMode ? 'border-white/10' : 'border-gray-100'
+                            }`}>
+                            <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {t('Të Ruajturat e Mia', 'My Saved Items')}
+                            </h2>
+                            <button
+                                onClick={() => setShowUserActivity(false)}
+                                className={`p-2 rounded-full ${darkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
+                            >
+                                <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                            </button>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className={`flex border-b ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
+                            <button
+                                onClick={() => setUserActivityTab('saved')}
+                                className={`flex-1 py-3 text-sm font-medium transition-colors ${userActivityTab === 'saved'
+                                        ? 'text-amber-500 border-b-2 border-amber-500'
+                                        : darkMode ? 'text-gray-400' : 'text-gray-500'
+                                    }`}
+                            >
+                                {t('Artikuj', 'Articles')} ({savedArticles.length})
+                            </button>
+                            <button
+                                onClick={() => setUserActivityTab('events')}
+                                className={`flex-1 py-3 text-sm font-medium transition-colors ${userActivityTab === 'events'
+                                        ? 'text-amber-500 border-b-2 border-amber-500'
+                                        : darkMode ? 'text-gray-400' : 'text-gray-500'
+                                    }`}
+                            >
+                                {t('Evente', 'Events')} ({savedEvents.length})
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="overflow-y-auto max-h-[50vh] p-4">
+                            {userActivityTab === 'saved' ? (
+                                getSavedArticlesData().length > 0 ? (
+                                    <div className="space-y-3">
+                                        {getSavedArticlesData().map(article => (
+                                            <div
+                                                key={article.id}
+                                                className={`flex gap-3 p-3 rounded-xl cursor-pointer transition-colors ${darkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-50 hover:bg-gray-100'
+                                                    }`}
+                                                onClick={() => { openArticle(article); setShowUserActivity(false); }}
+                                            >
+                                                <img
+                                                    src={article.image}
+                                                    alt={article.titleAl}
+                                                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className={`font-medium text-sm line-clamp-2 ${darkMode ? 'text-white' : 'text-gray-900'
+                                                        }`}>
+                                                        {language === 'al' ? article.titleAl : article.titleEn}
+                                                    </h4>
+                                                    <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                        {article.category}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); toggleSaveArticle(article.id); }}
+                                                    className="p-2 text-amber-500"
+                                                >
+                                                    <BookmarkCheck className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-10">
+                                        <Bookmark className={`w-12 h-12 mx-auto mb-3 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
+                                        <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            {t('Nuk ke artikuj të ruajtur', 'No saved articles yet')}
+                                        </p>
+                                    </div>
+                                )
+                            ) : (
+                                getSavedEventsData().length > 0 ? (
+                                    <div className="space-y-3">
+                                        {getSavedEventsData().map(event => (
+                                            <div
+                                                key={event.id}
+                                                className={`flex gap-3 p-3 rounded-xl cursor-pointer transition-colors ${darkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-50 hover:bg-gray-100'
+                                                    }`}
+                                            >
+                                                <div className={`w-16 h-16 rounded-xl flex flex-col items-center justify-center flex-shrink-0 ${darkMode ? 'bg-amber-500/20' : 'bg-amber-100'
+                                                    }`}>
+                                                    <Calendar className="w-5 h-5 text-amber-500" />
+                                                    <span className={`text-xs font-medium mt-1 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                                                        {event.date?.slice(5, 10)}
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className={`font-medium text-sm line-clamp-2 ${darkMode ? 'text-white' : 'text-gray-900'
+                                                        }`}>
+                                                        {language === 'al' ? event.titleAl : event.titleEn}
+                                                    </h4>
+                                                    <p className={`text-xs mt-1 flex items-center gap-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                        <MapPin className="w-3 h-3" />
+                                                        {event.location}
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); toggleSaveEvent(event.id); }}
+                                                    className="p-2 text-amber-500"
+                                                >
+                                                    <BookmarkCheck className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-10">
+                                        <Calendar className={`w-12 h-12 mx-auto mb-3 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
+                                        <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            {t('Nuk ke evente të ruajtura', 'No saved events yet')}
+                                        </p>
+                                    </div>
+                                )
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ==========================================
+                NATIVE SHARE MODAL - WhatsApp, Snapchat, etc.
+               ========================================== */}
+            {showNativeShare && nativeShareItem && (
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowNativeShare(false)}>
+                    <div className={`absolute inset-0 ${darkMode ? 'bg-black/70' : 'bg-black/50'}`} />
+                    <div
+                        className={`relative w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden ${darkMode ? 'bg-[#1a1918]' : 'bg-white'
+                            }`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-center pt-3 pb-1">
+                            <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-white/20' : 'bg-gray-300'}`} />
+                        </div>
+                        <div className="p-5 pt-2 text-center">
+                            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {t('Shpërndaj', 'Share')}
+                            </h3>
+                            <p className={`text-sm mt-1 line-clamp-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {nativeShareItem.title}
+                            </p>
+                        </div>
+
+                        {/* Share Options - For Everyone */}
+                        <div className="px-5 pb-4">
+                            <div className="grid grid-cols-4 gap-4">
+                                {/* WhatsApp */}
+                                <a
+                                    href={`https://wa.me/?text=${encodeURIComponent(nativeShareItem.title + ' ' + nativeShareItem.url)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex flex-col items-center gap-2"
+                                >
+                                    <div className="w-14 h-14 rounded-2xl bg-green-500 flex items-center justify-center">
+                                        <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                        </svg>
+                                    </div>
+                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>WhatsApp</span>
+                                </a>
+
+                                {/* Telegram */}
+                                <a
+                                    href={`https://t.me/share/url?url=${encodeURIComponent(nativeShareItem.url)}&text=${encodeURIComponent(nativeShareItem.title)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex flex-col items-center gap-2"
+                                >
+                                    <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center">
+                                        <Send className="w-6 h-6 text-white" />
+                                    </div>
+                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Telegram</span>
+                                </a>
+
+                                {/* Twitter/X */}
+                                <a
+                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(nativeShareItem.title)}&url=${encodeURIComponent(nativeShareItem.url)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex flex-col items-center gap-2"
+                                >
+                                    <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center">
+                                        <span className="text-white font-bold text-xl">𝕏</span>
+                                    </div>
+                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>X</span>
+                                </a>
+
+                                {/* Copy Link */}
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(nativeShareItem.url);
+                                        alert(t('Linku u kopjua!', 'Link copied!'));
+                                    }}
+                                    className="flex flex-col items-center gap-2"
+                                >
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-white/10' : 'bg-gray-100'
+                                        }`}>
+                                        <Copy className={`w-6 h-6 ${darkMode ? 'text-white' : 'text-gray-700'}`} />
+                                    </div>
+                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Kopjo', 'Copy')}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Instagram Share - Admin Only */}
+                        {userProfile?.is_admin && (
+                            <>
+                                <div className={`mx-5 border-t ${darkMode ? 'border-white/10' : 'border-gray-100'}`} />
+                                <div className="p-5">
+                                    <p className={`text-xs font-medium mb-3 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                        {t('Vetëm për Admin - Shpërndaj në Instagram', 'Admin Only - Share to Instagram')}
+                                    </p>
+                                    <button
+                                        onClick={() => openShareModal(nativeShareItem.item, nativeShareItem.type)}
+                                        className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white font-medium flex items-center justify-center gap-2"
+                                    >
+                                        <Instagram className="w-5 h-5" />
+                                        {t('Krijo Post për Instagram', 'Create Instagram Post')}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Cancel */}
+                        <div className="p-5 pt-0">
+                            <button
+                                onClick={() => setShowNativeShare(false)}
+                                className={`w-full py-3 rounded-xl font-medium ${darkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-100 text-gray-700'
+                                    }`}
+                            >
+                                {t('Anulo', 'Cancel')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <style>{`
         @keyframes fadeIn {
           from { 
@@ -5403,36 +5674,6 @@ const RinON = () => {
                                 </div>
                             </div>
                         )}
-
-                        <div className={`backdrop-blur-lg border-b sticky top-[72px] z-40 transition-colors duration-300 ${darkMode
-                            ? 'bg-[#2D2A26]/80 border-amber-500/20'
-                            : 'bg-white/80 border-amber-200'
-                            }`}>
-                            <div className="max-w-7xl mx-auto px-4 py-4">
-                                <div className="flex items-center space-x-2 overflow-x-auto">
-                                    {categories.map((cat) => {
-                                        const Icon = cat.icon;
-                                        const catName = language === 'al' ? cat.al : cat.en;
-                                        const isActive = activeCategory === cat.al || activeCategory === cat.en;
-                                        return (
-                                            <button
-                                                key={cat.al}
-                                                onClick={() => setActiveCategory(catName)}
-                                                className={`flex items-center space-x-2 px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all transform hover:scale-105 ${isActive
-                                                    ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/50'
-                                                    : darkMode
-                                                        ? 'bg-[#3D3A36]/50 text-gray-400 hover:bg-[#3D3A36] border border-amber-500/30'
-                                                        : 'bg-amber-50 text-amber-700 hover:bg-[#FFE5D9] border border-amber-200'
-                                                    }`}
-                                            >
-                                                <Icon className="h-4 w-4" />
-                                                <span>{catName}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
 
                         {/* ==========================================
                             QUICK CTA CARDS - Mobile Swipeable
@@ -5636,7 +5877,7 @@ const RinON = () => {
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            openShareModal(article, 'article');
+                                                            handleNativeShare(article, 'article');
                                                         }}
                                                         className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
                                                         title={t('Shpërndaj', 'Share')}
@@ -5998,73 +6239,85 @@ const RinON = () => {
 
             {/* ==========================================
                 MOBILE BOTTOM NAVIGATION BAR
-                Instagram/TikTok style - always visible on mobile
+                Clean, elevated design with larger touch targets
                ========================================== */}
-            <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-xl transition-colors duration-300 ${darkMode
-                    ? 'bg-[#2D2A26]/95 border-amber-500/20'
-                    : 'bg-white/95 border-amber-200'
+            <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 transition-colors duration-300 ${darkMode
+                    ? 'bg-[#1a1918]'
+                    : 'bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
                 }`}>
-                <div className="flex items-center justify-around py-2 px-2 safe-area-inset-bottom">
+                <div className="flex items-center justify-around px-4 pt-3 pb-6">
                     {/* Home/News */}
                     <button
                         onClick={() => changePage('home')}
-                        className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all min-w-[60px] ${currentPage === 'home'
-                                ? 'text-amber-500 bg-amber-500/10'
+                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'home'
+                                ? darkMode
+                                    ? 'text-amber-400'
+                                    : 'text-amber-600'
                                 : darkMode
-                                    ? 'text-gray-400 hover:text-amber-500 hover:bg-amber-500/10'
-                                    : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50'
+                                    ? 'text-gray-500 active:text-gray-300'
+                                    : 'text-gray-400 active:text-gray-600'
                             }`}
                     >
-                        <Newspaper className={`w-6 h-6 ${currentPage === 'home' ? 'fill-amber-500/20' : ''}`} />
-                        <span className="text-[10px] font-medium mt-1">{t('Lajme', 'News')}</span>
+                        <Newspaper className={`w-6 h-6 mb-1 ${currentPage === 'home' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[11px] ${currentPage === 'home' ? 'font-semibold' : 'font-normal'}`}>
+                            {t('Lajme', 'News')}
+                        </span>
                     </button>
 
-                    {/* Events - Center highlight */}
+                    {/* Events - Elevated center button */}
                     <button
                         onClick={() => changePage('events')}
-                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-2xl transition-all transform min-w-[70px] ${currentPage === 'events'
-                                ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white scale-105 shadow-lg shadow-amber-500/30'
+                        className={`flex flex-col items-center justify-center min-w-[72px] min-h-[56px] -mt-4 rounded-2xl transition-all active:scale-95 ${currentPage === 'events'
+                                ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/30'
                                 : darkMode
-                                    ? 'text-gray-400 hover:text-amber-500 bg-[#3D3A36] hover:bg-amber-500/20'
-                                    : 'text-gray-500 hover:text-amber-600 bg-gray-100 hover:bg-amber-50'
+                                    ? 'bg-[#2a2826] text-gray-400 active:bg-[#3a3836]'
+                                    : 'bg-gray-100 text-gray-500 active:bg-gray-200'
                             }`}
                     >
-                        <Calendar className={`w-6 h-6`} />
-                        <span className="text-[10px] font-semibold mt-1">{t('Evente', 'Events')}</span>
+                        <Calendar className={`w-6 h-6 mb-1 ${currentPage === 'events' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[11px] ${currentPage === 'events' ? 'font-semibold' : 'font-normal'}`}>
+                            {t('Evente', 'Events')}
+                        </span>
                     </button>
 
-                    {/* Discussion */}
+                    {/* Forum */}
                     <button
                         onClick={() => changePage('discussion')}
-                        className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all min-w-[60px] ${currentPage === 'discussion'
-                                ? 'text-amber-500 bg-amber-500/10'
+                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'discussion'
+                                ? darkMode
+                                    ? 'text-amber-400'
+                                    : 'text-amber-600'
                                 : darkMode
-                                    ? 'text-gray-400 hover:text-amber-500 hover:bg-amber-500/10'
-                                    : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50'
+                                    ? 'text-gray-500 active:text-gray-300'
+                                    : 'text-gray-400 active:text-gray-600'
                             }`}
                     >
-                        <MessageCircle className={`w-6 h-6 ${currentPage === 'discussion' ? 'fill-amber-500/20' : ''}`} />
-                        <span className="text-[10px] font-medium mt-1">{t('Forum', 'Forum')}</span>
+                        <MessageCircle className={`w-6 h-6 mb-1 ${currentPage === 'discussion' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[11px] ${currentPage === 'discussion' ? 'font-semibold' : 'font-normal'}`}>
+                            {t('Forum', 'Forum')}
+                        </span>
                     </button>
 
                     {/* Profile/Account */}
                     <button
                         onClick={() => user ? setShowPreferences(true) : (setShowAuthModal(true), setAuthMode('login'))}
-                        className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all min-w-[60px] ${darkMode
-                                ? 'text-gray-400 hover:text-amber-500 hover:bg-amber-500/10'
-                                : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50'
+                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${darkMode
+                                ? 'text-gray-500 active:text-gray-300'
+                                : 'text-gray-400 active:text-gray-600'
                             }`}
                     >
                         {user ? (
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center">
-                                <span className="text-white text-xs font-bold">
+                            <div className="w-7 h-7 mb-1 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center ring-2 ring-offset-2 ring-offset-transparent ring-amber-400/30">
+                                <span className="text-white text-xs font-semibold">
                                     {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                                 </span>
                             </div>
                         ) : (
-                            <User className="w-6 h-6" />
+                            <User className="w-6 h-6 mb-1 stroke-[1.5px]" />
                         )}
-                        <span className="text-[10px] font-medium mt-1">{user ? t('Profili', 'Profile') : t('Hyr', 'Login')}</span>
+                        <span className="text-[11px] font-normal">
+                            {user ? t('Profili', 'Profile') : t('Hyr', 'Login')}
+                        </span>
                     </button>
                 </div>
             </nav>
@@ -6073,7 +6326,7 @@ const RinON = () => {
                 FLOATING ACTION BUTTON (FAB) - Mobile Settings
                 Quick access to language, dark mode, etc.
                ========================================== */}
-            <div className="md:hidden fixed bottom-20 right-4 z-50">
+            <div className="md:hidden fixed bottom-24 right-4 z-50">
                 {/* FAB Menu Items */}
                 <div className={`absolute bottom-14 right-0 flex flex-col gap-2 transition-all duration-300 ${fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
                     }`}>
