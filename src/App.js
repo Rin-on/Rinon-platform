@@ -1305,10 +1305,14 @@ const RinON = () => {
     const [showNativeShare, setShowNativeShare] = useState(false);
     const [nativeShareItem, setNativeShareItem] = useState(null);
 
+    // Drafts System
+    const [drafts, setDrafts] = useState([]);
+    const [showDraftsModal, setShowDraftsModal] = useState(false);
+    const [editingDraftId, setEditingDraftId] = useState(null);
+
     const [formData, setFormData] = useState({
         titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false,
-        isDraft: false // NEW: Draft option
+        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
     });
 
     const [eventFormData, setEventFormData] = useState({
@@ -1515,6 +1519,8 @@ const RinON = () => {
         if (savedEvts) {
             setSavedEvents(JSON.parse(savedEvts));
         }
+        // Load drafts
+        loadDrafts();
     }, []);
 
     // Scroll position listener for scroll-to-top button
@@ -1539,6 +1545,109 @@ const RinON = () => {
             loadEvents(),
         ]);
         setTimeout(() => setIsRefreshing(false), 1000);
+    };
+
+    // ==========================================
+    // DRAFTS MANAGEMENT SYSTEM
+    // ==========================================
+
+    // Load drafts from localStorage
+    const loadDrafts = () => {
+        const savedDrafts = localStorage.getItem('rinon_drafts');
+        if (savedDrafts) {
+            setDrafts(JSON.parse(savedDrafts));
+        }
+    };
+
+    // Save draft to localStorage
+    const saveDraft = () => {
+        if (!formData.titleAl && !formData.contentAl) {
+            alert(t('Shkruaj diçka para se ta ruash si draft', 'Write something before saving as draft'));
+            return;
+        }
+
+        const newDraft = {
+            id: editingDraftId || Date.now().toString(),
+            titleAl: formData.titleAl,
+            titleEn: formData.titleEn,
+            contentAl: formData.contentAl,
+            contentEn: formData.contentEn,
+            category: formData.category,
+            image: formData.image,
+            source: formData.source,
+            featured: formData.featured,
+            createdAt: editingDraftId ? drafts.find(d => d.id === editingDraftId)?.createdAt : new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        setDrafts(prev => {
+            let updated;
+            if (editingDraftId) {
+                // Update existing draft
+                updated = prev.map(d => d.id === editingDraftId ? newDraft : d);
+            } else {
+                // Add new draft
+                updated = [newDraft, ...prev];
+            }
+            localStorage.setItem('rinon_drafts', JSON.stringify(updated));
+            return updated;
+        });
+
+        // Reset form
+        setFormData({
+            titleAl: '', titleEn: '', contentAl: '', contentEn: '',
+            category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
+        });
+        setEditingDraftId(null);
+        setShowAddForm(false);
+        alert(t('Draft u ruajt me sukses!', 'Draft saved successfully!'));
+    };
+
+    // Load draft into form for editing
+    const editDraft = (draft) => {
+        setFormData({
+            titleAl: draft.titleAl || '',
+            titleEn: draft.titleEn || '',
+            contentAl: draft.contentAl || '',
+            contentEn: draft.contentEn || '',
+            category: draft.category || 'Sport dhe Kulturë',
+            image: draft.image || '',
+            imageFile: null,
+            source: draft.source || '',
+            featured: draft.featured || false
+        });
+        setEditingDraftId(draft.id);
+        setShowDraftsModal(false);
+        setShowAddForm(true);
+    };
+
+    // Delete draft
+    const deleteDraft = (draftId) => {
+        if (window.confirm(t('Je i sigurt që dëshiron ta fshish këtë draft?', 'Are you sure you want to delete this draft?'))) {
+            setDrafts(prev => {
+                const updated = prev.filter(d => d.id !== draftId);
+                localStorage.setItem('rinon_drafts', JSON.stringify(updated));
+                return updated;
+            });
+        }
+    };
+
+    // Publish draft (convert to article)
+    const publishDraft = async (draft) => {
+        setFormData({
+            titleAl: draft.titleAl || '',
+            titleEn: draft.titleEn || '',
+            contentAl: draft.contentAl || '',
+            contentEn: draft.contentEn || '',
+            category: draft.category || 'Sport dhe Kulturë',
+            image: draft.image || '',
+            imageFile: null,
+            source: draft.source || '',
+            featured: draft.featured || false
+        });
+        setEditingDraftId(draft.id);
+        setShowDraftsModal(false);
+        setShowAddForm(true);
     };
 
     // Save/Unsave article handler
@@ -2133,8 +2242,7 @@ const RinON = () => {
                 image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`,
                 source: validateInput.sanitizeHtml(formData.source),
                 featured: formData.featured,
-                author_id: user?.id,
-                is_draft: saveAsDraft // NEW: Draft status
+                author_id: user?.id
             };
 
             let error;
@@ -2146,21 +2254,27 @@ const RinON = () => {
 
             if (error) throw error;
 
+            // If publishing from a draft, delete the draft
+            if (editingDraftId) {
+                setDrafts(prev => {
+                    const updated = prev.filter(d => d.id !== editingDraftId);
+                    localStorage.setItem('rinon_drafts', JSON.stringify(updated));
+                    return updated;
+                });
+                setEditingDraftId(null);
+            }
+
             loadArticles();
             setFormData({
                 titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false, isDraft: false
+                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
             });
             setShowAddForm(false);
             setEditMode(false);
             setEditingItem(null);
 
-            if (saveAsDraft) {
-                alert(t('Artikulli u ruajt si draft!', 'Article saved as draft!'));
-            } else {
-                alert(t(editMode ? 'Artikulli u përditësua me sukses!' : 'Artikulli u publikua me sukses!',
-                    editMode ? 'Article updated successfully!' : 'Article published successfully!'));
-            }
+            alert(t(editMode ? 'Artikulli u përditësua me sukses!' : 'Artikulli u publikua me sukses!',
+                editMode ? 'Article updated successfully!' : 'Article published successfully!'));
         } catch (err) {
             alert(handleError(err, 'handleSubmitArticle'));
         }
@@ -3897,7 +4011,7 @@ const RinON = () => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => changePage('home')}>
                             <img
-                                src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png"
+                                src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png"
                                 alt="RinON Logo"
                                 className="w-20 h-20 object-contain group-hover:scale-110 transition-transform"
                                 onError={(e) => {
@@ -4154,12 +4268,28 @@ const RinON = () => {
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
                     <div className="bg-[#2D2A26] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-amber-500/20 shadow-2xl p-8">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                                {editMode ? t('Ndrysho Artikull', 'Edit Article') : t('Shto Artikull', 'Add Article')}
-                            </h2>
-                            <button onClick={() => { setShowAddForm(false); setEditMode(false); setEditingItem(null); }} className="p-2 hover:bg-amber-500/20 rounded-lg transition-all">
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
+                            <div>
+                                <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                                    {editMode ? t('Ndrysho Artikull', 'Edit Article') : (editingDraftId ? t('Vazhdo Draft', 'Continue Draft') : t('Shto Artikull', 'Add Article'))}
+                                </h2>
+                                {editingDraftId && (
+                                    <p className="text-sm text-amber-500 mt-1">{t('Duke edituar draft', 'Editing draft')}</p>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {drafts.length > 0 && !editingDraftId && (
+                                    <button
+                                        onClick={() => { setShowAddForm(false); setShowDraftsModal(true); }}
+                                        className="flex items-center gap-2 px-3 py-2 text-amber-400 border border-amber-500/30 rounded-lg hover:bg-amber-500/10 transition-all text-sm"
+                                    >
+                                        <Edit className="w-4 h-4" />
+                                        {t('Drafts', 'Drafts')} ({drafts.length})
+                                    </button>
+                                )}
+                                <button onClick={() => { setShowAddForm(false); setEditMode(false); setEditingItem(null); setEditingDraftId(null); }} className="p-2 hover:bg-amber-500/20 rounded-lg transition-all">
+                                    <X className="w-5 h-5 text-gray-400" />
+                                </button>
+                            </div>
                         </div>
                         <div className="space-y-4">
                             <input
@@ -4228,18 +4358,18 @@ const RinON = () => {
                                 <span>{t('Artikull i veçantë', 'Featured article')}</span>
                             </label>
                             <div className="flex gap-3 pt-4">
-                                <button onClick={() => { setShowAddForm(false); setEditMode(false); setEditingItem(null); }} className="px-4 py-3 border border-[#3D3A36] rounded-xl text-gray-400 hover:border-[#4D4A46] transition-all">
+                                <button onClick={() => { setShowAddForm(false); setEditMode(false); setEditingItem(null); setEditingDraftId(null); }} className="px-4 py-3 border border-[#3D3A36] rounded-xl text-gray-400 hover:border-[#4D4A46] transition-all">
                                     {t('Anulo', 'Cancel')}
                                 </button>
                                 <button
-                                    onClick={() => handleSubmitArticle(true)}
+                                    onClick={saveDraft}
                                     className="flex-1 px-4 py-3 border border-amber-500/30 text-amber-400 rounded-xl hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
                                 >
                                     <Edit className="w-4 h-4" />
-                                    {t('Ruaj Draft', 'Save Draft')}
+                                    {editingDraftId ? t('Përditëso Draft', 'Update Draft') : t('Ruaj Draft', 'Save Draft')}
                                 </button>
-                                <button onClick={() => handleSubmitArticle(false)} className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50">
-                                    {editMode ? t('Përditëso', 'Update') : t('Publiko', 'Publish')}
+                                <button onClick={() => handleSubmitArticle()} className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50">
+                                    {editMode ? t('Përditëso', 'Update') : (editingDraftId ? t('Publiko Draft', 'Publish Draft') : t('Publiko', 'Publish'))}
                                 </button>
                             </div>
                         </div>
@@ -5228,6 +5358,131 @@ const RinON = () => {
                 darkMode={darkMode}
                 t={t}
             />
+
+            {/* ==========================================
+                DRAFTS MODAL - View and manage saved drafts
+               ========================================== */}
+            {showDraftsModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowDraftsModal(false)}>
+                    <div className={`absolute inset-0 ${darkMode ? 'bg-black/70' : 'bg-black/50'} backdrop-blur-sm`} />
+                    <div
+                        className={`relative w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-2xl ${darkMode ? 'bg-[#1a1918]' : 'bg-white'
+                            }`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className={`flex items-center justify-between p-5 border-b ${darkMode ? 'border-white/10' : 'border-gray-100'
+                            }`}>
+                            <div>
+                                <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {t('Drafts të Mia', 'My Drafts')}
+                                </h2>
+                                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                    {drafts.length} {t('draft të ruajtur', 'saved drafts')}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setShowDraftsModal(false)}
+                                className={`p-2 rounded-full ${darkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
+                            >
+                                <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                            </button>
+                        </div>
+
+                        {/* Drafts List */}
+                        <div className="overflow-y-auto max-h-[60vh] p-4">
+                            {drafts.length > 0 ? (
+                                <div className="space-y-3">
+                                    {drafts.map(draft => (
+                                        <div
+                                            key={draft.id}
+                                            className={`p-4 rounded-xl border transition-colors ${darkMode
+                                                    ? 'bg-white/5 border-white/10 hover:bg-white/10'
+                                                    : 'bg-gray-50 border-gray-100 hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className={`font-medium line-clamp-1 ${darkMode ? 'text-white' : 'text-gray-900'
+                                                        }`}>
+                                                        {draft.titleAl || t('Pa titull', 'Untitled')}
+                                                    </h4>
+                                                    <p className={`text-sm mt-1 line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'
+                                                        }`}>
+                                                        {draft.contentAl?.substring(0, 150) || t('Pa përmbajtje', 'No content')}...
+                                                    </p>
+                                                    <div className={`flex items-center gap-3 mt-2 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'
+                                                        }`}>
+                                                        <span className={`px-2 py-0.5 rounded-full ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'
+                                                            }`}>
+                                                            {draft.category}
+                                                        </span>
+                                                        <span>
+                                                            {t('Përditësuar', 'Updated')}: {new Date(draft.updatedAt).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {draft.image && (
+                                                    <img
+                                                        src={draft.image}
+                                                        alt=""
+                                                        className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                                                    />
+                                                )}
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-dashed border-gray-200 dark:border-white/10">
+                                                <button
+                                                    onClick={() => editDraft(draft)}
+                                                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${darkMode
+                                                            ? 'bg-white/5 text-gray-300 hover:bg-white/10'
+                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                        }`}
+                                                >
+                                                    <Edit className="w-4 h-4 inline mr-1" />
+                                                    {t('Vazhdo', 'Continue')}
+                                                </button>
+                                                <button
+                                                    onClick={() => publishDraft(draft)}
+                                                    className="flex-1 py-2 text-sm font-medium rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600"
+                                                >
+                                                    {t('Publiko', 'Publish')}
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteDraft(draft.id)}
+                                                    className={`p-2 rounded-lg transition-colors ${darkMode
+                                                            ? 'text-red-400 hover:bg-red-500/10'
+                                                            : 'text-red-500 hover:bg-red-50'
+                                                        }`}
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <Edit className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-700' : 'text-gray-200'}`} />
+                                    <h3 className={`text-lg font-medium mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                        {t('Asnjë draft', 'No drafts yet')}
+                                    </h3>
+                                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                        {t('Drafts që ruan do të shfaqen këtu', 'Drafts you save will appear here')}
+                                    </p>
+                                    <button
+                                        onClick={() => { setShowDraftsModal(false); setShowAddForm(true); }}
+                                        className="px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-medium rounded-lg"
+                                    >
+                                        {t('Shkruaj Artikull', 'Write Article')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ==========================================
                 USER ACTIVITY BANK - Saved Articles & Events
@@ -6330,6 +6585,20 @@ const RinON = () => {
                 {/* FAB Menu Items */}
                 <div className={`absolute bottom-14 right-0 flex flex-col gap-2 transition-all duration-300 ${fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
                     }`}>
+                    {/* Drafts - Admin only */}
+                    {showAdmin && drafts.length > 0 && (
+                        <button
+                            onClick={() => { setShowDraftsModal(true); setFabOpen(false); }}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
+                                    ? 'bg-amber-500 text-white'
+                                    : 'bg-amber-500 text-white'
+                                }`}
+                        >
+                            <Edit className="w-4 h-4" />
+                            <span className="text-sm font-medium">{t('Drafts', 'Drafts')} ({drafts.length})</span>
+                        </button>
+                    )}
+
                     {/* Language Toggle */}
                     <button
                         onClick={() => { setLanguage(language === 'al' ? 'en' : 'al'); setFabOpen(false); }}
