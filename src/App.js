@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, BookmarkPlus, Sparkles, ArrowUp, ChevronUp } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, BookmarkPlus, Sparkles, ArrowUp, ChevronUp, Smartphone } from 'lucide-react';
 import DOMPurify from 'dompurify';
+import { initializeApp } from 'firebase/app';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 
 // Initialize Supabase
@@ -9,6 +11,22 @@ const supabase = createClient(
     'https://hslwkxwarflnvjfytsul.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHdreHdhcmZsbnZqZnl0c3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxNzY5NzcsImV4cCI6MjA3NTc1Mjk3N30.bwAqhvyRaNaec9vkJRytf_ktZRPrbbbViiTGcjWIus4'
 );
+
+// Firebase Configuration for Push Notifications
+const firebaseConfig = {
+    apiKey: "AIzaSyBQWErh4Kg0YPUniX3EfGjYBMl99n6LWN8",
+    authDomain: "rinon-notifications.firebaseapp.com",
+    projectId: "rinon-notifications",
+    storageBucket: "rinon-notifications.firebasestorage.app",
+    messagingSenderId: "1048258783490",
+    appId: "1:1048258783490:web:88da7361ad7b7d931a7a1b"
+};
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+
+// VAPID Key for web push
+const VAPID_KEY = 'BOfpnj9cj-R4dIiNLmwl9fZ4k49wdlFRHoWi-InN1jV3x-kgl-k4GnfItpdn6D_eOZTqypDFiVdxNgHljml06T0';
 
 
 // Validation utilities
@@ -96,23 +114,148 @@ const uploadImage = async (file) => {
     }
 };
 
-const FOMOPopup = ({ showPopup, onClose, darkMode, t, onNavigateToEvents }) => {
-    const [attendees, setAttendees] = useState(247);
-
-    useEffect(() => {
-        if (showPopup) {
-            const interval = setInterval(() => {
-                setAttendees(prev => prev + Math.floor(Math.random() * 3));
-            }, 3000);
-            return () => clearInterval(interval);
-        }
-    }, [showPopup]);
-
-    if (!showPopup) return null;
+// Notification Modal Component
+const NotificationModal = ({
+    show,
+    onClose,
+    darkMode,
+    t,
+    preferences,
+    setPreferences,
+    onSave,
+    onEnableNotifications,
+    notificationsEnabled,
+    isIOS
+}) => {
+    if (!show) return null;
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-            <div className={`rounded-3xl max-w-md w-full p-8 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'
+            <div className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'
+                }`}>
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 hover:bg-amber-500/20 rounded-lg transition-all"
+                >
+                    <X className="w-5 h-5 text-gray-400" />
+                </button>
+
+                <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50">
+                        <Bell className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                        {t('Menaxho Njoftimet', 'Manage Notifications')}
+                    </h3>
+                    <p className={`text-sm mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {t('Zgjidh për çfarë dëshiron të njoftohesh', 'Choose what you want to be notified about')}
+                    </p>
+                </div>
+
+                {!notificationsEnabled ? (
+                    <div className="space-y-4">
+                        <p className={`text-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {t(
+                                'Aktivizo njoftimet për të marrë lajme të fundit dhe evente direkt në pajisjen tënde.',
+                                'Enable notifications to receive latest news and events directly on your device.'
+                            )}
+                        </p>
+
+                        {isIOS && (
+                            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'}`}>
+                                <p className={`text-sm ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
+                                    <strong>📱 iPhone/iPad:</strong> {t(
+                                        'Për të marrë njoftime, shto RinON në ekranin bazë: Kliko butonin Share → "Add to Home Screen"',
+                                        'To receive notifications, add RinON to your home screen: Tap Share → "Add to Home Screen"'
+                                    )}
+                                </p>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={onEnableNotifications}
+                            className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold"
+                        >
+                            {t('Aktivizo Njoftimet', 'Enable Notifications')}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className={`p-4 rounded-xl border ${darkMode ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'}`}>
+                            <p className={`text-sm flex items-center gap-2 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>
+                                <Check className="w-4 h-4" />
+                                {t('Njoftimet janë aktive!', 'Notifications are enabled!')}
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${preferences.notify_news
+                                    ? darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-300'
+                                    : darkMode ? 'bg-[#3D3A36] border-[#4D4A46]' : 'bg-gray-50 border-gray-200'
+                                }`}>
+                                <div className="flex items-center gap-3">
+                                    <Newspaper className={`w-5 h-5 ${preferences.notify_news ? 'text-amber-500' : 'text-gray-400'}`} />
+                                    <div>
+                                        <p className={`font-medium ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                            {t('Lajme', 'News')}
+                                        </p>
+                                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {t('Artikuj të rinj dhe lajme', 'New articles and news')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={preferences.notify_news}
+                                    onChange={(e) => setPreferences({ ...preferences, notify_news: e.target.checked })}
+                                    className="w-5 h-5 rounded accent-amber-500"
+                                />
+                            </label>
+
+                            <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${preferences.notify_events
+                                    ? darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-300'
+                                    : darkMode ? 'bg-[#3D3A36] border-[#4D4A46]' : 'bg-gray-50 border-gray-200'
+                                }`}>
+                                <div className="flex items-center gap-3">
+                                    <Calendar className={`w-5 h-5 ${preferences.notify_events ? 'text-amber-500' : 'text-gray-400'}`} />
+                                    <div>
+                                        <p className={`font-medium ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                            {t('Evente', 'Events')}
+                                        </p>
+                                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {t('Evente të reja dhe aktivitete', 'New events and activities')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={preferences.notify_events}
+                                    onChange={(e) => setPreferences({ ...preferences, notify_events: e.target.checked })}
+                                    className="w-5 h-5 rounded accent-amber-500"
+                                />
+                            </label>
+                        </div>
+
+                        <button
+                            onClick={onSave}
+                            className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold"
+                        >
+                            {t('Ruaj Preferencat', 'Save Preferences')}
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// Signup Prompt Popup (for non-logged-in users after scrolling)
+const SignupPromptPopup = ({ show, onClose, onSignup, darkMode, t }) => {
+    if (!show) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'
                 }`}>
                 <button
                     onClick={onClose}
@@ -122,49 +265,52 @@ const FOMOPopup = ({ showPopup, onClose, darkMode, t, onNavigateToEvents }) => {
                 </button>
 
                 <div className="text-center">
-                    <div className="w-20 h-20 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-500/50 animate-pulse">
-                        <Calendar className="w-10 h-10 text-white" />
+                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50">
+                        <Sparkles className="w-8 h-8 text-white" />
                     </div>
 
-                    <h3 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-[#2D2A26]'
-                        }`}>
-                        {t('Diçka e Madhe Po Ndodh!', 'Something Big is Happening!')}
+                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                        {t('Mos Humb Asgjë!', "Don't Miss Anything!")}
                     </h3>
 
-                    <div className="mb-6">
-                        <p className={`text-xl mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            <span className="text-4xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                                {attendees}
-                            </span>
+                    <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {t(
+                            'Krijo një llogari falas për të marrë njoftime për lajmet dhe eventet më të fundit.',
+                            'Create a free account to get notifications about the latest news and events.'
+                        )}
+                    </p>
+
+                    <div className={`text-left space-y-2 mb-6 p-4 rounded-xl ${darkMode ? 'bg-[#3D3A36]' : 'bg-gray-50'}`}>
+                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <Check className="w-4 h-4 text-green-500" />
+                            {t('Njoftime për evente të reja', 'Notifications for new events')}
                         </p>
-                        <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {t('të rinj tashmë kanë rezervuar evente këtë javë', 'youth have already booked events this week')}
+                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <Check className="w-4 h-4 text-green-500" />
+                            {t('Lajme të personalizuara', 'Personalized news')}
+                        </p>
+                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <Check className="w-4 h-4 text-green-500" />
+                            {t('Ruaj artikuj dhe evente', 'Save articles and events')}
                         </p>
                     </div>
-
-                    <p className={`text-2xl font-bold mb-6 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                        {t('Shiko çfarë po humb...', "See what you're missing...")}
-                    </p>
 
                     <div className="flex flex-col gap-3">
                         <button
-                            onClick={() => {
-                                onClose();
-                                onNavigateToEvents();
-                            }}
+                            onClick={onSignup}
                             className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold"
                         >
-                            {t('Eksploro Kalendarin', 'Explore Calendar')}
+                            {t('Regjistrohu Falas', 'Sign Up Free')}
                         </button>
 
                         <button
                             onClick={onClose}
-                            className={`w-full px-6 py-3 rounded-xl border transition-all font-semibold ${darkMode
-                                ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
-                                : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                            className={`w-full px-6 py-3 rounded-xl border transition-all ${darkMode
+                                    ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
+                                    : 'border-gray-300 text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
-                            {t('Shiko Më Vonë', 'See Later')}
+                            {t('Jo Tani', 'Not Now')}
                         </button>
                     </div>
                 </div>
@@ -172,6 +318,41 @@ const FOMOPopup = ({ showPopup, onClose, darkMode, t, onNavigateToEvents }) => {
         </div>
     );
 };
+
+// iOS Instructions Banner (small, non-intrusive)
+const IOSInstructionsBanner = ({ show, onClose, darkMode, t }) => {
+    if (!show) return null;
+
+    return (
+        <div className={`fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40 animate-slideUp ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'
+            } rounded-2xl border shadow-xl p-4`}>
+            <button
+                onClick={onClose}
+                className="absolute top-2 right-2 p-1 hover:bg-amber-500/20 rounded-lg transition-all"
+            >
+                <X className="w-4 h-4 text-gray-400" />
+            </button>
+
+            <div className="flex items-start gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Smartphone className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                    <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                        {t('Shto në Ekranin Bazë', 'Add to Home Screen')}
+                    </p>
+                    <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {t(
+                            'Për njoftime në iPhone: Kliko Share → "Add to Home Screen"',
+                            'For iPhone notifications: Tap Share → "Add to Home Screen"'
+                        )}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Event Calendar Component
 const EventCalendar = ({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t, openShareModal, openEvent }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -296,77 +477,68 @@ END:VCALENDAR`;
 
     return (
         <div className="space-y-6">
-            {/* Stats Bar */}
-            <div className="grid grid-cols-3 gap-4">
-                <div className={`backdrop-blur-lg rounded-xl p-4 border ${darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'
-                    }`}>
-                    <div className="flex items-center gap-3">
-                        <Calendar className="w-8 h-8 text-amber-500" />
-                        <div>
-                            <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{totalEvents}</p>
-                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {t('Evente Totale', 'Total Events')}
-                            </p>
-                        </div>
+            {/* Calendar Instruction Banner */}
+            <div className={`rounded-2xl p-6 border ${darkMode ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200'}`}>
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                        <CalendarIcon className="w-6 h-6 text-white" />
                     </div>
-                </div>
-
-                <div className={`backdrop-blur-lg rounded-xl p-4 border ${darkMode ? 'bg-green-600/10 border-green-500/30' : 'bg-green-100 border-green-300'
-                    }`}>
-                    <div className="flex items-center gap-3">
-                        <Star className="w-8 h-8 text-green-400" />
-                        <div>
-                            <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{freeEvents}</p>
-                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {t('Evente Falas', 'Free Events')}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className={`backdrop-blur-lg rounded-xl p-4 border ${darkMode ? 'bg-[#FF6B6B]/10 border-[#FF6B6B]/30' : 'bg-[#FFE5D9] border-[#FF6B6B]/50'
-                    }`}>
-                    <div className="flex items-center gap-3">
-                        <Users className="w-8 h-8 text-[#FF6B6B]" />
-                        <div>
-                            <p className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>500+</p>
-                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {t('Të Rinj Aktivë', 'Active Youth')}
-                            </p>
-                        </div>
+                    <div>
+                        <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                            {t('Si të regjistrohesh në një event?', 'How to register for an event?')}
+                        </h3>
+                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {t('Kliko një ditë në kalendar për të parë dhe regjistruar në eventet e asaj dite.', 'Click a day on the calendar to view and register for events on that day.')}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4">
-                <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className={`flex-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-amber-500/20 ${darkMode
-                        ? 'bg-[#3D3A36] border-amber-500/30 text-white'
-                        : 'bg-white border-amber-200 text-[#2D2A26]'
-                        }`}
-                >
-                    {categories.map(cat => (
-                        <option key={cat.value} value={cat.value}>
-                            {language === 'al' ? cat.label.al : cat.label.en}
-                        </option>
-                    ))}
-                </select>
+            {/* Compact Stats Row */}
+            <div className="flex flex-wrap gap-4 items-center justify-between">
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-amber-500" />
+                        <span className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{totalEvents}</span>
+                        <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('evente', 'events')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Star className="w-5 h-5 text-green-500" />
+                        <span className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{freeEvents}</span>
+                        <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('falas', 'free')}</span>
+                    </div>
+                </div>
 
-                <button
-                    onClick={() => setShowOnlyFree(!showOnlyFree)}
-                    className={`px-6 py-3 rounded-xl border transition-all ${showOnlyFree
-                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white border-green-500'
-                        : darkMode
-                            ? 'bg-[#3D3A36] border-amber-500/30 text-gray-300 hover:bg-[#4D4A46]'
-                            : 'bg-white border-amber-200 text-gray-700 hover:bg-[#FFE5D9]'
-                        }`}
-                >
-                    <Filter className="w-5 h-5 inline mr-2" />
-                    {t('Vetëm Falas', 'Free Only')}
-                </button>
+                {/* Compact Filters */}
+                <div className="flex gap-2">
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 ${darkMode
+                            ? 'bg-[#3D3A36] border-amber-500/30 text-white'
+                            : 'bg-white border-amber-200 text-[#2D2A26]'
+                            }`}
+                    >
+                        {categories.map(cat => (
+                            <option key={cat.value} value={cat.value}>
+                                {language === 'al' ? cat.label.al : cat.label.en}
+                            </option>
+                        ))}
+                    </select>
+
+                    <button
+                        onClick={() => setShowOnlyFree(!showOnlyFree)}
+                        className={`px-3 py-2 rounded-lg border text-sm transition-all flex items-center gap-1 ${showOnlyFree
+                            ? 'bg-green-500 text-white border-green-500'
+                            : darkMode
+                                ? 'bg-[#3D3A36] border-amber-500/30 text-gray-300 hover:bg-[#4D4A46]'
+                                : 'bg-white border-amber-200 text-gray-700 hover:bg-amber-50'
+                            }`}
+                    >
+                        <Star className="w-4 h-4" />
+                        {t('Falas', 'Free')}
+                    </button>
+                </div>
             </div>
 
             {/* Calendar Header */}
@@ -1280,7 +1452,15 @@ const RinON = () => {
     const [savedArticles, setSavedArticles] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    const [showFOMOPopup, setShowFOMOPopup] = useState(false);
+    // Notification System States
+    const [showNotificationModal, setShowNotificationModal] = useState(false);
+    const [notificationPreferences, setNotificationPreferences] = useState({ notify_news: true, notify_events: true });
+    const [pushSubscription, setPushSubscription] = useState(null);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+    const [showSignupPrompt, setShowSignupPrompt] = useState(false);
+    const [articlesScrolled, setArticlesScrolled] = useState(0);
+    const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+
     const [eventViewMode, setEventViewMode] = useState('calendar');
 
     const [editingItem, setEditingItem] = useState(null);
@@ -1485,15 +1665,257 @@ const RinON = () => {
         }, 350);
     };
 
+    // Check if device is iOS
+    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    // Initialize Firebase Messaging
+    const initializeFirebaseMessaging = async () => {
+        try {
+            if (!('Notification' in window)) {
+                console.log('This browser does not support notifications');
+                return null;
+            }
+
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                console.log('Notification permission denied');
+                return null;
+            }
+
+            const messaging = getMessaging(firebaseApp);
+            const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+            console.log('FCM Token:', token);
+            return token;
+        } catch (error) {
+            console.error('Error initializing Firebase Messaging:', error);
+            return null;
+        }
+    };
+
+    // Save push subscription to Supabase
+    const savePushSubscription = async (token) => {
+        if (!user || !token) return;
+
+        try {
+            const deviceInfo = `${navigator.userAgent.substring(0, 100)}`;
+
+            const { error } = await supabase
+                .from('push_subscriptions')
+                .upsert({
+                    user_id: user.id,
+                    fcm_token: token,
+                    device_info: deviceInfo
+                }, {
+                    onConflict: 'user_id,fcm_token'
+                });
+
+            if (error) throw error;
+            console.log('Push subscription saved');
+        } catch (error) {
+            console.error('Error saving push subscription:', error);
+        }
+    };
+
+    // Load notification preferences from Supabase
+    const loadNotificationPreferences = async () => {
+        if (!user) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('notification_preferences')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+
+            if (data) {
+                setNotificationPreferences({
+                    notify_news: data.notify_news,
+                    notify_events: data.notify_events
+                });
+            }
+        } catch (error) {
+            console.error('Error loading notification preferences:', error);
+        }
+    };
+
+    // Save notification preferences to Supabase
+    const saveNotificationPreferences = async () => {
+        if (!user) return;
+
+        try {
+            const { error } = await supabase
+                .from('notification_preferences')
+                .upsert({
+                    user_id: user.id,
+                    notify_news: notificationPreferences.notify_news,
+                    notify_events: notificationPreferences.notify_events,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_id'
+                });
+
+            if (error) throw error;
+
+            alert(t('Preferencat u ruajtën!', 'Preferences saved!'));
+            setShowNotificationModal(false);
+        } catch (error) {
+            console.error('Error saving notification preferences:', error);
+            alert(t('Gabim në ruajtjen e preferencave', 'Error saving preferences'));
+        }
+    };
+
+    // Enable notifications
+    const enableNotifications = async () => {
+        const token = await initializeFirebaseMessaging();
+
+        if (token) {
+            setPushSubscription(token);
+            setNotificationsEnabled(true);
+            await savePushSubscription(token);
+
+            await supabase.from('notification_preferences').upsert({
+                user_id: user.id,
+                notify_news: true,
+                notify_events: true,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+
+            if (isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
+                setShowIOSInstructions(true);
+            }
+        }
+    };
+
+    // Check if notifications are already enabled
+    const checkNotificationStatus = async () => {
+        if (!user) return;
+
+        try {
+            const { data } = await supabase
+                .from('push_subscriptions')
+                .select('fcm_token')
+                .eq('user_id', user.id)
+                .limit(1);
+
+            if (data && data.length > 0) {
+                setNotificationsEnabled(true);
+                setPushSubscription(data[0].fcm_token);
+            }
+        } catch (error) {
+            console.error('Error checking notification status:', error);
+        }
+    };
+
+    // Send notification to users (for admin panel)
+    const sendNotificationToUsers = async (type, title, body, url) => {
+        try {
+            const { data: preferences, error: prefError } = await supabase
+                .from('notification_preferences')
+                .select('user_id')
+                .eq(type === 'news' ? 'notify_news' : 'notify_events', true);
+
+            if (prefError) throw prefError;
+
+            if (!preferences || preferences.length === 0) {
+                alert(t('Nuk ka përdorues të abonuar për këtë lloj njoftimi', 'No users subscribed to this notification type'));
+                return;
+            }
+
+            const userIds = preferences.map(p => p.user_id);
+
+            const { data: subscriptions, error: subError } = await supabase
+                .from('push_subscriptions')
+                .select('fcm_token')
+                .in('user_id', userIds);
+
+            if (subError) throw subError;
+
+            if (!subscriptions || subscriptions.length === 0) {
+                alert(t('Nuk ka pajisje të regjistruara', 'No devices registered'));
+                return;
+            }
+
+            const tokens = subscriptions.map(s => s.fcm_token);
+
+            const { error: sendError } = await supabase.functions.invoke('send-notification', {
+                body: {
+                    tokens,
+                    notification: { title, body },
+                    data: { type, url }
+                }
+            });
+
+            if (sendError) throw sendError;
+
+            alert(t(`Njoftimi u dërgua te ${tokens.length} pajisje!`, `Notification sent to ${tokens.length} devices!`));
+        } catch (error) {
+            console.error('Error sending notification:', error);
+            alert(t('Gabim në dërgimin e njoftimit', 'Error sending notification'));
+        }
+    };
+
     useEffect(() => {
         setHasPageLoaded(true);
-
-        const timer = setTimeout(() => {
-            setShowFOMOPopup(true);
-        }, 3000);
-
-        return () => clearTimeout(timer);
     }, []);
+
+    // Load notification preferences when user logs in
+    useEffect(() => {
+        if (user) {
+            loadNotificationPreferences();
+            checkNotificationStatus();
+        }
+    }, [user]);
+
+    // Track article scrolling for signup prompt (non-logged-in users)
+    useEffect(() => {
+        if (user) return;
+
+        const handleScroll = () => {
+            const articles = document.querySelectorAll('[data-article-card]');
+            let visibleCount = 0;
+
+            articles.forEach(article => {
+                const rect = article.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    visibleCount++;
+                }
+            });
+
+            if (visibleCount >= 3 && !showSignupPrompt && !localStorage.getItem('rinon_signup_prompt_shown')) {
+                setShowSignupPrompt(true);
+                localStorage.setItem('rinon_signup_prompt_shown', 'true');
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [user, showSignupPrompt]);
+
+    // Listen for foreground messages
+    useEffect(() => {
+        if (!notificationsEnabled) return;
+
+        try {
+            const messaging = getMessaging(firebaseApp);
+
+            const unsubscribe = onMessage(messaging, (payload) => {
+                console.log('Foreground message received:', payload);
+
+                if (Notification.permission === 'granted') {
+                    new Notification(payload.notification?.title || 'RinON', {
+                        body: payload.notification?.body,
+                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png'
+                    });
+                }
+            });
+
+            return () => unsubscribe();
+        } catch (error) {
+            console.error('Error setting up foreground messaging:', error);
+        }
+    }, [notificationsEnabled]);
 
     // First-time visitor tooltip
     useEffect(() => {
@@ -3108,16 +3530,6 @@ const RinON = () => {
                 </div>
             </div>
 
-            {/* Hero Slider - Shows on BOTH Calendar and List views */}
-            <EventHeroSlider
-                events={otherEvents}
-                language={language}
-                darkMode={darkMode}
-                t={t}
-                openEvent={openEvent}
-                openShareModal={openShareModal}
-            />
-
             {/* View Mode Content */}
             {eventViewMode === 'calendar' ? (
                 <EventCalendar
@@ -3994,14 +4406,6 @@ const RinON = () => {
 
     return (
         <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}>
-            <FOMOPopup
-                showPopup={showFOMOPopup}
-                onClose={() => setShowFOMOPopup(false)}
-                darkMode={darkMode}
-                t={t}
-                onNavigateToEvents={() => changePage('events')}
-            />
-
 
             <header className={`backdrop-blur-lg border-b sticky top-0 z-50 shadow-lg transition-colors duration-300 ${darkMode
                 ? 'bg-[#2D2A26]/80 border-amber-500/20 shadow-amber-500/10'
@@ -4061,12 +4465,28 @@ const RinON = () => {
                             <button
                                 onClick={() => setShowSearchBar(!showSearchBar)}
                                 className={`p-2 rounded-lg transition-all border ${showSearchBar
-                                        ? 'bg-amber-500 text-white border-amber-500'
-                                        : 'bg-amber-500/20 text-amber-500 border-amber-500/30 hover:bg-amber-500/30'
+                                    ? 'bg-amber-500 text-white border-amber-500'
+                                    : 'bg-amber-500/20 text-amber-500 border-amber-500/30 hover:bg-amber-500/30'
                                     }`}
                             >
                                 <Search className="h-5 w-5" />
                             </button>
+
+                            {/* Mobile Notification Bell - Only for logged in users */}
+                            {user && (
+                                <button
+                                    onClick={() => setShowNotificationModal(true)}
+                                    className={`relative p-2 rounded-lg transition-all border ${notificationsEnabled
+                                            ? 'bg-amber-500/20 text-amber-500 border-amber-500/30'
+                                            : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                                        }`}
+                                >
+                                    <Bell className="h-5 w-5" />
+                                    {!notificationsEnabled && (
+                                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                                    )}
+                                </button>
+                            )}
 
                             {/* Mobile Login/Profile Button - ALWAYS VISIBLE */}
                             {user ? (
@@ -4110,8 +4530,8 @@ const RinON = () => {
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
                                             className={`w-full pl-10 pr-4 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${darkMode
-                                                    ? 'bg-[#3D3A36] border-amber-500/30 text-white placeholder-gray-400'
-                                                    : 'bg-white border-amber-200 text-[#2D2A26] placeholder-gray-400'
+                                                ? 'bg-[#3D3A36] border-amber-500/30 text-white placeholder-gray-400'
+                                                : 'bg-white border-amber-200 text-[#2D2A26] placeholder-gray-400'
                                                 }`}
                                             autoFocus
                                         />
@@ -4149,6 +4569,23 @@ const RinON = () => {
                                 {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                             </button>
 
+                            {/* Notification Bell - Only for logged in users */}
+                            {user && (
+                                <button
+                                    onClick={() => setShowNotificationModal(true)}
+                                    className={`relative p-2 rounded-lg transition-all border ${notificationsEnabled
+                                            ? 'bg-amber-500/20 text-amber-500 border-amber-500/30 hover:bg-amber-500/30'
+                                            : 'bg-gray-500/20 text-gray-400 border-gray-500/30 hover:bg-gray-500/30'
+                                        }`}
+                                    title={t('Njoftimet', 'Notifications')}
+                                >
+                                    <Bell className="h-5 w-5" />
+                                    {!notificationsEnabled && (
+                                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                                    )}
+                                </button>
+                            )}
+
                             {user ? (
                                 <div className="flex items-center gap-3">
                                     <span className={`text-sm hidden sm:inline ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{userProfile?.display_name || user.email}</span>
@@ -4180,8 +4617,8 @@ const RinON = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className={`w-full pl-10 pr-10 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${darkMode
-                                        ? 'bg-[#3D3A36] border-amber-500/30 text-white placeholder-gray-400'
-                                        : 'bg-gray-50 border-amber-200 text-[#2D2A26] placeholder-gray-400'
+                                    ? 'bg-[#3D3A36] border-amber-500/30 text-white placeholder-gray-400'
+                                    : 'bg-gray-50 border-amber-200 text-[#2D2A26] placeholder-gray-400'
                                     }`}
                                 autoFocus
                             />
@@ -4206,8 +4643,8 @@ const RinON = () => {
             {/* Horizontal Category Pills - Only on Home Page */}
             {currentPage === 'home' && (
                 <div className={`sticky top-[88px] md:top-[96px] z-40 border-b backdrop-blur-xl transition-colors duration-300 ${darkMode
-                        ? 'bg-[#2D2A26]/95 border-amber-500/10'
-                        : 'bg-white/95 border-amber-100'
+                    ? 'bg-[#2D2A26]/95 border-amber-500/10'
+                    : 'bg-white/95 border-amber-100'
                     }`}>
                     <div className="max-w-7xl mx-auto px-4 py-3">
                         <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1">
@@ -4219,10 +4656,10 @@ const RinON = () => {
                                         key={cat.al}
                                         onClick={() => setSelectedCategoryFilter(cat.al)}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all text-sm font-medium ${isActive
-                                                ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
-                                                : darkMode
-                                                    ? 'bg-[#3D3A36] text-gray-300 hover:bg-amber-500/20 hover:text-amber-400 border border-amber-500/20'
-                                                    : 'bg-amber-50 text-gray-600 hover:bg-[#FFE5D9] hover:text-amber-700 border border-amber-200'
+                                            ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
+                                            : darkMode
+                                                ? 'bg-[#3D3A36] text-gray-300 hover:bg-amber-500/20 hover:text-amber-400 border border-amber-500/20'
+                                                : 'bg-amber-50 text-gray-600 hover:bg-[#FFE5D9] hover:text-amber-700 border border-amber-200'
                                             }`}
                                     >
                                         <Icon className="w-4 h-4" />
@@ -4372,6 +4809,26 @@ const RinON = () => {
                                     {editMode ? t('Përditëso', 'Update') : (editingDraftId ? t('Publiko Draft', 'Publish Draft') : t('Publiko', 'Publish'))}
                                 </button>
                             </div>
+
+                            {/* Notify Users Button */}
+                            <button
+                                onClick={async () => {
+                                    if (!formData.titleAl) {
+                                        alert(t('Ju lutem ruani artikullin para se të dërgoni njoftim', 'Please save the article before sending notification'));
+                                        return;
+                                    }
+                                    await sendNotificationToUsers(
+                                        'news',
+                                        formData.titleAl,
+                                        formData.contentAl?.substring(0, 100) + '...' || '',
+                                        'https://rinon.al'
+                                    );
+                                }}
+                                className="w-full px-4 py-3 border border-amber-500/50 text-amber-400 rounded-xl hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Bell className="w-4 h-4" />
+                                {t('Njofto Përdoruesit', 'Notify Users')}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -4581,6 +5038,26 @@ const RinON = () => {
                                     {editMode ? t('Përditëso', 'Update') : t('Shto', 'Add')}
                                 </button>
                             </div>
+
+                            {/* Notify Users Button */}
+                            <button
+                                onClick={async () => {
+                                    if (!eventFormData.titleAl) {
+                                        alert(t('Ju lutem ruani eventin para se të dërgoni njoftim', 'Please save the event before sending notification'));
+                                        return;
+                                    }
+                                    await sendNotificationToUsers(
+                                        'events',
+                                        eventFormData.titleAl,
+                                        eventFormData.descAl?.substring(0, 100) + '...' || '',
+                                        'https://rinon.al'
+                                    );
+                                }}
+                                className="w-full px-4 py-3 border border-amber-500/50 text-amber-400 rounded-xl hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Bell className="w-4 h-4" />
+                                {t('Njofto Përdoruesit', 'Notify Users')}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -5221,10 +5698,10 @@ const RinON = () => {
                                             key={page}
                                             onClick={() => { changePage(page); setMobileMenuOpen(false); }}
                                             className={`block w-full text-left py-3 text-lg transition-colors ${currentPage === page || (page === 'schools' && currentPage === 'school-portal')
-                                                    ? 'text-amber-500 font-medium'
-                                                    : darkMode
-                                                        ? 'text-gray-300 hover:text-white'
-                                                        : 'text-gray-600 hover:text-gray-900'
+                                                ? 'text-amber-500 font-medium'
+                                                : darkMode
+                                                    ? 'text-gray-300 hover:text-white'
+                                                    : 'text-gray-600 hover:text-gray-900'
                                                 }`}
                                         >
                                             {label}
@@ -5262,8 +5739,8 @@ const RinON = () => {
                                     <button
                                         onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
                                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-colors ${darkMode
-                                                ? 'bg-white/5 hover:bg-white/10 text-gray-300'
-                                                : 'bg-black/5 hover:bg-black/10 text-gray-600'
+                                            ? 'bg-white/5 hover:bg-white/10 text-gray-300'
+                                            : 'bg-black/5 hover:bg-black/10 text-gray-600'
                                             }`}
                                     >
                                         <Globe className="w-4 h-4" />
@@ -5272,8 +5749,8 @@ const RinON = () => {
                                     <button
                                         onClick={() => setDarkMode(!darkMode)}
                                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl transition-colors ${darkMode
-                                                ? 'bg-white/5 hover:bg-white/10 text-gray-300'
-                                                : 'bg-black/5 hover:bg-black/10 text-gray-600'
+                                            ? 'bg-white/5 hover:bg-white/10 text-gray-300'
+                                            : 'bg-black/5 hover:bg-black/10 text-gray-600'
                                             }`}
                                     >
                                         {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -5306,8 +5783,8 @@ const RinON = () => {
                                     <button
                                         onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                                         className={`w-full py-2.5 text-sm font-medium rounded-xl transition-colors ${darkMode
-                                                ? 'text-red-400 hover:bg-red-500/10'
-                                                : 'text-red-500 hover:bg-red-50'
+                                            ? 'text-red-400 hover:bg-red-500/10'
+                                            : 'text-red-500 hover:bg-red-50'
                                             }`}
                                     >
                                         {t('Dil nga llogaria', 'Sign out')}
@@ -5397,8 +5874,8 @@ const RinON = () => {
                                         <div
                                             key={draft.id}
                                             className={`p-4 rounded-xl border transition-colors ${darkMode
-                                                    ? 'bg-white/5 border-white/10 hover:bg-white/10'
-                                                    : 'bg-gray-50 border-gray-100 hover:bg-gray-100'
+                                                ? 'bg-white/5 border-white/10 hover:bg-white/10'
+                                                : 'bg-gray-50 border-gray-100 hover:bg-gray-100'
                                                 }`}
                                         >
                                             <div className="flex items-start justify-between gap-4">
@@ -5436,8 +5913,8 @@ const RinON = () => {
                                                 <button
                                                     onClick={() => editDraft(draft)}
                                                     className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${darkMode
-                                                            ? 'bg-white/5 text-gray-300 hover:bg-white/10'
-                                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                        ? 'bg-white/5 text-gray-300 hover:bg-white/10'
+                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                         }`}
                                                 >
                                                     <Edit className="w-4 h-4 inline mr-1" />
@@ -5452,8 +5929,8 @@ const RinON = () => {
                                                 <button
                                                     onClick={() => deleteDraft(draft.id)}
                                                     className={`p-2 rounded-lg transition-colors ${darkMode
-                                                            ? 'text-red-400 hover:bg-red-500/10'
-                                                            : 'text-red-500 hover:bg-red-50'
+                                                        ? 'text-red-400 hover:bg-red-500/10'
+                                                        : 'text-red-500 hover:bg-red-50'
                                                         }`}
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -5514,8 +5991,8 @@ const RinON = () => {
                             <button
                                 onClick={() => setUserActivityTab('saved')}
                                 className={`flex-1 py-3 text-sm font-medium transition-colors ${userActivityTab === 'saved'
-                                        ? 'text-amber-500 border-b-2 border-amber-500'
-                                        : darkMode ? 'text-gray-400' : 'text-gray-500'
+                                    ? 'text-amber-500 border-b-2 border-amber-500'
+                                    : darkMode ? 'text-gray-400' : 'text-gray-500'
                                     }`}
                             >
                                 {t('Artikuj', 'Articles')} ({savedArticles.length})
@@ -5523,8 +6000,8 @@ const RinON = () => {
                             <button
                                 onClick={() => setUserActivityTab('events')}
                                 className={`flex-1 py-3 text-sm font-medium transition-colors ${userActivityTab === 'events'
-                                        ? 'text-amber-500 border-b-2 border-amber-500'
-                                        : darkMode ? 'text-gray-400' : 'text-gray-500'
+                                    ? 'text-amber-500 border-b-2 border-amber-500'
+                                    : darkMode ? 'text-gray-400' : 'text-gray-500'
                                     }`}
                             >
                                 {t('Evente', 'Events')} ({savedEvents.length})
@@ -5940,8 +6417,8 @@ const RinON = () => {
                                 <div
                                     onClick={() => changePage('events')}
                                     className={`flex-shrink-0 w-[280px] p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02] ${darkMode
-                                            ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30'
-                                            : 'bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200'
+                                        ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30'
+                                        : 'bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3 mb-3">
@@ -5969,8 +6446,8 @@ const RinON = () => {
                                 <div
                                     onClick={() => changePage('discussion')}
                                     className={`flex-shrink-0 w-[280px] p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02] ${darkMode
-                                            ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30'
-                                            : 'bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200'
+                                        ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30'
+                                        : 'bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3 mb-3">
@@ -5998,8 +6475,8 @@ const RinON = () => {
                                 <div
                                     onClick={() => changePage('schools')}
                                     className={`flex-shrink-0 w-[280px] p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02] ${darkMode
-                                            ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30'
-                                            : 'bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200'
+                                        ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30'
+                                        : 'bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3 mb-3">
@@ -6029,8 +6506,8 @@ const RinON = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className={`flex-shrink-0 w-[280px] p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02] ${darkMode
-                                            ? 'bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30'
-                                            : 'bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200'
+                                        ? 'bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30'
+                                        : 'bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3 mb-3">
@@ -6097,6 +6574,7 @@ const RinON = () => {
                                     {filteredArticles.map((article) => (
                                         <div
                                             key={article.id}
+                                            data-article-card
                                             className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/30"
                                             onClick={() => openArticle(article)}
                                         >
@@ -6122,8 +6600,8 @@ const RinON = () => {
                                                             toggleSaveArticle(article.id);
                                                         }}
                                                         className={`p-2 rounded-full transition z-10 shadow-lg ${savedArticles.includes(article.id)
-                                                                ? 'bg-amber-500 text-white'
-                                                                : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
+                                                            ? 'bg-amber-500 text-white'
+                                                            : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
                                                             }`}
                                                         title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
                                                     >
@@ -6483,8 +6961,8 @@ const RinON = () => {
                 <button
                     onClick={scrollToTop}
                     className={`fixed bottom-24 md:bottom-8 left-4 z-40 w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 animate-fadeIn ${darkMode
-                            ? 'bg-[#3D3A36] text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
-                            : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'
+                        ? 'bg-[#3D3A36] text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
+                        : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'
                         }`}
                     title={t('Kthehu lart', 'Back to top')}
                 >
@@ -6497,20 +6975,20 @@ const RinON = () => {
                 Clean, elevated design with larger touch targets
                ========================================== */}
             <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 transition-colors duration-300 ${darkMode
-                    ? 'bg-[#1a1918]'
-                    : 'bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
+                ? 'bg-[#1a1918]'
+                : 'bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
                 }`}>
                 <div className="flex items-center justify-around px-4 pt-3 pb-6">
                     {/* Home/News */}
                     <button
                         onClick={() => changePage('home')}
                         className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'home'
-                                ? darkMode
-                                    ? 'text-amber-400'
-                                    : 'text-amber-600'
-                                : darkMode
-                                    ? 'text-gray-500 active:text-gray-300'
-                                    : 'text-gray-400 active:text-gray-600'
+                            ? darkMode
+                                ? 'text-amber-400'
+                                : 'text-amber-600'
+                            : darkMode
+                                ? 'text-gray-500 active:text-gray-300'
+                                : 'text-gray-400 active:text-gray-600'
                             }`}
                     >
                         <Newspaper className={`w-6 h-6 mb-1 ${currentPage === 'home' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
@@ -6523,10 +7001,10 @@ const RinON = () => {
                     <button
                         onClick={() => changePage('events')}
                         className={`flex flex-col items-center justify-center min-w-[72px] min-h-[56px] -mt-4 rounded-2xl transition-all active:scale-95 ${currentPage === 'events'
-                                ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/30'
-                                : darkMode
-                                    ? 'bg-[#2a2826] text-gray-400 active:bg-[#3a3836]'
-                                    : 'bg-gray-100 text-gray-500 active:bg-gray-200'
+                            ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/30'
+                            : darkMode
+                                ? 'bg-[#2a2826] text-gray-400 active:bg-[#3a3836]'
+                                : 'bg-gray-100 text-gray-500 active:bg-gray-200'
                             }`}
                     >
                         <Calendar className={`w-6 h-6 mb-1 ${currentPage === 'events' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
@@ -6539,12 +7017,12 @@ const RinON = () => {
                     <button
                         onClick={() => changePage('discussion')}
                         className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'discussion'
-                                ? darkMode
-                                    ? 'text-amber-400'
-                                    : 'text-amber-600'
-                                : darkMode
-                                    ? 'text-gray-500 active:text-gray-300'
-                                    : 'text-gray-400 active:text-gray-600'
+                            ? darkMode
+                                ? 'text-amber-400'
+                                : 'text-amber-600'
+                            : darkMode
+                                ? 'text-gray-500 active:text-gray-300'
+                                : 'text-gray-400 active:text-gray-600'
                             }`}
                     >
                         <MessageCircle className={`w-6 h-6 mb-1 ${currentPage === 'discussion' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
@@ -6557,8 +7035,8 @@ const RinON = () => {
                     <button
                         onClick={() => user ? setShowPreferences(true) : (setShowAuthModal(true), setAuthMode('login'))}
                         className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${darkMode
-                                ? 'text-gray-500 active:text-gray-300'
-                                : 'text-gray-400 active:text-gray-600'
+                            ? 'text-gray-500 active:text-gray-300'
+                            : 'text-gray-400 active:text-gray-600'
                             }`}
                     >
                         {user ? (
@@ -6590,8 +7068,8 @@ const RinON = () => {
                         <button
                             onClick={() => { setShowDraftsModal(true); setFabOpen(false); }}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                                    ? 'bg-amber-500 text-white'
-                                    : 'bg-amber-500 text-white'
+                                ? 'bg-amber-500 text-white'
+                                : 'bg-amber-500 text-white'
                                 }`}
                         >
                             <Edit className="w-4 h-4" />
@@ -6603,8 +7081,8 @@ const RinON = () => {
                     <button
                         onClick={() => { setLanguage(language === 'al' ? 'en' : 'al'); setFabOpen(false); }}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                                ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
-                                : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
+                            ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
+                            : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
                             }`}
                     >
                         <Globe className="w-4 h-4 text-amber-500" />
@@ -6615,8 +7093,8 @@ const RinON = () => {
                     <button
                         onClick={() => { setDarkMode(!darkMode); setFabOpen(false); }}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                                ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
-                                : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
+                            ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
+                            : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
                             }`}
                     >
                         {darkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-amber-500" />}
@@ -6627,8 +7105,8 @@ const RinON = () => {
                     <button
                         onClick={() => { changePage('schools'); setFabOpen(false); }}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                                ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
-                                : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
+                            ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
+                            : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
                             }`}
                     >
                         <School className="w-4 h-4 text-amber-500" />
@@ -6639,8 +7117,8 @@ const RinON = () => {
                     <button
                         onClick={() => { changePage('about'); setFabOpen(false); }}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                                ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
-                                : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
+                            ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
+                            : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
                             }`}
                     >
                         <Heart className="w-4 h-4 text-amber-500" />
@@ -6652,8 +7130,8 @@ const RinON = () => {
                 <button
                     onClick={() => setFabOpen(!fabOpen)}
                     className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ${fabOpen
-                            ? 'bg-[#FF6B6B] rotate-45'
-                            : 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B]'
+                        ? 'bg-[#FF6B6B] rotate-45'
+                        : 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B]'
                         }`}
                 >
                     <Plus className="w-6 h-6 text-white" />
@@ -6734,6 +7212,41 @@ const RinON = () => {
                     </div>
                 </div>
             </footer>
+
+            {/* Notification Modal */}
+            <NotificationModal
+                show={showNotificationModal}
+                onClose={() => setShowNotificationModal(false)}
+                darkMode={darkMode}
+                t={t}
+                preferences={notificationPreferences}
+                setPreferences={setNotificationPreferences}
+                onSave={saveNotificationPreferences}
+                onEnableNotifications={enableNotifications}
+                notificationsEnabled={notificationsEnabled}
+                isIOS={isIOS}
+            />
+
+            {/* Signup Prompt Popup */}
+            <SignupPromptPopup
+                show={showSignupPrompt}
+                onClose={() => setShowSignupPrompt(false)}
+                onSignup={() => {
+                    setShowSignupPrompt(false);
+                    setShowAuthModal(true);
+                    setAuthMode('signup');
+                }}
+                darkMode={darkMode}
+                t={t}
+            />
+
+            {/* iOS Instructions Banner */}
+            <IOSInstructionsBanner
+                show={showIOSInstructions}
+                onClose={() => setShowIOSInstructions(false)}
+                darkMode={darkMode}
+                t={t}
+            />
         </div>
     );
 };

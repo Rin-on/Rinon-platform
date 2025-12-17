@@ -8,6 +8,7 @@
     "@testing-library/react": "^13.x.x",
     "@testing-library/user-event": "^13.x.x",
     "dompurify": "^3.3.0",
+    "firebase": "^12.6.0",
     "lucide-react": "^0.x.x",
     "react": "^18.x.x",
     "react-dom": "^18.x.x",
