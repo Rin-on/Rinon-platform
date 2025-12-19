@@ -1860,6 +1860,14 @@ const RinON = () => {
         setHasPageLoaded(true);
     }, []);
 
+    // Set body background color to prevent purple showing on zoom out
+    useEffect(() => {
+        document.body.style.backgroundColor = darkMode ? '#000000' : '#f9fafb';
+        return () => {
+            document.body.style.backgroundColor = '';
+        };
+    }, [darkMode]);
+
     // Load notification preferences when user logs in
     useEffect(() => {
         if (user) {
@@ -4405,7 +4413,7 @@ const RinON = () => {
     };
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-black' : 'bg-gray-50'}`}>
+        <div className={`min-h-screen w-full transition-colors duration-300 ${darkMode ? 'bg-black' : 'bg-gray-50'}`}>
 
             <header className={`backdrop-blur-lg border-b sticky top-0 z-50 shadow-lg transition-colors duration-300 ${darkMode
                 ? 'bg-[#2D2A26]/80 border-amber-500/20 shadow-amber-500/10'
