@@ -6500,28 +6500,78 @@ const RinON = () => {
                                                 key={article.id}
                                                 data-article-card
                                                 onClick={() => openArticle(article)}
-                                                className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl ${darkMode ? 'bg-[#1a1a1a] border border-gray-800' : 'bg-white border border-gray-200'
-                                                    }`}
+                                                className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/30"
                                             >
-                                                <div className="relative h-56 overflow-hidden">
+                                                <div className="relative h-80 overflow-hidden">
                                                     <img
                                                         src={article.image}
                                                         alt={article.titleAl}
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                         onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
                                                     />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                                                    <span className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white text-xs font-bold rounded-full">
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+
+                                                    <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white text-xs font-bold backdrop-blur-sm shadow-lg">
                                                         {article.category}
                                                     </span>
-                                                </div>
-                                                <div className="p-5">
-                                                    <h3 className={`text-lg font-bold mb-2 line-clamp-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
-                                                        {language === 'al' ? article.titleAl : article.titleEn}
-                                                    </h3>
-                                                    <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                        {language === 'al' ? article.contentAl : article.contentEn}
-                                                    </p>
+
+                                                    <div className="absolute top-4 right-4 flex gap-2">
+                                                        {/* Save/Bookmark Button */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleSaveArticle(article.id);
+                                                            }}
+                                                            className={`p-2 rounded-full transition z-10 shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
+                                                            title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
+                                                        >
+                                                            {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleNativeShare(article, 'article');
+                                                            }}
+                                                            className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
+                                                            title={t('Shpërndaj', 'Share')}
+                                                        >
+                                                            <Share2 className="h-4 w-4" />
+                                                        </button>
+                                                        {showAdmin && (
+                                                            <>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        editArticle(article);
+                                                                    }}
+                                                                    className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
+                                                                >
+                                                                    <Edit className="h-4 w-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        deleteArticle(article.id);
+                                                                    }}
+                                                                    className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                                        <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-amber-400 transition">
+                                                            {language === 'al' ? article.titleAl : article.titleEn}
+                                                        </h3>
+                                                        <div className="flex items-center gap-4 text-sm opacity-80">
+                                                            <span>{article.date}</span>
+                                                            <span className="text-amber-400 font-medium group-hover:underline">
+                                                                {t('Lexo më shumë →', 'Read more →')}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -6639,27 +6689,78 @@ const RinON = () => {
                                             key={article.id}
                                             data-article-card
                                             onClick={() => openArticle(article)}
-                                            className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl ${darkMode ? 'bg-[#1a1a1a] border border-gray-800' : 'bg-white border border-gray-200'}`}
+                                            className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/30"
                                         >
-                                            <div className="relative h-56 overflow-hidden">
+                                            <div className="relative h-80 overflow-hidden">
                                                 <img
                                                     src={article.image}
                                                     alt={article.titleAl}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                                                <span className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white text-xs font-bold rounded-full">
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+
+                                                <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white text-xs font-bold backdrop-blur-sm shadow-lg">
                                                     {article.category}
                                                 </span>
-                                            </div>
-                                            <div className="p-5">
-                                                <h3 className={`text-lg font-bold mb-2 line-clamp-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
-                                                    {language === 'al' ? article.titleAl : article.titleEn}
-                                                </h3>
-                                                <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                    {language === 'al' ? article.contentAl : article.contentEn}
-                                                </p>
+
+                                                <div className="absolute top-4 right-4 flex gap-2">
+                                                    {/* Save/Bookmark Button */}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleSaveArticle(article.id);
+                                                        }}
+                                                        className={`p-2 rounded-full transition z-10 shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
+                                                        title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
+                                                    >
+                                                        {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleNativeShare(article, 'article');
+                                                        }}
+                                                        className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
+                                                        title={t('Shpërndaj', 'Share')}
+                                                    >
+                                                        <Share2 className="h-4 w-4" />
+                                                    </button>
+                                                    {showAdmin && (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    editArticle(article);
+                                                                }}
+                                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    deleteArticle(article.id);
+                                                                }}
+                                                                className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                                    <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-amber-400 transition">
+                                                        {language === 'al' ? article.titleAl : article.titleEn}
+                                                    </h3>
+                                                    <div className="flex items-center gap-4 text-sm opacity-80">
+                                                        <span>{article.date}</span>
+                                                        <span className="text-amber-400 font-medium group-hover:underline">
+                                                            {t('Lexo më shumë →', 'Read more →')}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
