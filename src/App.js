@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, BookmarkPlus, Sparkles, ArrowUp, ChevronUp, Smartphone } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, BookmarkPlus, Sparkles, ArrowUp, ChevronUp, Smartphone, FileText } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
@@ -190,8 +190,8 @@ const NotificationModal = ({
 
                         <div className="space-y-3">
                             <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${preferences.notify_news
-                                    ? darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-300'
-                                    : darkMode ? 'bg-[#3D3A36] border-[#4D4A46]' : 'bg-gray-50 border-gray-200'
+                                ? darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-300'
+                                : darkMode ? 'bg-[#3D3A36] border-[#4D4A46]' : 'bg-gray-50 border-gray-200'
                                 }`}>
                                 <div className="flex items-center gap-3">
                                     <Newspaper className={`w-5 h-5 ${preferences.notify_news ? 'text-amber-500' : 'text-gray-400'}`} />
@@ -213,8 +213,8 @@ const NotificationModal = ({
                             </label>
 
                             <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${preferences.notify_events
-                                    ? darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-300'
-                                    : darkMode ? 'bg-[#3D3A36] border-[#4D4A46]' : 'bg-gray-50 border-gray-200'
+                                ? darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-300'
+                                : darkMode ? 'bg-[#3D3A36] border-[#4D4A46]' : 'bg-gray-50 border-gray-200'
                                 }`}>
                                 <div className="flex items-center gap-3">
                                     <Calendar className={`w-5 h-5 ${preferences.notify_events ? 'text-amber-500' : 'text-gray-400'}`} />
@@ -306,8 +306,8 @@ const SignupPromptPopup = ({ show, onClose, onSignup, darkMode, t }) => {
                         <button
                             onClick={onClose}
                             className={`w-full px-6 py-3 rounded-xl border transition-all ${darkMode
-                                    ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
-                                    : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                                ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
+                                : 'border-gray-300 text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
                             {t('Jo Tani', 'Not Now')}
@@ -1492,7 +1492,7 @@ const RinON = () => {
 
     const [formData, setFormData] = useState({
         titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
+        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false, postType: 'lajme'
     });
 
     const [eventFormData, setEventFormData] = useState({
@@ -4477,8 +4477,8 @@ const RinON = () => {
                                 <button
                                     onClick={() => setShowNotificationModal(true)}
                                     className={`relative p-2 rounded-lg transition-all border ${notificationsEnabled
-                                            ? 'bg-amber-500/20 text-amber-500 border-amber-500/30'
-                                            : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                                        ? 'bg-amber-500/20 text-amber-500 border-amber-500/30'
+                                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
                                         }`}
                                 >
                                     <Bell className="h-5 w-5" />
@@ -4574,8 +4574,8 @@ const RinON = () => {
                                 <button
                                     onClick={() => setShowNotificationModal(true)}
                                     className={`relative p-2 rounded-lg transition-all border ${notificationsEnabled
-                                            ? 'bg-amber-500/20 text-amber-500 border-amber-500/30 hover:bg-amber-500/30'
-                                            : 'bg-gray-500/20 text-gray-400 border-gray-500/30 hover:bg-gray-500/30'
+                                        ? 'bg-amber-500/20 text-amber-500 border-amber-500/30 hover:bg-amber-500/30'
+                                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30 hover:bg-gray-500/30'
                                         }`}
                                     title={t('Njoftimet', 'Notifications')}
                                 >
@@ -4641,7 +4641,7 @@ const RinON = () => {
                 Scrollable category filter below header
                ========================================== */}
             {/* Horizontal Category Pills - Only on Home Page */}
-            {currentPage === 'home' && (
+            {currentPage === 'lajme' && (
                 <div className={`sticky top-[88px] md:top-[96px] z-40 border-b backdrop-blur-xl transition-colors duration-300 ${darkMode
                     ? 'bg-[#2D2A26]/95 border-amber-500/10'
                     : 'bg-white/95 border-amber-100'
@@ -4770,6 +4770,36 @@ const RinON = () => {
                                     <option key={cat.al} value={cat.al}>{language === 'al' ? cat.al : cat.en}</option>
                                 ))}
                             </select>
+
+                            {/* Post Type: Lajme vs Artikull */}
+                            <div className="space-y-2">
+                                <label className="text-white text-sm font-medium">{t('Lloji i Postimit', 'Post Type')}</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 text-white cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="postType"
+                                            value="lajme"
+                                            checked={formData.postType === 'lajme'}
+                                            onChange={(e) => setFormData({ ...formData, postType: e.target.value })}
+                                            className="w-4 h-4 text-amber-600 focus:ring-amber-500/20"
+                                        />
+                                        <span>{t('Lajme (News)', 'Lajme (News)')}</span>
+                                    </label>
+                                    <label className="flex items-center gap-2 text-white cursor-pointer">
+                                        <input
+                                            type="radio"
+                                            name="postType"
+                                            value="artikull"
+                                            checked={formData.postType === 'artikull'}
+                                            onChange={(e) => setFormData({ ...formData, postType: e.target.value })}
+                                            className="w-4 h-4 text-amber-600 focus:ring-amber-500/20"
+                                        />
+                                        <span>{t('Artikull (Article)', 'Artikull (Article)')}</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <input
                                 type="text"
                                 placeholder={t('URL Imazhi', 'Image URL')}
@@ -6345,228 +6375,261 @@ const RinON = () => {
                     </div>
                 ) : currentPage === 'home' ? (
                     <>
-                        {featuredArticles.length > 0 && (
-                            <div className="relative bg-gradient-to-br from-[#2D2A26] via-[#3D3A36] to-[#2D2A26] text-white overflow-hidden">
-                                <div className="absolute inset-0 opacity-20">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] animate-pulse"></div>
-                                </div>
-                                <div className="max-w-7xl mx-auto relative">
-                                    <div className="relative min-h-[600px] overflow-hidden">
-                                        {featuredArticles.map((article, index) => (
-                                            <div
-                                                key={article.id}
-                                                className={`absolute inset-0 transition-opacity duration-700 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-10"></div>
-                                                <img
-                                                    src={article.image}
-                                                    alt={article.titleAl}
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800';
-                                                    }}
-                                                />
-                                                <div className="absolute inset-0 z-20 flex items-center">
-                                                    <div className="max-w-3xl mx-auto px-4 md:px-8">
-                                                        <span className="inline-block px-4 py-2 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-sm font-bold rounded-full mb-6 shadow-lg shadow-amber-500/50 animate-pulse">
-                                                            {article.category}
-                                                        </span>
-                                                        <h2 className="text-5xl md:text-7xl font-black mb-6 leading-tight bg-gradient-to-r from-white via-amber-200 to-orange-200 bg-clip-text text-transparent">
-                                                            {language === 'al' ? article.titleAl : article.titleEn}
-                                                        </h2>
-                                                        <p className="text-xl text-gray-200 mb-8 line-clamp-2">
-                                                            {language === 'al' ? article.contentAl : article.contentEn}
-                                                        </p>
-                                                        <button
-                                                            onClick={() => openArticle(article)}
-                                                            className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white px-8 py-4 rounded-full font-bold hover:from-amber-500 hover:to-[#FF5252] transform hover:scale-105 transition-all shadow-lg shadow-amber-500/50"
-                                                        >
-                                                            {t('Lexo më shumë', 'Read more')}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-
-                                        {featuredArticles.length > 1 && (
-                                            <>
-                                                <button onClick={prevSlide} className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-lg border border-white/20 transition-all">
-                                                    <ChevronLeft className="h-6 w-6 text-white" />
-                                                </button>
-                                                <button onClick={nextSlide} className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 p-3 rounded-full backdrop-blur-lg border border-white/20 transition-all">
-                                                    <ChevronRight className="h-6 w-6 text-white" />
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 animate-bounce">
-                                    <ChevronDown className="w-8 h-8 text-white/60" />
-                                </div>
-                            </div>
-                        )}
-
                         {/* ==========================================
-                            QUICK CTA CARDS - Mobile Swipeable
-                            Eye-catching action cards for quick navigation
+                            HERO SECTION - Welcome message
                            ========================================== */}
-                        <div className="md:hidden max-w-7xl mx-auto px-4 py-6">
-                            <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-                                {/* Events CTA */}
-                                <div
-                                    onClick={() => changePage('events')}
-                                    className={`flex-shrink-0 w-[280px] p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02] ${darkMode
-                                        ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/30'
-                                        : 'bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-                                            <Calendar className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {t('Evente', 'Events')}
-                                            </h3>
-                                            <p className={`text-sm ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                                                {otherEvents.length} {t('të disponueshme', 'available')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {t('Zbulo eventet më të fundit për të rinj', 'Discover the latest youth events')}
-                                    </p>
-                                    <span className="text-amber-500 text-sm font-semibold flex items-center gap-1">
-                                        {t('Shiko Kalendarin', 'View Calendar')} <ChevronRight className="w-4 h-4" />
-                                    </span>
+                        <div className={`relative overflow-hidden ${darkMode ? 'bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a]' : 'bg-gradient-to-br from-white via-gray-50 to-white'}`}>
+                            <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-10">
+                                {/* Animated background elements */}
+                                <div className="absolute inset-0 overflow-hidden opacity-30">
+                                    <div className="absolute top-20 left-10 w-72 h-72 bg-[#fbbf24] rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
+                                    <div className="absolute top-40 right-10 w-72 h-72 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
+                                    <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
                                 </div>
 
-                                {/* Forum CTA */}
-                                <div
-                                    onClick={() => changePage('discussion')}
-                                    className={`flex-shrink-0 w-[280px] p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02] ${darkMode
-                                        ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30'
-                                        : 'bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center shadow-lg">
-                                            <MessageCircle className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {t('Forum', 'Forum')}
-                                            </h3>
-                                            <p className={`text-sm ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                                                {topics.length} {t('tema', 'topics')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {t('Diskuto me të rinj të tjerë', 'Discuss with other youth')}
-                                    </p>
-                                    <span className="text-blue-500 text-sm font-semibold flex items-center gap-1">
-                                        {t('Bashkohu', 'Join')} <ChevronRight className="w-4 h-4" />
-                                    </span>
-                                </div>
-
-                                {/* Schools CTA */}
-                                <div
-                                    onClick={() => changePage('schools')}
-                                    className={`flex-shrink-0 w-[280px] p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02] ${darkMode
-                                        ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30'
-                                        : 'bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg">
-                                            <School className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {t('Shkollat', 'Schools')}
-                                            </h3>
-                                            <p className={`text-sm ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                                                {schools.length} {t('shkolla', 'schools')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {t('Pasqyra e shkollave Shqiptare', 'Albanian schools mirror')}
-                                    </p>
-                                    <span className="text-green-500 text-sm font-semibold flex items-center gap-1">
-                                        {t('Eksploro', 'Explore')} <ChevronRight className="w-4 h-4" />
-                                    </span>
-                                </div>
-
-                                {/* Volunteer CTA */}
-                                <a
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSd2J3S01v9PhZyQgSLNLmZ5YnDUbQePlta_LXx1D13VLB644A/viewform?usp=dialog"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={`flex-shrink-0 w-[280px] p-5 rounded-2xl cursor-pointer transition-all transform hover:scale-[1.02] ${darkMode
-                                        ? 'bg-gradient-to-br from-pink-500/20 to-rose-500/20 border border-pink-500/30'
-                                        : 'bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center shadow-lg">
-                                            <Heart className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {t('Vullnetar', 'Volunteer')}
-                                            </h3>
-                                            <p className={`text-sm ${darkMode ? 'text-pink-400' : 'text-pink-600'}`}>
-                                                {t('Bashkohu me ne', 'Join us')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {t('Behu pjesë e ekipit tonë', 'Become part of our team')}
-                                    </p>
-                                    <span className="text-pink-500 text-sm font-semibold flex items-center gap-1">
-                                        {t('Apliko Tani', 'Apply Now')} <ChevronRight className="w-4 h-4" />
-                                    </span>
-                                </a>
-                            </div>
-                        </div>
-
-                        {/* Search Results Info */}
-                        {searchQuery && (
-                            <div className="max-w-7xl mx-auto px-4 pb-4">
-                                <div className={`flex items-center justify-between p-3 rounded-xl ${darkMode ? 'bg-amber-500/10 border border-amber-500/20' : 'bg-amber-50 border border-amber-200'
-                                    }`}>
-                                    <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                        <Search className="w-4 h-4 inline mr-2" />
-                                        {t('Rezultate për', 'Results for')} "<span className="font-semibold text-amber-500">{searchQuery}</span>"
-                                        <span className="ml-2">({filteredArticles.length} {t('artikuj', 'articles')})</span>
+                                <div className="relative text-center">
+                                    <h1 className={`text-5xl md:text-7xl font-black mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        <span className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#fbbf24] bg-clip-text text-transparent">
+                                            {t('Aktivizo', 'Activate')}
+                                        </span>
+                                        {' '}{t('Rininë Tënde', 'Your Youth')}
+                                    </h1>
+                                    <p className={`text-xl md:text-2xl mb-8 max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        {t('Çdo ngjarje rinore, lajm dhe mundësi në Tiranë', 'Every youth event, news and opportunity in Tirana')}
                                     </p>
                                     <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="text-amber-500 text-sm font-medium hover:underline"
+                                        onClick={() => changePage('events')}
+                                        className="bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl hover:scale-105 transition-all"
                                     >
-                                        {t('Pastro', 'Clear')}
+                                        {t('Eksploro Ngjarjet', 'Explore Events')} →
                                     </button>
                                 </div>
                             </div>
-                        )}
+                        </div>
 
+                        {/* ==========================================
+                            UPCOMING EVENTS PREVIEW
+                           ========================================== */}
+                        <div className={`py-12 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
+                            <div className="max-w-7xl mx-auto px-4">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        {t('Ngjarje të ardhshme', 'Upcoming Events')}
+                                    </h2>
+                                    <button
+                                        onClick={() => changePage('events')}
+                                        className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
+                                    >
+                                        {t('Shiko të gjitha', 'View all')} →
+                                    </button>
+                                </div>
+
+                                {otherEvents.length === 0 ? (
+                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-50'}`}>
+                                        <Calendar className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                            {t('Asnjë ngjarje e ardhshme ende', 'No upcoming events yet')}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {otherEvents.slice(0, 3).map((event) => (
+                                            <div
+                                                key={event.id}
+                                                onClick={() => { setSelectedEvent(event); setShowEventModal(true); }}
+                                                className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl ${darkMode ? 'bg-[#2a2a2a] border border-gray-800' : 'bg-white border border-gray-200'
+                                                    }`}
+                                            >
+                                                <div className="relative h-48 overflow-hidden">
+                                                    <img
+                                                        src={event.image}
+                                                        alt={event.titleAl}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800'; }}
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                                                    <div className="absolute top-3 left-3 px-3 py-1 bg-[#fbbf24] text-black text-xs font-bold rounded-full">
+                                                        {event.date || event.dateAl}
+                                                    </div>
+                                                </div>
+                                                <div className="p-5">
+                                                    <h3 className={`text-xl font-bold mb-2 line-clamp-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                        {language === 'al' ? event.titleAl : event.titleEn}
+                                                    </h3>
+                                                    {event.location && (
+                                                        <p className={`text-sm flex items-center gap-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                            <MapPin className="w-4 h-4" /> {event.location}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ==========================================
+                            LATEST NEWS PREVIEW
+                           ========================================== */}
+                        <div className={`py-12 ${darkMode ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
+                            <div className="max-w-7xl mx-auto px-4">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        {t('Lajme të fundit', 'Latest News')}
+                                    </h2>
+                                    <button
+                                        onClick={() => changePage('lajme')}
+                                        className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
+                                    >
+                                        {t('Lexo më shumë', 'Read more')} →
+                                    </button>
+                                </div>
+
+                                {articles.length === 0 ? (
+                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
+                                        <Newspaper className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                            {t('Asnjë artikull ende', 'No articles yet')}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {articles.slice(0, 3).map((article) => (
+                                            <div
+                                                key={article.id}
+                                                data-article-card
+                                                onClick={() => openArticle(article)}
+                                                className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl ${darkMode ? 'bg-[#1a1a1a] border border-gray-800' : 'bg-white border border-gray-200'
+                                                    }`}
+                                            >
+                                                <div className="relative h-56 overflow-hidden">
+                                                    <img
+                                                        src={article.image}
+                                                        alt={article.titleAl}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                                                    <span className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white text-xs font-bold rounded-full">
+                                                        {article.category}
+                                                    </span>
+                                                </div>
+                                                <div className="p-5">
+                                                    <h3 className={`text-lg font-bold mb-2 line-clamp-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                        {language === 'al' ? article.titleAl : article.titleEn}
+                                                    </h3>
+                                                    <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                        {language === 'al' ? article.contentAl : article.contentEn}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ==========================================
+                            COMMUNITY SPOTLIGHT
+                           ========================================== */}
+                        <div className={`py-12 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
+                            <div className="max-w-7xl mx-auto px-4">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        {t('Nga komuniteti', 'From the Community')}
+                                    </h2>
+                                    <button
+                                        onClick={() => changePage('discussion')}
+                                        className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
+                                    >
+                                        {t('Shiko forumin', 'View forum')} →
+                                    </button>
+                                </div>
+
+                                {topics.length === 0 ? (
+                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-50'}`}>
+                                        <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                            {t('Asnjë diskutim ende', 'No discussions yet')}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {topics.slice(0, 4).map((topic) => (
+                                            <div
+                                                key={topic.id}
+                                                onClick={() => { setSelectedTopic(topic); changePage('discussion'); }}
+                                                className={`p-5 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${darkMode
+                                                    ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-gray-800'
+                                                    : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
+                                                    }`}
+                                            >
+                                                <h3 className={`text-lg font-bold mb-2 hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                    {language === 'al' ? topic.titleAl : topic.titleEn}
+                                                </h3>
+                                                <p className={`text-sm line-clamp-2 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    {language === 'al' ? topic.descriptionAl : topic.descriptionEn}
+                                                </p>
+                                                <div className="flex items-center gap-2 text-xs text-[#fbbf24]">
+                                                    <MessageCircle className="w-4 h-4" />
+                                                    <span>{t('Bashkohu në diskutim', 'Join discussion')}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ==========================================
+                            PARTNERS SECTION
+                           ========================================== */}
+                        {partners.length > 0 && (
+                            <div className={`py-12 border-t ${darkMode ? 'bg-[#0a0a0a] border-gray-800' : 'bg-gray-50 border-gray-200'}`}>
+                                <div className="max-w-7xl mx-auto px-4">
+                                    <h2 className={`text-2xl md:text-3xl font-bold text-center mb-8 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        {t('Partnerët tanë', 'Our Partners')}
+                                    </h2>
+                                    <div className="flex flex-wrap items-center justify-center gap-8">
+                                        {partners.map((partner) => (
+                                            <a
+                                                key={partner.id}
+                                                href={partner.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`p-4 rounded-xl transition-all hover:scale-110 ${darkMode ? 'bg-[#2a2a2a]' : 'bg-white'}`}
+                                            >
+                                                <img
+                                                    src={partner.image}
+                                                    alt={partner.nameAl}
+                                                    className="h-12 w-auto object-contain grayscale hover:grayscale-0 transition-all"
+                                                />
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : currentPage === 'lajme' ? (
+                    <>
+                        {/* ==========================================
+                            LAJME PAGE - All news articles with category filters
+                           ========================================== */}
                         <div className="max-w-7xl mx-auto px-4 py-12">
+                            <h1 className={`text-4xl md:text-5xl font-bold mb-8 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                {t('Lajme', 'News')}
+                            </h1>
+
                             {filteredArticles.length === 0 ? (
                                 <div className="text-center py-20">
-                                    <div className="w-20 h-20 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-amber-500/30">
-                                        {searchQuery ? <Search className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-amber-600'}`} /> : <TrendingUp className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-amber-600'}`} />}
-                                    </div>
-                                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                        {searchQuery ? t('Asnjë rezultat', 'No results') : t('Asnjë artikull ende', 'No articles yet')}
+                                    <Newspaper className={`w-20 h-20 mx-auto mb-6 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        {t('Asnjë lajm ende', 'No news yet')}
                                     </h3>
                                     <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                        {searchQuery
-                                            ? t('Provo të kërkosh diçka tjetër', 'Try searching for something else')
-                                            : t('Artikujt do të shfaqen këtu kur të publikohen', 'Articles will appear here when published')
-                                        }
+                                        {t('Lajmet do të shfaqen këtu kur të publikohen', 'News will appear here when published')}
                                     </p>
                                 </div>
                             ) : (
@@ -6575,88 +6638,118 @@ const RinON = () => {
                                         <div
                                             key={article.id}
                                             data-article-card
-                                            className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/30"
                                             onClick={() => openArticle(article)}
+                                            className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl ${darkMode ? 'bg-[#1a1a1a] border border-gray-800' : 'bg-white border border-gray-200'}`}
                                         >
-                                            <div className="relative h-80 overflow-hidden">
+                                            <div className="relative h-56 overflow-hidden">
                                                 <img
                                                     src={article.image}
                                                     alt={article.titleAl}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                    onError={(e) => {
-                                                        e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800';
-                                                    }}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
-
-                                                <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-xs font-bold backdrop-blur-sm shadow-lg">
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                                                <span className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white text-xs font-bold rounded-full">
                                                     {article.category}
                                                 </span>
-                                                <div className="absolute top-4 right-4 flex gap-2">
-                                                    {/* Save/Bookmark Button */}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleSaveArticle(article.id);
-                                                        }}
-                                                        className={`p-2 rounded-full transition z-10 shadow-lg ${savedArticles.includes(article.id)
-                                                            ? 'bg-amber-500 text-white'
-                                                            : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
-                                                            }`}
-                                                        title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
-                                                    >
-                                                        {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleNativeShare(article, 'article');
-                                                        }}
-                                                        className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
-                                                        title={t('Shpërndaj', 'Share')}
-                                                    >
-                                                        <Share2 className="h-4 w-4" />
-                                                    </button>
-                                                    {showAdmin && (
-                                                        <>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    editArticle(article);
-                                                                }}
-                                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                                            >
-                                                                <Edit className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    deleteArticle(article.id);
-                                                                }}
-                                                                className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-
-                                                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                                    <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-amber-400 transition">
-                                                        {language === 'al' ? article.titleAl : article.titleEn}
-                                                    </h3>
-                                                    <div className="flex items-center gap-4 text-sm opacity-80">
-                                                        <span>{article.date}</span>
-                                                        <span className="text-amber-400 font-medium group-hover:underline">
-                                                            {t('Lexo më shumë →', 'Read more →')}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                            </div>
+                                            <div className="p-5">
+                                                <h3 className={`text-lg font-bold mb-2 line-clamp-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                    {language === 'al' ? article.titleAl : article.titleEn}
+                                                </h3>
+                                                <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    {language === 'al' ? article.contentAl : article.contentEn}
+                                                </p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    </>
+                ) : currentPage === 'komuniteti' ? (
+                    <>
+                        {/* ==========================================
+                            KOMUNITETI PAGE - Articles + Discussions
+                           ========================================== */}
+                        <div className="max-w-7xl mx-auto px-4 py-12">
+                            <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                Komuniteti
+                            </h1>
+                            <p className={`text-lg mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Artikuj dhe diskutime nga komuniteti rinor', 'Articles and discussions from the youth community')}
+                            </p>
+
+                            {/* Articles Section */}
+                            <div className="mb-12">
+                                <h2 className={`text-2xl md:text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                    {t('Artikuj', 'Articles')}
+                                </h2>
+                                {articles.length === 0 ? (
+                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
+                                        <FileText className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                            {t('Asnjë artikull ende', 'No articles yet')}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                        {articles.slice(0, 6).map((article) => (
+                                            <div
+                                                key={article.id}
+                                                onClick={() => openArticle(article)}
+                                                className={`group p-6 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800' : 'bg-white hover:bg-gray-50 border border-gray-200'}`}
+                                            >
+                                                <span className="inline-block px-3 py-1 bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white text-xs font-bold rounded-full mb-3">
+                                                    {article.category}
+                                                </span>
+                                                <h3 className={`text-xl font-bold mb-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                    {language === 'al' ? article.titleAl : article.titleEn}
+                                                </h3>
+                                                <p className={`text-sm line-clamp-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    {language === 'al' ? article.contentAl : article.contentEn}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Discussions Section */}
+                            <div>
+                                <h2 className={`text-2xl md:text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                    {t('Diskutime', 'Discussions')}
+                                </h2>
+                                {topics.length === 0 ? (
+                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
+                                        <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                            {t('Asnjë diskutim ende', 'No discussions yet')}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {topics.map((topic) => (
+                                            <div
+                                                key={topic.id}
+                                                onClick={() => { setSelectedTopic(topic); changePage('discussion'); }}
+                                                className={`p-6 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800' : 'bg-white hover:bg-gray-50 border border-gray-200'}`}
+                                            >
+                                                <h3 className={`text-xl font-bold mb-2 hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                    {language === 'al' ? topic.titleAl : topic.titleEn}
+                                                </h3>
+                                                <p className={`text-sm line-clamp-2 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    {language === 'al' ? topic.descriptionAl : topic.descriptionEn}
+                                                </p>
+                                                <div className="flex items-center gap-2 text-xs text-[#fbbf24]">
+                                                    <MessageCircle className="w-4 h-4" />
+                                                    <span>{t('Bashkohu në diskutim', 'Join discussion')}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </>
                 ) : currentPage === 'events' ? (
@@ -6979,68 +7072,57 @@ const RinON = () => {
                 : 'bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
                 }`}>
                 <div className="flex items-center justify-around px-4 pt-3 pb-6">
-                    {/* Home/News */}
+                    {/* Home */}
                     <button
                         onClick={() => changePage('home')}
-                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'home'
-                            ? darkMode
-                                ? 'text-amber-400'
-                                : 'text-amber-600'
-                            : darkMode
-                                ? 'text-gray-500 active:text-gray-300'
-                                : 'text-gray-400 active:text-gray-600'
-                            }`}
+                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'home' ? (darkMode ? 'text-[#fbbf24]' : 'text-[#f59e0b]') : (darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600')}`}
                     >
-                        <Newspaper className={`w-6 h-6 mb-1 ${currentPage === 'home' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
+                        <Home className={`w-6 h-6 mb-1 ${currentPage === 'home' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
                         <span className={`text-[11px] ${currentPage === 'home' ? 'font-semibold' : 'font-normal'}`}>
-                            {t('Lajme', 'News')}
+                            Home
                         </span>
                     </button>
 
-                    {/* Events - Elevated center button */}
+                    {/* Events */}
                     <button
                         onClick={() => changePage('events')}
-                        className={`flex flex-col items-center justify-center min-w-[72px] min-h-[56px] -mt-4 rounded-2xl transition-all active:scale-95 ${currentPage === 'events'
-                            ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/30'
-                            : darkMode
-                                ? 'bg-[#2a2826] text-gray-400 active:bg-[#3a3836]'
-                                : 'bg-gray-100 text-gray-500 active:bg-gray-200'
-                            }`}
+                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'events' ? (darkMode ? 'text-[#fbbf24]' : 'text-[#f59e0b]') : (darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600')}`}
                     >
                         <Calendar className={`w-6 h-6 mb-1 ${currentPage === 'events' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
                         <span className={`text-[11px] ${currentPage === 'events' ? 'font-semibold' : 'font-normal'}`}>
-                            {t('Evente', 'Events')}
+                            Evente
                         </span>
                     </button>
 
-                    {/* Forum */}
+                    {/* Lajme - Center position (replaces admin button) */}
                     <button
-                        onClick={() => changePage('discussion')}
-                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'discussion'
-                            ? darkMode
-                                ? 'text-amber-400'
-                                : 'text-amber-600'
-                            : darkMode
-                                ? 'text-gray-500 active:text-gray-300'
-                                : 'text-gray-400 active:text-gray-600'
-                            }`}
+                        onClick={() => changePage('lajme')}
+                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'lajme' ? (darkMode ? 'text-[#fbbf24]' : 'text-[#f59e0b]') : (darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600')}`}
                     >
-                        <MessageCircle className={`w-6 h-6 mb-1 ${currentPage === 'discussion' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[11px] ${currentPage === 'discussion' ? 'font-semibold' : 'font-normal'}`}>
-                            {t('Forum', 'Forum')}
+                        <Newspaper className={`w-6 h-6 mb-1 ${currentPage === 'lajme' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[11px] ${currentPage === 'lajme' ? 'font-semibold' : 'font-normal'}`}>
+                            Lajme
+                        </span>
+                    </button>
+
+                    {/* Komuniteti (Articles + Discussions) */}
+                    <button
+                        onClick={() => changePage('komuniteti')}
+                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'komuniteti' ? (darkMode ? 'text-[#fbbf24]' : 'text-[#f59e0b]') : (darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600')}`}
+                    >
+                        <MessageCircle className={`w-6 h-6 mb-1 ${currentPage === 'komuniteti' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[11px] ${currentPage === 'komuniteti' ? 'font-semibold' : 'font-normal'}`}>
+                            Komuniteti
                         </span>
                     </button>
 
                     {/* Profile/Account */}
                     <button
                         onClick={() => user ? setShowPreferences(true) : (setShowAuthModal(true), setAuthMode('login'))}
-                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${darkMode
-                            ? 'text-gray-500 active:text-gray-300'
-                            : 'text-gray-400 active:text-gray-600'
-                            }`}
+                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600'}`}
                     >
                         {user ? (
-                            <div className="w-7 h-7 mb-1 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center ring-2 ring-offset-2 ring-offset-transparent ring-amber-400/30">
+                            <div className="w-7 h-7 mb-1 rounded-full bg-gradient-to-br from-[#fbbf24] to-orange-500 flex items-center justify-center ring-2 ring-offset-2 ring-offset-transparent ring-yellow-400/30">
                                 <span className="text-white text-xs font-semibold">
                                     {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                                 </span>
@@ -7048,8 +7130,8 @@ const RinON = () => {
                         ) : (
                             <User className="w-6 h-6 mb-1 stroke-[1.5px]" />
                         )}
-                        <span className="text-[11px] font-normal">
-                            {user ? t('Profili', 'Profile') : t('Hyr', 'Login')}
+                        <span className={`text-[11px] font-normal`}>
+                            {user ? t('Profil', 'Profile') : t('Hyr', 'Login')}
                         </span>
                     </button>
                 </div>
@@ -7061,67 +7143,53 @@ const RinON = () => {
                ========================================== */}
             <div className="md:hidden fixed bottom-24 right-4 z-50">
                 {/* FAB Menu Items */}
-                <div className={`absolute bottom-14 right-0 flex flex-col gap-2 transition-all duration-300 ${fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-                    }`}>
-                    {/* Drafts - Admin only */}
-                    {showAdmin && drafts.length > 0 && (
-                        <button
-                            onClick={() => { setShowDraftsModal(true); setFabOpen(false); }}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-amber-500 text-white'
-                                }`}
-                        >
-                            <Edit className="w-4 h-4" />
-                            <span className="text-sm font-medium">{t('Drafts', 'Drafts')} ({drafts.length})</span>
-                        </button>
-                    )}
+                <div className={`absolute bottom-14 right-0 flex flex-col gap-2 transition-all duration-300 ${fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                    {/* User: Write Your Own Article */}
+                    <a
+                        href="mailto:rinon@example.com?subject=Propozim%20Artikulli&body=P%C3%ABrsh%C3%ABndetje,%0A%0AKam%20nj%C3%AB%20ide%20p%C3%ABr%20nj%C3%AB%20artikull..."
+                        onClick={() => setFabOpen(false)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode ? 'bg-[#3D3A36] text-white border border-[#fbbf24]/30 hover:bg-[#4D4A46]' : 'bg-white text-[#2D2A26] border border-yellow-200 hover:bg-yellow-50'}`}
+                    >
+                        <Edit className="w-4 h-4 text-[#fbbf24]" />
+                        <span className="text-sm font-medium">{t('Shkruaj Artikull', 'Write Article')}</span>
+                    </a>
+
+                    {/* User: Become a Volunteer */}
+                    <a
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSd2J3S01v9PhZyQgSLNLmZ5YnDUbQePlta_LXx1D13VLB644A/viewform"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setFabOpen(false)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode ? 'bg-[#3D3A36] text-white border border-[#fbbf24]/30 hover:bg-[#4D4A46]' : 'bg-white text-[#2D2A26] border border-yellow-200 hover:bg-yellow-50'}`}
+                    >
+                        <Heart className="w-4 h-4 text-[#fbbf24]" />
+                        <span className="text-sm font-medium">{t('Bëhu Vullnetar', 'Become Volunteer')}</span>
+                    </a>
 
                     {/* Language Toggle */}
                     <button
                         onClick={() => { setLanguage(language === 'al' ? 'en' : 'al'); setFabOpen(false); }}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                            ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
-                            : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
-                            }`}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode ? 'bg-[#3D3A36] text-white border border-[#fbbf24]/30 hover:bg-[#4D4A46]' : 'bg-white text-[#2D2A26] border border-yellow-200 hover:bg-yellow-50'}`}
                     >
-                        <Globe className="w-4 h-4 text-amber-500" />
+                        <Globe className="w-4 h-4 text-[#fbbf24]" />
                         <span className="text-sm font-medium">{language === 'al' ? '🇬🇧 English' : '🇦🇱 Shqip'}</span>
                     </button>
 
                     {/* Dark Mode Toggle */}
                     <button
                         onClick={() => { setDarkMode(!darkMode); setFabOpen(false); }}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                            ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
-                            : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
-                            }`}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode ? 'bg-[#3D3A36] text-white border border-[#fbbf24]/30 hover:bg-[#4D4A46]' : 'bg-white text-[#2D2A26] border border-yellow-200 hover:bg-yellow-50'}`}
                     >
-                        {darkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-amber-500" />}
+                        {darkMode ? <Sun className="w-4 h-4 text-[#fbbf24]" /> : <Moon className="w-4 h-4 text-[#fbbf24]" />}
                         <span className="text-sm font-medium">{darkMode ? t('Dritë', 'Light') : t('Errët', 'Dark')}</span>
-                    </button>
-
-                    {/* Schools */}
-                    <button
-                        onClick={() => { changePage('schools'); setFabOpen(false); }}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                            ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
-                            : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
-                            }`}
-                    >
-                        <School className="w-4 h-4 text-amber-500" />
-                        <span className="text-sm font-medium">{t('Shkollat', 'Schools')}</span>
                     </button>
 
                     {/* About/Info */}
                     <button
                         onClick={() => { changePage('about'); setFabOpen(false); }}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode
-                            ? 'bg-[#3D3A36] text-white border border-amber-500/30 hover:bg-[#4D4A46]'
-                            : 'bg-white text-[#2D2A26] border border-amber-200 hover:bg-amber-50'
-                            }`}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all whitespace-nowrap ${darkMode ? 'bg-[#3D3A36] text-white border border-[#fbbf24]/30 hover:bg-[#4D4A46]' : 'bg-white text-[#2D2A26] border border-yellow-200 hover:bg-yellow-50'}`}
                     >
-                        <Heart className="w-4 h-4 text-amber-500" />
+                        <Heart className="w-4 h-4 text-[#fbbf24]" />
                         <span className="text-sm font-medium">{t('Rreth Nesh', 'About Us')}</span>
                     </button>
                 </div>
@@ -7129,10 +7197,7 @@ const RinON = () => {
                 {/* FAB Button */}
                 <button
                     onClick={() => setFabOpen(!fabOpen)}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ${fabOpen
-                        ? 'bg-[#FF6B6B] rotate-45'
-                        : 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B]'
-                        }`}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ${fabOpen ? 'bg-[#FF6B6B] rotate-45' : 'bg-gradient-to-r from-[#fbbf24] to-orange-500'}`}
                 >
                     <Plus className="w-6 h-6 text-white" />
                 </button>
@@ -7141,10 +7206,7 @@ const RinON = () => {
             {/* Spacer for bottom nav on mobile */}
             <div className="md:hidden h-20"></div>
 
-            <footer className={`border-t py-12 pb-24 md:pb-12 transition-colors duration-300 ${darkMode
-                ? 'bg-gradient-to-br from-[#2D2A26] via-[#3D3A36] to-[#2D2A26] text-white border-amber-500/20'
-                : 'bg-gradient-to-br from-[#FFFCF2] via-[#FFE5D9] to-[#FFFCF2] text-gray-900 border-amber-200'
-                }`}>
+            <footer className={`border-t py-12 pb-24 md:pb-12 transition-colors duration-300 ${darkMode ? 'bg-gradient-to-br from-[#2D2A26] via-[#3D3A36] to-[#2D2A26] text-white border-amber-500/20' : 'bg-gradient-to-br from-[#FFFCF2] via-[#FFE5D9] to-[#FFFCF2] text-gray-900 border-amber-200'}`}>
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                         <div>
