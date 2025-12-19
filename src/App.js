@@ -4405,7 +4405,7 @@ const RinON = () => {
     };
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}>
+        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-black' : 'bg-gray-50'}`}>
 
             <header className={`backdrop-blur-lg border-b sticky top-0 z-50 shadow-lg transition-colors duration-300 ${darkMode
                 ? 'bg-[#2D2A26]/80 border-amber-500/20 shadow-amber-500/10'
@@ -4436,6 +4436,9 @@ const RinON = () => {
 
                         <nav className="hidden md:flex items-center space-x-6">
                             <button onClick={() => changePage('home')} className={`font-medium transition-all ${currentPage === 'home' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                                {t('Home', 'Home')}
+                            </button>
+                            <button onClick={() => changePage('lajme')} className={`font-medium transition-all ${currentPage === 'lajme' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
                                 {t('Lajme', 'News')}
                             </button>
                             <button onClick={() => changePage('events')} className={`font-medium transition-all ${currentPage === 'events' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
@@ -4450,9 +4453,9 @@ const RinON = () => {
                                 <Users className="w-4 h-4" />
                                 {t('Bashkëpunime', 'Cooperations')}
                             </button>
-                            <button onClick={() => changePage('discussion')} className={`font-medium flex items-center gap-2 transition-all ${currentPage === 'discussion' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                            <button onClick={() => changePage('komuniteti')} className={`font-medium flex items-center gap-2 transition-all ${currentPage === 'komuniteti' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
                                 <MessageCircle className="w-4 h-4" />
-                                {t('Bisedim', 'Discussion')}
+                                {t('Komuniteti', 'Community')}
                             </button>
                             <button onClick={() => changePage('about')} className={`font-medium transition-all ${currentPage === 'about' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
                                 {t('Rreth Nesh', 'About')}
@@ -6379,7 +6382,7 @@ const RinON = () => {
                             HERO SECTION - Welcome message
                            ========================================== */}
                         <div className={`relative overflow-hidden ${darkMode ? 'bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a]' : 'bg-gradient-to-br from-white via-gray-50 to-white'}`}>
-                            <div className="max-w-7xl mx-auto px-4 py-16 md:py-24 relative z-10">
+                            <div className="max-w-7xl mx-auto px-4 py-12 md:py-20 relative z-10">
                                 {/* Animated background elements */}
                                 <div className="absolute inset-0 overflow-hidden opacity-30">
                                     <div className="absolute top-20 left-10 w-72 h-72 bg-[#fbbf24] rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
@@ -6407,183 +6410,187 @@ const RinON = () => {
                             </div>
                         </div>
 
-                        {/* ==========================================
-                            UPCOMING EVENTS PREVIEW
-                           ========================================== */}
-                        <div className={`py-12 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
-                            <div className="max-w-7xl mx-auto px-4">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {t('Ngjarje të ardhshme', 'Upcoming Events')}
-                                    </h2>
-                                    <button
-                                        onClick={() => changePage('events')}
-                                        className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
-                                    >
-                                        {t('Shiko të gjitha', 'View all')} →
-                                    </button>
-                                </div>
-
-                                {otherEvents.length === 0 ? (
-                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-50'}`}>
-                                        <Calendar className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                            {t('Asnjë ngjarje e ardhshme ende', 'No upcoming events yet')}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {otherEvents.slice(0, 3).map((event) => (
-                                            <div
-                                                key={event.id}
-                                                onClick={() => { setSelectedEvent(event); setShowEventModal(true); }}
-                                                className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl ${darkMode ? 'bg-[#2a2a2a] border border-gray-800' : 'bg-white border border-gray-200'
-                                                    }`}
-                                            >
-                                                <div className="relative h-48 overflow-hidden">
-                                                    <img
-                                                        src={event.image}
-                                                        alt={event.titleAl}
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800'; }}
-                                                    />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                                                    <div className="absolute top-3 left-3 px-3 py-1 bg-[#fbbf24] text-black text-xs font-bold rounded-full">
-                                                        {event.date || event.dateAl}
-                                                    </div>
-                                                </div>
-                                                <div className="p-5">
-                                                    <h3 className={`text-xl font-bold mb-2 line-clamp-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
-                                                        {language === 'al' ? event.titleAl : event.titleEn}
-                                                    </h3>
-                                                    {event.location && (
-                                                        <p className={`text-sm flex items-center gap-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                            <MapPin className="w-4 h-4" /> {event.location}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* ==========================================
+                        {/* Flex container to reorder on mobile */}
+                        <div className="flex flex-col">
+                            {/* ==========================================
                             LATEST NEWS PREVIEW
                            ========================================== */}
-                        <div className={`py-12 ${darkMode ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
-                            <div className="max-w-7xl mx-auto px-4">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {t('Lajme të fundit', 'Latest News')}
-                                    </h2>
-                                    <button
-                                        onClick={() => changePage('lajme')}
-                                        className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
-                                    >
-                                        {t('Lexo më shumë', 'Read more')} →
-                                    </button>
-                                </div>
-
-                                {articles.length === 0 ? (
-                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
-                                        <Newspaper className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                            {t('Asnjë artikull ende', 'No articles yet')}
-                                        </p>
+                            <div className={`py-8 md:py-12 order-2 md:order-1 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
+                                <div className="max-w-7xl mx-auto px-4">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                            {t('Ngjarje të ardhshme', 'Upcoming Events')}
+                                        </h2>
+                                        <button
+                                            onClick={() => changePage('events')}
+                                            className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
+                                        >
+                                            {t('Shiko të gjitha', 'View all')} →
+                                        </button>
                                     </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        {articles.slice(0, 3).map((article) => (
-                                            <div
-                                                key={article.id}
-                                                data-article-card
-                                                onClick={() => openArticle(article)}
-                                                className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/30"
-                                            >
-                                                <div className="relative h-80 overflow-hidden">
-                                                    <img
-                                                        src={article.image}
-                                                        alt={article.titleAl}
-                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                    />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
 
-                                                    <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white text-xs font-bold backdrop-blur-sm shadow-lg">
-                                                        {article.category}
-                                                    </span>
-
-                                                    <div className="absolute top-4 right-4 flex gap-2">
-                                                        {/* Save/Bookmark Button */}
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                toggleSaveArticle(article.id);
-                                                            }}
-                                                            className={`p-2 rounded-full transition z-10 shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
-                                                            title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
-                                                        >
-                                                            {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleNativeShare(article, 'article');
-                                                            }}
-                                                            className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
-                                                            title={t('Shpërndaj', 'Share')}
-                                                        >
-                                                            <Share2 className="h-4 w-4" />
-                                                        </button>
-                                                        {showAdmin && (
-                                                            <>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        editArticle(article);
-                                                                    }}
-                                                                    className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                                                >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        deleteArticle(article.id);
-                                                                    }}
-                                                                    className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </button>
-                                                            </>
+                                    {otherEvents.length === 0 ? (
+                                        <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-50'}`}>
+                                            <Calendar className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                                {t('Asnjë ngjarje e ardhshme ende', 'No upcoming events yet')}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {otherEvents.slice(0, 3).map((event) => (
+                                                <div
+                                                    key={event.id}
+                                                    onClick={() => { setSelectedEvent(event); setShowEventModal(true); }}
+                                                    className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl ${darkMode ? 'bg-[#2a2a2a] border border-gray-800' : 'bg-white border border-gray-200'
+                                                        }`}
+                                                >
+                                                    <div className="relative h-48 overflow-hidden">
+                                                        <img
+                                                            src={event.image}
+                                                            alt={event.titleAl}
+                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800'; }}
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                                                        <div className="absolute top-3 left-3 px-3 py-1 bg-[#fbbf24] text-black text-xs font-bold rounded-full">
+                                                            {event.date || event.dateAl}
+                                                        </div>
+                                                    </div>
+                                                    <div className="p-5">
+                                                        <h3 className={`text-xl font-bold mb-2 line-clamp-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                            {language === 'al' ? event.titleAl : event.titleEn}
+                                                        </h3>
+                                                        {event.location && (
+                                                            <p className={`text-sm flex items-center gap-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                <MapPin className="w-4 h-4" /> {event.location}
+                                                            </p>
                                                         )}
                                                     </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
-                                                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                                        <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-amber-400 transition">
-                                                            {language === 'al' ? article.titleAl : article.titleEn}
-                                                        </h3>
-                                                        <div className="flex items-center gap-4 text-sm opacity-80">
-                                                            <span>{article.date}</span>
-                                                            <span className="text-amber-400 font-medium group-hover:underline">
-                                                                {t('Lexo më shumë →', 'Read more →')}
-                                                            </span>
+                            {/* ==========================================
+                            LATEST NEWS PREVIEW
+                           ========================================== */}
+                            <div className={`py-8 md:py-12 order-1 md:order-2 ${darkMode ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
+                                <div className="max-w-7xl mx-auto px-4">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                            {t('Lajme të fundit', 'Latest News')}
+                                        </h2>
+                                        <button
+                                            onClick={() => changePage('lajme')}
+                                            className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
+                                        >
+                                            {t('Lexo më shumë', 'Read more')} →
+                                        </button>
+                                    </div>
+
+                                    {articles.length === 0 ? (
+                                        <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
+                                            <Newspaper className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                                {t('Asnjë artikull ende', 'No articles yet')}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            {articles.slice(0, 3).map((article) => (
+                                                <div
+                                                    key={article.id}
+                                                    data-article-card
+                                                    onClick={() => openArticle(article)}
+                                                    className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/30"
+                                                >
+                                                    <div className="relative h-80 overflow-hidden">
+                                                        <img
+                                                            src={article.image}
+                                                            alt={article.titleAl}
+                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+
+                                                        <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white text-xs font-bold backdrop-blur-sm shadow-lg">
+                                                            {article.category}
+                                                        </span>
+
+                                                        <div className="absolute top-4 right-4 flex gap-2">
+                                                            {/* Save/Bookmark Button */}
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleSaveArticle(article.id);
+                                                                }}
+                                                                className={`p-2 rounded-full transition z-10 shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
+                                                                title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
+                                                            >
+                                                                {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleNativeShare(article, 'article');
+                                                                }}
+                                                                className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
+                                                                title={t('Shpërndaj', 'Share')}
+                                                            >
+                                                                <Share2 className="h-4 w-4" />
+                                                            </button>
+                                                            {showAdmin && (
+                                                                <>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            editArticle(article);
+                                                                        }}
+                                                                        className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
+                                                                    >
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            deleteArticle(article.id);
+                                                                        }}
+                                                                        className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                                            <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-amber-400 transition">
+                                                                {language === 'al' ? article.titleAl : article.titleEn}
+                                                            </h3>
+                                                            <div className="flex items-center gap-4 text-sm opacity-80">
+                                                                <span>{article.date}</span>
+                                                                <span className="text-amber-400 font-medium group-hover:underline">
+                                                                    {t('Lexo më shumë →', 'Read more →')}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
+                        {/* End flex container */}
 
                         {/* ==========================================
                             COMMUNITY SPOTLIGHT
                            ========================================== */}
-                        <div className={`py-12 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
+                        <div className={`py-8 md:py-12 order-3 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
                             <div className="max-w-7xl mx-auto px-4">
                                 <div className="flex items-center justify-between mb-8">
                                     <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
