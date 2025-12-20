@@ -1858,7 +1858,66 @@ const RinON = () => {
 
     useEffect(() => {
         setHasPageLoaded(true);
-    }, []);
+
+        // Handle deep links from notifications (when app was closed)
+        const urlParams = new URLSearchParams(window.location.search);
+        const openArticleId = urlParams.get('openArticle');
+        const openEventId = urlParams.get('openEvent');
+
+        if (openArticleId) {
+            // Wait for articles to load, then open
+            const checkAndOpen = setInterval(() => {
+                const article = articles.find(a => a.id === openArticleId);
+                if (article) {
+                    clearInterval(checkAndOpen);
+                    openArticle(article);
+                    // Clean URL
+                    window.history.replaceState({}, '', '/');
+                }
+            }, 500);
+
+            // Cleanup after 5 seconds
+            setTimeout(() => clearInterval(checkAndOpen), 5000);
+        }
+
+        if (openEventId) {
+            // Wait for events to load, then open
+            const checkAndOpen = setInterval(() => {
+                const event = otherEvents.find(e => e.id === openEventId);
+                if (event) {
+                    clearInterval(checkAndOpen);
+                    setSelectedEvent(event);
+                    setShowEventModal(true);
+                    // Clean URL
+                    window.history.replaceState({}, '', '/');
+                }
+            }, 500);
+
+            // Cleanup after 5 seconds
+            setTimeout(() => clearInterval(checkAndOpen), 5000);
+        }
+
+        // Also listen for messages from service worker (when app was open in background)
+        navigator.serviceWorker?.addEventListener('message', (event) => {
+            if (event.data?.type === 'NOTIFICATION_CLICK') {
+                const url = event.data?.url;
+                if (url) {
+                    const [type, id] = url.split(':');
+
+                    if (type === 'article') {
+                        const article = articles.find(a => a.id === id);
+                        if (article) openArticle(article);
+                    } else if (type === 'event') {
+                        const event = otherEvents.find(e => e.id === id);
+                        if (event) {
+                            setSelectedEvent(event);
+                            setShowEventModal(true);
+                        }
+                    }
+                }
+            }
+        });
+    }, [otherEvents, articles]);
 
     // Set body background color to prevent purple showing on zoom out
     useEffect(() => {
@@ -1936,10 +1995,37 @@ const RinON = () => {
                 console.log('Foreground message received:', payload);
 
                 if (Notification.permission === 'granted') {
-                    new Notification(payload.notification?.title || 'RinON', {
+                    const notification = new Notification(payload.notification?.title || 'RinON', {
                         body: payload.notification?.body,
-                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png'
+                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png',
+                        data: payload.data // Pass through the data
                     });
+
+                    // Handle notification click
+                    notification.onclick = () => {
+                        window.focus();
+                        const url = payload.data?.url;
+
+                        if (url) {
+                            // Parse deep link format: "article:123" or "event:456"
+                            const [type, id] = url.split(':');
+
+                            if (type === 'article') {
+                                const article = articles.find(a => a.id === id);
+                                if (article) {
+                                    openArticle(article);
+                                }
+                            } else if (type === 'event') {
+                                const event = otherEvents.find(e => e.id === id);
+                                if (event) {
+                                    setSelectedEvent(event);
+                                    setShowEventModal(true);
+                                }
+                            }
+                        }
+
+                        notification.close();
+                    };
                 }
             });
 
@@ -2298,7 +2384,7 @@ const RinON = () => {
                     id: a.id, titleAl: a.title_al, titleEn: a.title_en,
                     contentAl: a.content_al, contentEn: a.content_en,
                     category: a.category, image: a.image, source: a.source,
-                    featured: a.featured, date: new Date(a.created_at).toISOString().split('T')[0]
+                    featured: a.featured, postType: a.post_type || 'lajme', date: new Date(a.created_at).toISOString().split('T')[0]
                 }));
                 setArticles(formattedArticles);
             }
@@ -2600,7 +2686,8 @@ const RinON = () => {
             image: article.image,
             imageFile: null,
             source: article.source,
-            featured: article.featured
+            featured: article.featured,
+            postType: article.postType || 'lajme'
         });
         setShowAddForm(true);
     };
@@ -2696,6 +2783,7 @@ const RinON = () => {
                 image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`,
                 source: validateInput.sanitizeHtml(formData.source),
                 featured: formData.featured,
+                post_type: formData.postType || 'lajme', // Add post_type field
                 author_id: user?.id
             };
 
@@ -2721,7 +2809,7 @@ const RinON = () => {
             loadArticles();
             setFormData({
                 titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
+                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false, postType: 'lajme'
             });
             setShowAddForm(false);
             setEditMode(false);
@@ -3261,6 +3349,10 @@ const RinON = () => {
 
         return filtered;
     })();
+
+    // Separate filters for Lajme page (postType: 'lajme') and Komuniteti page (postType: 'artikull')
+    const lajmeArticles = filteredArticles.filter(a => a.postType === 'lajme' || !a.postType); // Default to lajme if not set
+    const komunitetiArticles = filteredArticles.filter(a => a.postType === 'artikull');
 
     const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
@@ -3933,7 +4025,7 @@ const RinON = () => {
                         <Leaf className="w-8 h-8 text-white" />
                     </div>
                     <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>25+</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Projekte Rinore', 'Environmental Projects')}</p>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Projekte Rinore', 'Youth Projects')}</p>
                 </div>
             </div>
         </div>
@@ -4865,11 +4957,13 @@ const RinON = () => {
                                         alert(t('Ju lutem ruani artikullin para se të dërgoni njoftim', 'Please save the article before sending notification'));
                                         return;
                                     }
+                                    // Get the article ID (if editing) or latest article
+                                    const articleId = editingItem?.id || articles[0]?.id;
                                     await sendNotificationToUsers(
                                         'news',
                                         formData.titleAl,
-                                        formData.contentAl?.substring(0, 100) + '...' || '',
-                                        'https://rinon.al'
+                                        t('📰 Për ty!', '📰 For you!'),
+                                        `article:${articleId}` // Deep link format
                                     );
                                 }}
                                 className="w-full px-4 py-3 border border-amber-500/50 text-amber-400 rounded-xl hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
@@ -5094,11 +5188,13 @@ const RinON = () => {
                                         alert(t('Ju lutem ruani eventin para se të dërgoni njoftim', 'Please save the event before sending notification'));
                                         return;
                                     }
+                                    // Get the event ID (if editing) or latest event
+                                    const eventId = editingItem?.id || otherEvents[0]?.id;
                                     await sendNotificationToUsers(
                                         'events',
                                         eventFormData.titleAl,
-                                        eventFormData.descAl?.substring(0, 100) + '...' || '',
-                                        'https://rinon.al'
+                                        t('🎉 Për ty!', '🎉 For you!'),
+                                        `event:${eventId}` // Deep link format
                                     );
                                 }}
                                 className="w-full px-4 py-3 border border-amber-500/50 text-amber-400 rounded-xl hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
@@ -6701,7 +6797,7 @@ const RinON = () => {
                                 {t('Lajme', 'News')}
                             </h1>
 
-                            {filteredArticles.length === 0 ? (
+                            {lajmeArticles.length === 0 ? (
                                 <div className="text-center py-20">
                                     <Newspaper className={`w-20 h-20 mx-auto mb-6 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
                                     <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>
@@ -6713,7 +6809,7 @@ const RinON = () => {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {filteredArticles.map((article) => (
+                                    {lajmeArticles.map((article) => (
                                         <div
                                             key={article.id}
                                             data-article-card
@@ -6815,7 +6911,7 @@ const RinON = () => {
                                 <h2 className={`text-2xl md:text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
                                     {t('Artikuj', 'Articles')}
                                 </h2>
-                                {articles.length === 0 ? (
+                                {komunitetiArticles.length === 0 ? (
                                     <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
                                         <FileText className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
                                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
@@ -6824,15 +6920,64 @@ const RinON = () => {
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                        {articles.slice(0, 6).map((article) => (
+                                        {komunitetiArticles.slice(0, 6).map((article) => (
                                             <div
                                                 key={article.id}
                                                 onClick={() => openArticle(article)}
-                                                className={`group p-6 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800' : 'bg-white hover:bg-gray-50 border border-gray-200'}`}
+                                                className={`group relative p-6 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800' : 'bg-white hover:bg-gray-50 border border-gray-200'}`}
                                             >
-                                                <span className="inline-block px-3 py-1 bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white text-xs font-bold rounded-full mb-3">
-                                                    {article.category}
-                                                </span>
+                                                <div className="flex items-start justify-between mb-3">
+                                                    <span className="inline-block px-3 py-1 bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white text-xs font-bold rounded-full">
+                                                        {article.category}
+                                                    </span>
+
+                                                    {/* Action Buttons */}
+                                                    <div className="flex gap-2">
+                                                        {/* Save/Bookmark Button */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleSaveArticle(article.id);
+                                                            }}
+                                                            className={`p-2 rounded-full transition z-10 ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : darkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                                            title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
+                                                        >
+                                                            {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleNativeShare(article, 'article');
+                                                            }}
+                                                            className={`p-2 rounded-full transition z-10 ${darkMode ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600'}`}
+                                                            title={t('Shpërndaj', 'Share')}
+                                                        >
+                                                            <Share2 className="h-4 w-4" />
+                                                        </button>
+                                                        {showAdmin && (
+                                                            <>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        editArticle(article);
+                                                                    }}
+                                                                    className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10"
+                                                                >
+                                                                    <Edit className="h-4 w-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        deleteArticle(article.id);
+                                                                    }}
+                                                                    className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
                                                 <h3 className={`text-xl font-bold mb-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
                                                     {language === 'al' ? article.titleAl : article.titleEn}
                                                 </h3>
