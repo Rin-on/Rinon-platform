@@ -1860,6 +1860,38 @@ const RinON = () => {
         setHasPageLoaded(true);
     }, []);
 
+    // Set body background color to prevent purple showing on zoom out
+    useEffect(() => {
+        const bgColor = darkMode ? '#2D2A26' : '#f9fafb';
+        document.body.style.backgroundColor = bgColor;
+
+        // Also set html element background
+        document.documentElement.style.backgroundColor = bgColor;
+
+        // Update meta theme-color for iOS Safari and Android Chrome
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (!metaThemeColor) {
+            metaThemeColor = document.createElement('meta');
+            metaThemeColor.name = 'theme-color';
+            document.head.appendChild(metaThemeColor);
+        }
+        metaThemeColor.content = bgColor;
+
+        // Update apple-mobile-web-app-status-bar-style
+        let metaAppleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (!metaAppleStatusBar) {
+            metaAppleStatusBar = document.createElement('meta');
+            metaAppleStatusBar.name = 'apple-mobile-web-app-status-bar-style';
+            document.head.appendChild(metaAppleStatusBar);
+        }
+        metaAppleStatusBar.content = 'black-translucent';
+
+        return () => {
+            document.body.style.backgroundColor = '';
+            document.documentElement.style.backgroundColor = '';
+        };
+    }, [darkMode]);
+
     // Load notification preferences when user logs in
     useEffect(() => {
         if (user) {
@@ -1906,7 +1938,7 @@ const RinON = () => {
                 if (Notification.permission === 'granted') {
                     new Notification(payload.notification?.title || 'RinON', {
                         body: payload.notification?.body,
-                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png'
+                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png'
                     });
                 }
             });
@@ -3901,7 +3933,7 @@ const RinON = () => {
                         <Leaf className="w-8 h-8 text-white" />
                     </div>
                     <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>25+</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Projekte Mjedisore', 'Environmental Projects')}</p>
+                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Projekte Rinore', 'Environmental Projects')}</p>
                 </div>
             </div>
         </div>
@@ -4405,7 +4437,7 @@ const RinON = () => {
     };
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-black' : 'bg-gray-50'}`}>
+        <div className={`min-h-screen w-full transition-colors duration-300 ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}>
 
             <header className={`backdrop-blur-lg border-b sticky top-0 z-50 shadow-lg transition-colors duration-300 ${darkMode
                 ? 'bg-[#2D2A26]/80 border-amber-500/20 shadow-amber-500/10'
@@ -4415,7 +4447,7 @@ const RinON = () => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => changePage('home')}>
                             <img
-                                src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png"
+                                src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png"
                                 alt="RinON Logo"
                                 className="w-20 h-20 object-contain group-hover:scale-110 transition-transform"
                                 onError={(e) => {
@@ -4672,23 +4704,6 @@ const RinON = () => {
                             })}
                         </div>
                     </div>
-                </div>
-            )}
-
-            {/* ==========================================
-                FIRST-TIME USER TOOLTIP
-                Shows swipe hint for new visitors
-               ========================================== */}
-            {showFirstTimeTooltip && (
-                <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-50 animate-bounce md:hidden">
-                    <div className={`px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 ${darkMode ? 'bg-amber-500 text-white' : 'bg-[#2D2A26] text-white'
-                        }`}>
-                        <Sparkles className="w-5 h-5" />
-                        <span className="text-sm font-medium">{t('Swipe majtas për më shumë kategori!', 'Swipe left for more categories!')}</span>
-                        <ChevronRight className="w-5 h-5 animate-pulse" />
-                    </div>
-                    <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45 ${darkMode ? 'bg-amber-500' : 'bg-[#2D2A26]'
-                        }`}></div>
                 </div>
             )}
 
@@ -6379,263 +6394,270 @@ const RinON = () => {
                 ) : currentPage === 'home' ? (
                     <>
                         {/* ==========================================
-                            HERO SECTION - Welcome message
+                            HERO SECTION - Bold, attention-grabbing
                            ========================================== */}
                         <div className={`relative overflow-hidden ${darkMode ? 'bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a]' : 'bg-gradient-to-br from-white via-gray-50 to-white'}`}>
-                            <div className="max-w-7xl mx-auto px-4 py-12 md:py-20 relative z-10">
-                                {/* Animated background elements */}
-                                <div className="absolute inset-0 overflow-hidden opacity-30">
-                                    <div className="absolute top-20 left-10 w-72 h-72 bg-[#fbbf24] rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-                                    <div className="absolute top-40 right-10 w-72 h-72 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-                                    <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+                            <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative z-10">
+                                {/* Animated background blobs */}
+                                <div className="absolute inset-0 overflow-hidden opacity-20">
+                                    <div className="absolute top-10 left-10 w-96 h-96 bg-[#fbbf24] rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+                                    <div className="absolute top-20 right-10 w-96 h-96 bg-orange-400 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+                                    <div className="absolute -bottom-8 left-1/2 w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"></div>
                                 </div>
 
-                                <div className="relative text-center">
-                                    <h1 className={`text-5xl md:text-7xl font-black mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        <span className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#fbbf24] bg-clip-text text-transparent">
-                                            {t('Aktivizo', 'Activate')}
-                                        </span>
-                                        {' '}{t('Rininë Tënde', 'Your Youth')}
-                                    </h1>
-                                    <p className={`text-xl md:text-2xl mb-8 max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                        {t('Çdo ngjarje rinore, lajm dhe mundësi në Tiranë', 'Every youth event, news and opportunity in Tirana')}
-                                    </p>
-                                    <button
-                                        onClick={() => changePage('events')}
-                                        className="bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl hover:scale-105 transition-all"
-                                    >
-                                        {t('Eksploro Ngjarjet', 'Explore Events')} →
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Flex container to reorder on mobile */}
-                        <div className="flex flex-col">
-                            {/* ==========================================
-                            LATEST NEWS PREVIEW
-                           ========================================== */}
-                            <div className={`py-8 md:py-12 order-2 md:order-1 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
-                                <div className="max-w-7xl mx-auto px-4">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
-                                            {t('Ngjarje të ardhshme', 'Upcoming Events')}
-                                        </h2>
-                                        <button
-                                            onClick={() => changePage('events')}
-                                            className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
-                                        >
-                                            {t('Shiko të gjitha', 'View all')} →
-                                        </button>
-                                    </div>
-
-                                    {otherEvents.length === 0 ? (
-                                        <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-50'}`}>
-                                            <Calendar className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                                {t('Asnjë ngjarje e ardhshme ende', 'No upcoming events yet')}
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                            {otherEvents.slice(0, 3).map((event) => (
-                                                <div
-                                                    key={event.id}
-                                                    onClick={() => { setSelectedEvent(event); setShowEventModal(true); }}
-                                                    className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:scale-[1.02] hover:shadow-xl ${darkMode ? 'bg-[#2a2a2a] border border-gray-800' : 'bg-white border border-gray-200'
-                                                        }`}
-                                                >
-                                                    <div className="relative h-48 overflow-hidden">
-                                                        <img
-                                                            src={event.image}
-                                                            alt={event.titleAl}
-                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800'; }}
-                                                        />
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                                                        <div className="absolute top-3 left-3 px-3 py-1 bg-[#fbbf24] text-black text-xs font-bold rounded-full">
-                                                            {event.date || event.dateAl}
-                                                        </div>
-                                                    </div>
-                                                    <div className="p-5">
-                                                        <h3 className={`text-xl font-bold mb-2 line-clamp-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
-                                                            {language === 'al' ? event.titleAl : event.titleEn}
-                                                        </h3>
-                                                        {event.location && (
-                                                            <p className={`text-sm flex items-center gap-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                                <MapPin className="w-4 h-4" /> {event.location}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* ==========================================
-                            LATEST NEWS PREVIEW
-                           ========================================== */}
-                            <div className={`py-8 md:py-12 order-1 md:order-2 ${darkMode ? 'bg-[#0a0a0a]' : 'bg-gray-50'}`}>
-                                <div className="max-w-7xl mx-auto px-4">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
-                                            {t('Lajme të fundit', 'Latest News')}
-                                        </h2>
-                                        <button
-                                            onClick={() => changePage('lajme')}
-                                            className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
-                                        >
-                                            {t('Lexo më shumë', 'Read more')} →
-                                        </button>
-                                    </div>
-
-                                    {articles.length === 0 ? (
-                                        <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
-                                            <Newspaper className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                                {t('Asnjë artikull ende', 'No articles yet')}
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            {articles.slice(0, 3).map((article) => (
-                                                <div
-                                                    key={article.id}
-                                                    data-article-card
-                                                    onClick={() => openArticle(article)}
-                                                    className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/30"
-                                                >
-                                                    <div className="relative h-80 overflow-hidden">
-                                                        <img
-                                                            src={article.image}
-                                                            alt={article.titleAl}
-                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                        />
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
-
-                                                        <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white text-xs font-bold backdrop-blur-sm shadow-lg">
-                                                            {article.category}
-                                                        </span>
-
-                                                        <div className="absolute top-4 right-4 flex gap-2">
-                                                            {/* Save/Bookmark Button */}
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    toggleSaveArticle(article.id);
-                                                                }}
-                                                                className={`p-2 rounded-full transition z-10 shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
-                                                                title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
-                                                            >
-                                                                {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleNativeShare(article, 'article');
-                                                                }}
-                                                                className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
-                                                                title={t('Shpërndaj', 'Share')}
-                                                            >
-                                                                <Share2 className="h-4 w-4" />
-                                                            </button>
-                                                            {showAdmin && (
-                                                                <>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            editArticle(article);
-                                                                        }}
-                                                                        className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                                                    >
-                                                                        <Edit className="h-4 w-4" />
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            deleteArticle(article.id);
-                                                                        }}
-                                                                        className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </button>
-                                                                </>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                                            <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-amber-400 transition">
-                                                                {language === 'al' ? article.titleAl : article.titleEn}
-                                                            </h3>
-                                                            <div className="flex items-center gap-4 text-sm opacity-80">
-                                                                <span>{article.date}</span>
-                                                                <span className="text-amber-400 font-medium group-hover:underline">
-                                                                    {t('Lexo më shumë →', 'Read more →')}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                        {/* End flex container */}
-
-                        {/* ==========================================
-                            COMMUNITY SPOTLIGHT
-                           ========================================== */}
-                        <div className={`py-8 md:py-12 order-3 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
-                            <div className="max-w-7xl mx-auto px-4">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h2 className={`text-3xl md:text-4xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {t('Nga komuniteti', 'From the Community')}
-                                    </h2>
-                                    <button
-                                        onClick={() => changePage('discussion')}
-                                        className="text-[#fbbf24] font-semibold hover:underline flex items-center gap-1"
-                                    >
-                                        {t('Shiko forumin', 'View forum')} →
-                                    </button>
-                                </div>
-
-                                {topics.length === 0 ? (
-                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#2a2a2a]' : 'bg-gray-50'}`}>
-                                        <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                            {t('Asnjë diskutim ende', 'No discussions yet')}
+                                <div className="relative text-center space-y-8">
+                                    {/* Main headline - punchy and direct */}
+                                    <div className="space-y-4">
+                                        <h1 className={`text-4xl md:text-6xl lg:text-7xl font-black leading-tight ${darkMode ? 'text-white' : 'text-black'}`}>
+                                            <span className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent animate-gradient">
+                                                Platforma #1
+                                            </span>
+                                            <br />
+                                            {t('për Rininë në Tiranë', 'for Youth in Tirana')}
+                                        </h1>
+                                        <p className={`text-lg md:text-2xl max-w-3xl mx-auto font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            {t('Çdo ngjarje, lajm, mundësi dhe komunitet që të duhet - në një vend',
+                                                'Every event, news, opportunity and community you need - in one place')}
                                         </p>
                                     </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {topics.slice(0, 4).map((topic) => (
-                                            <div
-                                                key={topic.id}
-                                                onClick={() => { setSelectedTopic(topic); changePage('discussion'); }}
-                                                className={`p-5 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${darkMode
-                                                    ? 'bg-[#2a2a2a] hover:bg-[#3a3a3a] border border-gray-800'
-                                                    : 'bg-gray-50 hover:bg-gray-100 border border-gray-200'
-                                                    }`}
-                                            >
-                                                <h3 className={`text-lg font-bold mb-2 hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
-                                                    {language === 'al' ? topic.titleAl : topic.titleEn}
-                                                </h3>
-                                                <p className={`text-sm line-clamp-2 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                    {language === 'al' ? topic.descriptionAl : topic.descriptionEn}
-                                                </p>
-                                                <div className="flex items-center gap-2 text-xs text-[#fbbf24]">
-                                                    <MessageCircle className="w-4 h-4" />
-                                                    <span>{t('Bashkohu në diskutim', 'Join discussion')}</span>
-                                                </div>
-                                            </div>
-                                        ))}
+
+                                    {/* Quick stats - eye-catching */}
+                                    <div className="flex flex-wrap justify-center gap-4 md:gap-8 pt-4">
+                                        <div className={`px-6 py-3 rounded-2xl backdrop-blur-sm ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
+                                            <div className="text-3xl font-black bg-gradient-to-r from-[#fbbf24] to-orange-500 bg-clip-text text-transparent">500+</div>
+                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Anëtarë Aktivë', 'Active Members')}</div>
+                                        </div>
+                                        <div className={`px-6 py-3 rounded-2xl backdrop-blur-sm ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
+                                            <div className="text-3xl font-black bg-gradient-to-r from-orange-500 to-[#FF6B6B] bg-clip-text text-transparent">20+</div>
+                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Evente/Muaj', 'Events/Month')}</div>
+                                        </div>
+                                        <div className={`px-6 py-3 rounded-2xl backdrop-blur-sm ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
+                                            <div className="text-3xl font-black bg-gradient-to-r from-[#fbbf24] to-orange-500 bg-clip-text text-transparent">24/7</div>
+                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Info të Freskët', 'Fresh Info')}</div>
+                                        </div>
                                     </div>
-                                )}
+
+                                    {/* CTA Buttons - bold and action-oriented */}
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                                        <button
+                                            onClick={() => {
+                                                const featuresSection = document.getElementById('features-section');
+                                                if (featuresSection) {
+                                                    featuresSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                }
+                                            }}
+                                            className="group px-8 py-4 bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white rounded-2xl font-bold text-lg hover:shadow-2xl hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300 animate-gradient"
+                                        >
+                                            <span className="flex items-center gap-2 justify-center">
+                                                {t('✨ Mirë se erdhe!', '✨ Welcome!')}
+                                                <ArrowUp className="w-5 h-5 rotate-90 group-hover:translate-x-1 transition-transform" />
+                                            </span>
+                                        </button>
+                                        <button
+                                            onClick={() => changePage('events')}
+                                            className={`px-8 py-4 rounded-2xl font-bold text-lg border-2 transition-all duration-300 hover:scale-105 ${darkMode
+                                                    ? 'border-[#fbbf24] text-[#fbbf24] hover:bg-[#fbbf24] hover:text-black'
+                                                    : 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white'
+                                                }`}
+                                        >
+                                            {t('📅 Shiko Eventet', '📅 See Events')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ==========================================
+                            WHAT IS RINON - Quick explainer
+                           ========================================== */}
+                        <div className={`py-12 md:py-16 ${darkMode ? 'bg-[#1a1a1a]' : 'bg-white'}`}>
+                            <div className="max-w-5xl mx-auto px-4 text-center">
+                                <h2 className={`text-3xl md:text-5xl font-black mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                    {t('Çfarë është', 'What is')} <span className="bg-gradient-to-r from-[#fbbf24] to-orange-500 bg-clip-text text-transparent">RinON</span>?
+                                </h2>
+                                <p className={`text-lg md:text-xl leading-relaxed max-w-3xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    {t(
+                                        'RinON është platforma digjitale që **aktivizon** rininë shqiptare 18-25 vjeç në Tiranë. Ne të lidhim me mundësi, evente, lajme dhe një komunitet që të mbështet.',
+                                        'RinON is the digital platform that **activates** Albanian youth aged 18-25 in Tirana. We connect you with opportunities, events, news and a supportive community.'
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+
+
+                        {/* ==========================================
+                            WHAT YOU'LL FIND - Feature cards with icons
+                           ========================================== */}
+                        <div id="features-section" className={`py-12 md:py-20 ${darkMode ? 'bg-gradient-to-b from-[#0a0a0a] to-[#1a1a1a]' : 'bg-gradient-to-b from-gray-50 to-white'}`}>
+                            <div className="max-w-7xl mx-auto px-4">
+                                <h2 className={`text-3xl md:text-5xl font-black text-center mb-4 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                    {t('Çfarë Gjen Këtu?', 'What You\'ll Find Here?')}
+                                </h2>
+                                <p className={`text-center text-lg mb-12 max-w-2xl mx-auto ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {t('Gjithçka që një i ri aktiv ka nevojë', 'Everything an active youth needs')}
+                                </p>
+
+                                {/* Feature Grid - Interactive cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    {/* Lajme & Artikuj */}
+                                    <div
+                                        onClick={() => changePage('lajme')}
+                                        className={`group relative overflow-hidden rounded-3xl p-8 cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl ${darkMode ? 'bg-gradient-to-br from-[#2a2a2a] to-[#1a1a1a] border border-gray-800 hover:border-[#fbbf24]' : 'bg-white border-2 border-gray-200 hover:border-orange-500'
+                                            }`}
+                                    >
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#fbbf24]/20 to-orange-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+                                        <div className="relative">
+                                            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-[#fbbf24] to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/50 group-hover:rotate-12 transition-transform duration-500">
+                                                <Newspaper className="w-8 h-8 text-white" />
+                                            </div>
+                                            <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                {t('Lajme & Artikuj', 'News & Articles')}
+                                            </h3>
+                                            <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Informohu mbi çdo lajm të rëndësishëm për rininë dhe lexo artikuj nga bashkëmoshatarët',
+                                                    'Stay informed on important youth news and read articles from peers')}
+                                            </p>
+                                            <div className={`mt-6 flex items-center gap-2 font-semibold group-hover:gap-4 transition-all ${darkMode ? 'text-[#fbbf24]' : 'text-orange-500'}`}>
+                                                {t('Lexo Tani', 'Read Now')}
+                                                <ArrowUp className="w-4 h-4 rotate-90 group-hover:translate-x-2 transition-transform" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Evente */}
+                                    <div
+                                        onClick={() => changePage('events')}
+                                        className={`group relative overflow-hidden rounded-3xl p-8 cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl ${darkMode ? 'bg-gradient-to-br from-[#2a2a2a] to-[#1a1a1a] border border-gray-800 hover:border-[#fbbf24]' : 'bg-white border-2 border-gray-200 hover:border-orange-500'
+                                            }`}
+                                    >
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/20 to-[#FF6B6B]/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+                                        <div className="relative">
+                                            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-orange-500 to-[#FF6B6B] flex items-center justify-center shadow-lg shadow-orange-500/50 group-hover:rotate-12 transition-transform duration-500">
+                                                <Calendar className="w-8 h-8 text-white" />
+                                            </div>
+                                            <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                Evente
+                                            </h3>
+                                            <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Zbulo workshop, konferenca, konkurse dhe mundësi për të rritur aftësitë',
+                                                    'Discover workshops, conferences, competitions and opportunities to grow skills')}
+                                            </p>
+                                            <div className={`mt-6 flex items-center gap-2 font-semibold group-hover:gap-4 transition-all ${darkMode ? 'text-[#fbbf24]' : 'text-orange-500'}`}>
+                                                {t('Shiko Eventet', 'See Events')}
+                                                <ArrowUp className="w-4 h-4 rotate-90 group-hover:translate-x-2 transition-transform" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Komuniteti */}
+                                    <div
+                                        onClick={() => changePage('komuniteti')}
+                                        className={`group relative overflow-hidden rounded-3xl p-8 cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl ${darkMode ? 'bg-gradient-to-br from-[#2a2a2a] to-[#1a1a1a] border border-gray-800 hover:border-[#fbbf24]' : 'bg-white border-2 border-gray-200 hover:border-orange-500'
+                                            }`}
+                                    >
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#fbbf24]/20 to-orange-500/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+                                        <div className="relative">
+                                            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-[#fbbf24] to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/50 group-hover:rotate-12 transition-transform duration-500">
+                                                <MessageCircle className="w-8 h-8 text-white" />
+                                            </div>
+                                            <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                Komuniteti
+                                            </h3>
+                                            <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Lidhu me të rinj, shpërndaj ide, përvojat dhe ndërto lidhje që zgjasin',
+                                                    'Connect with youth, share ideas, experiences and build lasting connections')}
+                                            </p>
+                                            <div className={`mt-6 flex items-center gap-2 font-semibold group-hover:gap-4 transition-all ${darkMode ? 'text-[#fbbf24]' : 'text-orange-500'}`}>
+                                                {t('Bashkohu', 'Join')}
+                                                <ArrowUp className="w-4 h-4 rotate-90 group-hover:translate-x-2 transition-transform" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Shkollat */}
+                                    <div
+                                        onClick={() => changePage('schools')}
+                                        className={`group relative overflow-hidden rounded-3xl p-8 cursor-pointer transition-all duration-500 hover:scale-105 hover:shadow-2xl ${darkMode ? 'bg-gradient-to-br from-[#2a2a2a] to-[#1a1a1a] border border-gray-800 hover:border-[#fbbf24]' : 'bg-white border-2 border-gray-200 hover:border-orange-500'
+                                            }`}
+                                    >
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/20 to-[#FF6B6B]/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
+                                        <div className="relative">
+                                            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-orange-500 to-[#FF6B6B] flex items-center justify-center shadow-lg shadow-orange-500/50 group-hover:rotate-12 transition-transform duration-500">
+                                                <School className="w-8 h-8 text-white" />
+                                            </div>
+                                            <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                {t('Shkollat', 'Schools')}
+                                            </h3>
+                                            <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Shiko programet dhe partneritetet me shkollat për mundësi ekskluzive',
+                                                    'See programs and partnerships with schools for exclusive opportunities')}
+                                            </p>
+                                            <div className={`mt-6 flex items-center gap-2 font-semibold group-hover:gap-4 transition-all ${darkMode ? 'text-[#fbbf24]' : 'text-orange-500'}`}>
+                                                {t('Eksploro', 'Explore')}
+                                                <ArrowUp className="w-4 h-4 rotate-90 group-hover:translate-x-2 transition-transform" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ==========================================
+                            CALL TO ACTION - Get involved
+                           ========================================== */}
+                        <div className={`py-16 md:py-24 relative overflow-hidden ${darkMode ? 'bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a]' : 'bg-gradient-to-br from-orange-50 via-yellow-50 to-orange-50'}`}>
+                            {/* Background decoration */}
+                            <div className="absolute inset-0 opacity-10">
+                                <div className="absolute top-0 left-0 w-96 h-96 bg-[#fbbf24] rounded-full blur-3xl"></div>
+                                <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500 rounded-full blur-3xl"></div>
+                            </div>
+
+                            <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
+                                <h2 className={`text-3xl md:text-5xl font-black mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                    {t('Gati të Aktivizohesh?', 'Ready to Activate?')}
+                                </h2>
+                                <p className={`text-lg md:text-xl mb-10 max-w-2xl mx-auto ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    {t('Bëhu pjesë e komunitetit më të madh rinor në Tiranë dhe mos humb asnjë mundësi!',
+                                        'Become part of the biggest youth community in Tirana and don\'t miss any opportunity!')}
+                                </p>
+
+                                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                                    <a
+                                        href="https://docs.google.com/forms/d/e/1FAIpQLSd2J3S01v9PhZyQgSLNLmZ5YnDUbQePlta_LXx1D13VLB644A/viewform"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="group w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white rounded-2xl font-bold text-lg hover:shadow-2xl hover:shadow-orange-500/50 hover:scale-110 transition-all duration-300 flex items-center justify-center gap-3"
+                                    >
+                                        <Heart className="w-6 h-6 group-hover:scale-125 transition-transform" />
+                                        {t('Bëhu Vullnetar', 'Become a Volunteer')}
+                                    </a>
+                                    <button
+                                        onClick={() => { setShowAuthModal(true); setAuthMode('signup'); }}
+                                        className={`w-full sm:w-auto px-10 py-5 rounded-2xl font-bold text-lg border-2 transition-all duration-300 hover:scale-110 flex items-center justify-center gap-3 ${darkMode
+                                                ? 'border-[#fbbf24] text-[#fbbf24] hover:bg-[#fbbf24] hover:text-black'
+                                                : 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white'
+                                            }`}
+                                    >
+                                        <Sparkles className="w-6 h-6" />
+                                        {t('Regjistrohu Tani', 'Sign Up Now')}
+                                    </button>
+                                </div>
+
+                                {/* Social proof */}
+                                <div className="mt-12 flex items-center justify-center gap-8 flex-wrap">
+                                    <div className={`text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        <div className="text-2xl font-bold bg-gradient-to-r from-[#fbbf24] to-orange-500 bg-clip-text text-transparent">500+</div>
+                                        <div className="text-sm">{t('Anëtarë', 'Members')}</div>
+                                    </div>
+                                    <div className={`text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        <div className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-[#FF6B6B] bg-clip-text text-transparent">6+</div>
+                                        <div className="text-sm">{t('Partnerë', 'Partners')}</div>
+                                    </div>
+                                    <div className={`text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        <div className="text-2xl font-bold bg-gradient-to-r from-[#fbbf24] to-orange-500 bg-clip-text text-transparent">100%</div>
+                                        <div className="text-sm">{t('Falas', 'Free')}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
