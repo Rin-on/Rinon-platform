@@ -354,8 +354,7 @@ const IOSInstructionsBanner = ({ show, onClose, darkMode, t }) => {
 };
 
 // Event Calendar Component
-const EventCalendar = ({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t, openShareModal, openEvent }) => {
-    const [currentDate, setCurrentDate] = useState(new Date());
+const EventCalendar = React.memo(({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t, openShareModal, openEvent, currentDate, setCurrentDate }) => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [showOnlyFree, setShowOnlyFree] = useState(false);
@@ -825,7 +824,9 @@ END:VCALENDAR`;
             )}
         </div>
     );
-};
+});
+
+EventCalendar.displayName = 'EventCalendar';
 
 // Discussion Page Component
 const DiscussionPageContent = ({
@@ -1462,6 +1463,9 @@ const RinON = () => {
     const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
     const [eventViewMode, setEventViewMode] = useState('calendar');
+
+    // Calendar state - moved to parent to persist across re-renders
+    const [calendarDate, setCalendarDate] = useState(new Date());
 
     const [editingItem, setEditingItem] = useState(null);
     const [editMode, setEditMode] = useState(false);
@@ -3666,6 +3670,8 @@ const RinON = () => {
                     t={t}
                     openShareModal={openShareModal}
                     openEvent={openEvent}
+                    currentDate={calendarDate}
+                    setCurrentDate={setCalendarDate}
                 />
             ) : (
                 otherEvents.length === 0 ? (
@@ -4024,7 +4030,7 @@ const RinON = () => {
                     <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50">
                         <Leaf className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>25+</h3>
+                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>15+</h3>
                     <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Projekte Rinore', 'Youth Projects')}</p>
                 </div>
             </div>
@@ -6524,7 +6530,7 @@ const RinON = () => {
                                             <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Anëtarë Aktivë', 'Active Members')}</div>
                                         </div>
                                         <div className={`px-6 py-3 rounded-2xl backdrop-blur-sm ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
-                                            <div className="text-3xl font-black bg-gradient-to-r from-orange-500 to-[#FF6B6B] bg-clip-text text-transparent">20+</div>
+                                            <div className="text-3xl font-black bg-gradient-to-r from-orange-500 to-[#FF6B6B] bg-clip-text text-transparent">10+</div>
                                             <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Evente/Muaj', 'Events/Month')}</div>
                                         </div>
                                         <div className={`px-6 py-3 rounded-2xl backdrop-blur-sm ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
@@ -6552,8 +6558,8 @@ const RinON = () => {
                                         <button
                                             onClick={() => changePage('events')}
                                             className={`px-8 py-4 rounded-2xl font-bold text-lg border-2 transition-all duration-300 hover:scale-105 ${darkMode
-                                                    ? 'border-[#fbbf24] text-[#fbbf24] hover:bg-[#fbbf24] hover:text-black'
-                                                    : 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white'
+                                                ? 'border-[#fbbf24] text-[#fbbf24] hover:bg-[#fbbf24] hover:text-black'
+                                                : 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white'
                                                 }`}
                                         >
                                             {t('📅 Shiko Eventet', '📅 See Events')}
@@ -6730,8 +6736,8 @@ const RinON = () => {
                                     <button
                                         onClick={() => { setShowAuthModal(true); setAuthMode('signup'); }}
                                         className={`w-full sm:w-auto px-10 py-5 rounded-2xl font-bold text-lg border-2 transition-all duration-300 hover:scale-110 flex items-center justify-center gap-3 ${darkMode
-                                                ? 'border-[#fbbf24] text-[#fbbf24] hover:bg-[#fbbf24] hover:text-black'
-                                                : 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white'
+                                            ? 'border-[#fbbf24] text-[#fbbf24] hover:bg-[#fbbf24] hover:text-black'
+                                            : 'border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white'
                                             }`}
                                     >
                                         <Sparkles className="w-6 h-6" />
