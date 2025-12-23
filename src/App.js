@@ -2163,105 +2163,152 @@ const RinON = () => {
 
                     // Handle notification click
                     notification.onclick = async () => {
+                        console.log('=== NOTIFICATION CLICKED ===');
                         window.focus();
                         const url = payload.data?.url;
+                        console.log('Payload data:', payload.data);
+                        console.log('URL from payload:', url);
 
                         if (url) {
                             console.log('Notification clicked with URL:', url);
                             // Parse deep link format: "article:123" or "event:456"
-                            const [type, id] = url.split(':');
+                            const parts = url.split(':');
+                            const type = parts[0];
+                            const id = parts[1];
+
+                            console.log('Parsed type:', type);
+                            console.log('Parsed id:', id);
 
                             if (type === 'article') {
+                                console.log('Articles in memory:', articles.length);
                                 // Try to find in memory first
-                                let article = articles.find(a => a.id === id);
+                                let article = articles.find(a => {
+                                    console.log('Checking article:', a.id, '===', id, '?', a.id === id);
+                                    return a.id === id;
+                                });
+
+                                console.log('Article found in memory:', !!article);
 
                                 // If not found, fetch from database
                                 if (!article) {
                                     console.log('Article not in memory, fetching from database...');
-                                    const { data } = await supabase
-                                        .from('articles')
-                                        .select('*')
-                                        .eq('id', id)
-                                        .single();
+                                    try {
+                                        const { data, error } = await supabase
+                                            .from('articles')
+                                            .select('*')
+                                            .eq('id', id)
+                                            .single();
 
-                                    if (data) {
-                                        article = {
-                                            id: data.id,
-                                            titleAl: data.title_al,
-                                            titleEn: data.title_en,
-                                            contentAl: data.content_al,
-                                            contentEn: data.content_en,
-                                            category: data.category,
-                                            image: data.image,
-                                            source: data.source,
-                                            featured: data.featured,
-                                            postType: data.post_type || 'lajme',
-                                            date: new Date(data.created_at).toISOString().split('T')[0]
-                                        };
+                                        console.log('Database response:', data, error);
+
+                                        if (data) {
+                                            article = {
+                                                id: data.id,
+                                                titleAl: data.title_al,
+                                                titleEn: data.title_en,
+                                                contentAl: data.content_al,
+                                                contentEn: data.content_en,
+                                                category: data.category,
+                                                image: data.image,
+                                                source: data.source,
+                                                featured: data.featured,
+                                                postType: data.post_type || 'lajme',
+                                                date: new Date(data.created_at).toISOString().split('T')[0]
+                                            };
+                                            console.log('Article constructed from DB:', article);
+                                        }
+                                    } catch (err) {
+                                        console.error('Database fetch error:', err);
                                     }
                                 }
 
                                 if (article) {
                                     console.log('Opening article:', article.titleAl);
-                                    openArticle(article);
+                                    try {
+                                        openArticle(article);
+                                        console.log('openArticle called successfully');
+                                    } catch (err) {
+                                        console.error('Error calling openArticle:', err);
+                                    }
                                 } else {
-                                    console.error('Article not found:', id);
+                                    console.error('Article not found after all attempts. ID:', id);
                                 }
                             } else if (type === 'event') {
+                                console.log('Events in memory:', otherEvents.length);
                                 // Try to find in memory first
-                                let event = otherEvents.find(e => e.id === id);
+                                let event = otherEvents.find(e => {
+                                    console.log('Checking event:', e.id, '===', id, '?', e.id === id);
+                                    return e.id === id;
+                                });
+
+                                console.log('Event found in memory:', !!event);
 
                                 // If not found, fetch from database
                                 if (!event) {
                                     console.log('Event not in memory, fetching from database...');
-                                    const { data } = await supabase
-                                        .from('events')
-                                        .select('*')
-                                        .eq('id', id)
-                                        .single();
+                                    try {
+                                        const { data, error } = await supabase
+                                            .from('events')
+                                            .select('*')
+                                            .eq('id', id)
+                                            .single();
 
-                                    if (data) {
-                                        event = {
-                                            id: data.id,
-                                            titleAl: data.title_al,
-                                            titleEn: data.title_en,
-                                            dateAl: data.date_al,
-                                            dateEn: data.date_en,
-                                            type: data.type,
-                                            descAl: data.desc_al,
-                                            descEn: data.desc_en,
-                                            location: data.location,
-                                            image: data.image,
-                                            date: data.date,
-                                            time: data.time,
-                                            endTime: data.end_time,
-                                            address: data.address,
-                                            category: data.category,
-                                            spots_left: data.spots_left,
-                                            total_spots: data.total_spots,
-                                            is_free: data.is_free,
-                                            price: data.price,
-                                            attendees: data.attendees,
-                                            partner: data.partner,
-                                            registration_link: data.registration_link,
-                                            is_featured: data.is_featured,
-                                            is_trending: data.is_trending,
-                                            tags: data.tags
-                                        };
+                                        console.log('Database response:', data, error);
+
+                                        if (data) {
+                                            event = {
+                                                id: data.id,
+                                                titleAl: data.title_al,
+                                                titleEn: data.title_en,
+                                                dateAl: data.date_al,
+                                                dateEn: data.date_en,
+                                                type: data.type,
+                                                descAl: data.desc_al,
+                                                descEn: data.desc_en,
+                                                location: data.location,
+                                                image: data.image,
+                                                date: data.date,
+                                                time: data.time,
+                                                endTime: data.end_time,
+                                                address: data.address,
+                                                category: data.category,
+                                                spots_left: data.spots_left,
+                                                total_spots: data.total_spots,
+                                                is_free: data.is_free,
+                                                price: data.price,
+                                                attendees: data.attendees,
+                                                partner: data.partner,
+                                                registration_link: data.registration_link,
+                                                is_featured: data.is_featured,
+                                                is_trending: data.is_trending,
+                                                tags: data.tags
+                                            };
+                                            console.log('Event constructed from DB:', event);
+                                        }
+                                    } catch (err) {
+                                        console.error('Database fetch error:', err);
                                     }
                                 }
 
                                 if (event) {
                                     console.log('Opening event:', event.titleAl);
-                                    setSelectedEvent(event);
-                                    setShowEventModal(true);
+                                    try {
+                                        setSelectedEvent(event);
+                                        setShowEventModal(true);
+                                        console.log('Event modal opened successfully');
+                                    } catch (err) {
+                                        console.error('Error opening event modal:', err);
+                                    }
                                 } else {
-                                    console.error('Event not found:', id);
+                                    console.error('Event not found after all attempts. ID:', id);
                                 }
                             }
+                        } else {
+                            console.error('No URL in payload.data');
                         }
 
                         notification.close();
+                        console.log('=== NOTIFICATION HANDLER COMPLETE ===');
                     };
                 }
             });
