@@ -1841,12 +1841,17 @@ const RinON = () => {
                 return;
             }
 
-            const tokens = subscriptions.map(s => s.fcm_token);
+            // Deduplicate FCM tokens to prevent multiple notifications
+            const tokens = [...new Set(subscriptions.map(s => s.fcm_token))];
 
             const { error: sendError } = await supabase.functions.invoke('send-notification', {
                 body: {
                     tokens,
-                    notification: { title, body },
+                    notification: {
+                        title,
+                        body,
+                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png'
+                    },
                     data: { type, url }
                 }
             });
@@ -1868,51 +1873,196 @@ const RinON = () => {
         const openArticleId = urlParams.get('openArticle');
         const openEventId = urlParams.get('openEvent');
 
-        if (openArticleId) {
-            // Wait for articles to load, then open
-            const checkAndOpen = setInterval(() => {
-                const article = articles.find(a => a.id === openArticleId);
-                if (article) {
-                    clearInterval(checkAndOpen);
-                    openArticle(article);
-                    // Clean URL
-                    window.history.replaceState({}, '', '/');
+        const handleArticleOpen = async () => {
+            if (!openArticleId) return;
+
+            console.log('Opening article from URL:', openArticleId);
+
+            // Try to find in loaded articles first
+            let article = articles.find(a => a.id === openArticleId);
+
+            // If not found, fetch from database
+            if (!article) {
+                console.log('Article not loaded, fetching from database...');
+                try {
+                    const { data } = await supabase
+                        .from('articles')
+                        .select('*')
+                        .eq('id', openArticleId)
+                        .single();
+
+                    if (data) {
+                        article = {
+                            id: data.id,
+                            titleAl: data.title_al,
+                            titleEn: data.title_en,
+                            contentAl: data.content_al,
+                            contentEn: data.content_en,
+                            category: data.category,
+                            image: data.image,
+                            source: data.source,
+                            featured: data.featured,
+                            postType: data.post_type || 'lajme',
+                            date: new Date(data.created_at).toISOString().split('T')[0]
+                        };
+                    }
+                } catch (err) {
+                    console.error('Error fetching article:', err);
                 }
-            }, 500);
+            }
 
-            // Cleanup after 5 seconds
-            setTimeout(() => clearInterval(checkAndOpen), 5000);
-        }
+            if (article) {
+                console.log('Opening article:', article.titleAl);
+                openArticle(article);
+                window.history.replaceState({}, '', '/');
+            } else {
+                console.error('Article not found:', openArticleId);
+            }
+        };
 
-        if (openEventId) {
-            // Wait for events to load, then open
-            const checkAndOpen = setInterval(() => {
-                const event = otherEvents.find(e => e.id === openEventId);
-                if (event) {
-                    clearInterval(checkAndOpen);
-                    setSelectedEvent(event);
-                    setShowEventModal(true);
-                    // Clean URL
-                    window.history.replaceState({}, '', '/');
+        const handleEventOpen = async () => {
+            if (!openEventId) return;
+
+            console.log('Opening event from URL:', openEventId);
+
+            // Try to find in loaded events first
+            let event = otherEvents.find(e => e.id === openEventId);
+
+            // If not found, fetch from database
+            if (!event) {
+                console.log('Event not loaded, fetching from database...');
+                try {
+                    const { data } = await supabase
+                        .from('events')
+                        .select('*')
+                        .eq('id', openEventId)
+                        .single();
+
+                    if (data) {
+                        event = {
+                            id: data.id,
+                            titleAl: data.title_al,
+                            titleEn: data.title_en,
+                            dateAl: data.date_al,
+                            dateEn: data.date_en,
+                            type: data.type,
+                            descAl: data.desc_al,
+                            descEn: data.desc_en,
+                            location: data.location,
+                            image: data.image,
+                            date: data.date,
+                            time: data.time,
+                            endTime: data.end_time,
+                            address: data.address,
+                            category: data.category,
+                            spots_left: data.spots_left,
+                            total_spots: data.total_spots,
+                            is_free: data.is_free,
+                            price: data.price,
+                            attendees: data.attendees,
+                            partner: data.partner,
+                            registration_link: data.registration_link,
+                            is_featured: data.is_featured,
+                            is_trending: data.is_trending,
+                            tags: data.tags
+                        };
+                    }
+                } catch (err) {
+                    console.error('Error fetching event:', err);
                 }
-            }, 500);
+            }
 
-            // Cleanup after 5 seconds
-            setTimeout(() => clearInterval(checkAndOpen), 5000);
-        }
+            if (event) {
+                console.log('Opening event:', event.titleAl);
+                setSelectedEvent(event);
+                setShowEventModal(true);
+                window.history.replaceState({}, '', '/');
+            } else {
+                console.error('Event not found:', openEventId);
+            }
+        };
+
+        // Execute handlers
+        if (openArticleId) handleArticleOpen();
+        if (openEventId) handleEventOpen();
 
         // Also listen for messages from service worker (when app was open in background)
-        navigator.serviceWorker?.addEventListener('message', (event) => {
+        const handleServiceWorkerMessage = async (event) => {
             if (event.data?.type === 'NOTIFICATION_CLICK') {
                 const url = event.data?.url;
                 if (url) {
+                    console.log('Service worker message received:', url);
                     const [type, id] = url.split(':');
 
                     if (type === 'article') {
-                        const article = articles.find(a => a.id === id);
+                        let article = articles.find(a => a.id === id);
+
+                        if (!article) {
+                            const { data } = await supabase
+                                .from('articles')
+                                .select('*')
+                                .eq('id', id)
+                                .single();
+
+                            if (data) {
+                                article = {
+                                    id: data.id,
+                                    titleAl: data.title_al,
+                                    titleEn: data.title_en,
+                                    contentAl: data.content_al,
+                                    contentEn: data.content_en,
+                                    category: data.category,
+                                    image: data.image,
+                                    source: data.source,
+                                    featured: data.featured,
+                                    postType: data.post_type || 'lajme',
+                                    date: new Date(data.created_at).toISOString().split('T')[0]
+                                };
+                            }
+                        }
+
                         if (article) openArticle(article);
                     } else if (type === 'event') {
-                        const event = otherEvents.find(e => e.id === id);
+                        let event = otherEvents.find(e => e.id === id);
+
+                        if (!event) {
+                            const { data } = await supabase
+                                .from('events')
+                                .select('*')
+                                .eq('id', id)
+                                .single();
+
+                            if (data) {
+                                event = {
+                                    id: data.id,
+                                    titleAl: data.title_al,
+                                    titleEn: data.title_en,
+                                    dateAl: data.date_al,
+                                    dateEn: data.date_en,
+                                    type: data.type,
+                                    descAl: data.desc_al,
+                                    descEn: data.desc_en,
+                                    location: data.location,
+                                    image: data.image,
+                                    date: data.date,
+                                    time: data.time,
+                                    endTime: data.end_time,
+                                    address: data.address,
+                                    category: data.category,
+                                    spots_left: data.spots_left,
+                                    total_spots: data.total_spots,
+                                    is_free: data.is_free,
+                                    price: data.price,
+                                    attendees: data.attendees,
+                                    partner: data.partner,
+                                    registration_link: data.registration_link,
+                                    is_featured: data.is_featured,
+                                    is_trending: data.is_trending,
+                                    tags: data.tags
+                                };
+                            }
+                        }
+
                         if (event) {
                             setSelectedEvent(event);
                             setShowEventModal(true);
@@ -1920,7 +2070,13 @@ const RinON = () => {
                     }
                 }
             }
-        });
+        };
+
+        navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
+
+        return () => {
+            navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
+        };
     }, [otherEvents, articles]);
 
     // Set body background color to prevent purple showing on zoom out
@@ -2006,24 +2162,101 @@ const RinON = () => {
                     });
 
                     // Handle notification click
-                    notification.onclick = () => {
+                    notification.onclick = async () => {
                         window.focus();
                         const url = payload.data?.url;
 
                         if (url) {
+                            console.log('Notification clicked with URL:', url);
                             // Parse deep link format: "article:123" or "event:456"
                             const [type, id] = url.split(':');
 
                             if (type === 'article') {
-                                const article = articles.find(a => a.id === id);
+                                // Try to find in memory first
+                                let article = articles.find(a => a.id === id);
+
+                                // If not found, fetch from database
+                                if (!article) {
+                                    console.log('Article not in memory, fetching from database...');
+                                    const { data } = await supabase
+                                        .from('articles')
+                                        .select('*')
+                                        .eq('id', id)
+                                        .single();
+
+                                    if (data) {
+                                        article = {
+                                            id: data.id,
+                                            titleAl: data.title_al,
+                                            titleEn: data.title_en,
+                                            contentAl: data.content_al,
+                                            contentEn: data.content_en,
+                                            category: data.category,
+                                            image: data.image,
+                                            source: data.source,
+                                            featured: data.featured,
+                                            postType: data.post_type || 'lajme',
+                                            date: new Date(data.created_at).toISOString().split('T')[0]
+                                        };
+                                    }
+                                }
+
                                 if (article) {
+                                    console.log('Opening article:', article.titleAl);
                                     openArticle(article);
+                                } else {
+                                    console.error('Article not found:', id);
                                 }
                             } else if (type === 'event') {
-                                const event = otherEvents.find(e => e.id === id);
+                                // Try to find in memory first
+                                let event = otherEvents.find(e => e.id === id);
+
+                                // If not found, fetch from database
+                                if (!event) {
+                                    console.log('Event not in memory, fetching from database...');
+                                    const { data } = await supabase
+                                        .from('events')
+                                        .select('*')
+                                        .eq('id', id)
+                                        .single();
+
+                                    if (data) {
+                                        event = {
+                                            id: data.id,
+                                            titleAl: data.title_al,
+                                            titleEn: data.title_en,
+                                            dateAl: data.date_al,
+                                            dateEn: data.date_en,
+                                            type: data.type,
+                                            descAl: data.desc_al,
+                                            descEn: data.desc_en,
+                                            location: data.location,
+                                            image: data.image,
+                                            date: data.date,
+                                            time: data.time,
+                                            endTime: data.end_time,
+                                            address: data.address,
+                                            category: data.category,
+                                            spots_left: data.spots_left,
+                                            total_spots: data.total_spots,
+                                            is_free: data.is_free,
+                                            price: data.price,
+                                            attendees: data.attendees,
+                                            partner: data.partner,
+                                            registration_link: data.registration_link,
+                                            is_featured: data.is_featured,
+                                            is_trending: data.is_trending,
+                                            tags: data.tags
+                                        };
+                                    }
+                                }
+
                                 if (event) {
+                                    console.log('Opening event:', event.titleAl);
                                     setSelectedEvent(event);
                                     setShowEventModal(true);
+                                } else {
+                                    console.error('Event not found:', id);
                                 }
                             }
                         }
@@ -2791,14 +3024,21 @@ const RinON = () => {
                 author_id: user?.id
             };
 
-            let error;
+            let error, data;
             if (editMode && editingItem) {
                 ({ error } = await supabase.from('articles').update(article).eq('id', editingItem.id));
+                data = [{ id: editingItem.id }]; // Use existing ID
             } else {
-                ({ error } = await supabase.from('articles').insert([article]));
+                ({ data, error } = await supabase.from('articles').insert([article]).select('id'));
             }
 
             if (error) throw error;
+
+            // Store the article ID for notifications
+            const savedArticleId = data?.[0]?.id;
+            if (savedArticleId) {
+                setEditingItem({ ...editingItem, id: savedArticleId });
+            }
 
             // If publishing from a draft, delete the draft
             if (editingDraftId) {
@@ -2871,14 +3111,21 @@ const RinON = () => {
                 tags: eventFormData.tags
             };
 
-            let error;
+            let error, data;
             if (editMode && editingItem) {
                 ({ error } = await supabase.from('events').update(event).eq('id', editingItem.id));
+                data = [{ id: editingItem.id }]; // Use existing ID
             } else {
-                ({ error } = await supabase.from('events').insert([event]));
+                ({ data, error } = await supabase.from('events').insert([event]).select('id'));
             }
 
             if (error) throw error;
+
+            // Store the event ID for notifications
+            const savedEventId = data?.[0]?.id;
+            if (savedEventId) {
+                setEditingItem({ ...editingItem, id: savedEventId });
+            }
 
             loadEvents();
             setEventFormData({
@@ -4963,8 +5210,16 @@ const RinON = () => {
                                         alert(t('Ju lutem ruani artikullin para se të dërgoni njoftim', 'Please save the article before sending notification'));
                                         return;
                                     }
-                                    // Get the article ID (if editing) or latest article
-                                    const articleId = editingItem?.id || articles[0]?.id;
+
+                                    // Get the article ID - use editingItem which gets set after save
+                                    let articleId = editingItem?.id;
+
+                                    if (!articleId) {
+                                        // If no ID yet, user needs to save first
+                                        alert(t('Ju lutem ruani artikullin para se të dërgoni njoftim', 'Please save the article before sending notification'));
+                                        return;
+                                    }
+
                                     await sendNotificationToUsers(
                                         'news',
                                         formData.titleAl,
@@ -5194,8 +5449,16 @@ const RinON = () => {
                                         alert(t('Ju lutem ruani eventin para se të dërgoni njoftim', 'Please save the event before sending notification'));
                                         return;
                                     }
-                                    // Get the event ID (if editing) or latest event
-                                    const eventId = editingItem?.id || otherEvents[0]?.id;
+
+                                    // Get the event ID - use editingItem which gets set after save
+                                    let eventId = editingItem?.id;
+
+                                    if (!eventId) {
+                                        // If no ID yet, user needs to save first
+                                        alert(t('Ju lutem ruani eventin para se të dërgoni njoftim', 'Please save the event before sending notification'));
+                                        return;
+                                    }
+
                                     await sendNotificationToUsers(
                                         'events',
                                         eventFormData.titleAl,
