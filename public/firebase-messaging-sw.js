@@ -39,42 +39,80 @@ messaging.onBackgroundMessage((payload) => {
 
 // Handle notification click when app is in background or closed
 self.addEventListener('notificationclick', (event) => {
-    console.log('Notification clicked:', event);
+    console.log('=== SERVICE WORKER: Notification clicked ===');
+    console.log('Event:', event);
+    console.log('Notification data:', event.notification.data);
+    console.log('Notification tag:', event.notification.tag);
+
     event.notification.close();
 
-    const urlData = event.notification.data?.url;
+    // Try multiple ways to get the URL data
+    const urlData = event.notification.data?.url || event.notification.data;
+    console.log('URL data extracted:', urlData);
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            console.log('Clients found:', clientList.length);
+
             let targetUrl = '/';
 
             if (urlData) {
-                const parts = urlData.split(':');
-                const type = parts[0];
-                const id = parts[1];
+                console.log('Processing URL data:', urlData);
 
-                if (type === 'article') {
-                    targetUrl = `/?openArticle=${id}`;
-                } else if (type === 'event') {
-                    targetUrl = `/?openEvent=${id}`;
+                // Handle if urlData is a string with format "article:id"
+                if (typeof urlData === 'string' && urlData.includes(':')) {
+                    const parts = urlData.split(':');
+                    const type = parts[0];
+                    const id = parts[1];
+
+                    console.log('Parsed - type:', type, 'id:', id);
+
+                    if (type === 'article') {
+                        targetUrl = `/?openArticle=${id}`;
+                    } else if (type === 'event') {
+                        targetUrl = `/?openEvent=${id}`;
+                    }
+                }
+                // Handle if urlData is an object with url property
+                else if (typeof urlData === 'object' && urlData.url) {
+                    const parts = urlData.url.split(':');
+                    const type = parts[0];
+                    const id = parts[1];
+
+                    console.log('Parsed from object - type:', type, 'id:', id);
+
+                    if (type === 'article') {
+                        targetUrl = `/?openArticle=${id}`;
+                    } else if (type === 'event') {
+                        targetUrl = `/?openEvent=${id}`;
+                    }
                 }
             }
 
+            console.log('Target URL:', targetUrl);
+
+            // Try to focus existing window
             for (let i = 0; i < clientList.length; i++) {
                 const client = clientList[i];
+                console.log('Checking client:', client.url);
                 if (client.url.includes(self.location.origin) && 'focus' in client) {
+                    console.log('Focusing existing window and sending message');
                     client.focus();
                     client.postMessage({
                         type: 'NOTIFICATION_CLICK',
                         url: urlData
                     });
-                    return;
+                    return client.navigate(targetUrl);
                 }
             }
 
+            // Open new window if no existing window found
+            console.log('Opening new window with URL:', targetUrl);
             if (clients.openWindow) {
                 return clients.openWindow(targetUrl);
             }
         })
     );
+
+    console.log('=== SERVICE WORKER: Handler complete ===');
 });
