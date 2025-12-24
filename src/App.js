@@ -161,6 +161,7 @@ const NotificationModal = ({
     setPreferences,
     onSave,
     onEnableNotifications,
+    onDisableNotifications,
     notificationsEnabled,
     isIOS
 }) => {
@@ -278,6 +279,17 @@ const NotificationModal = ({
                             className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold"
                         >
                             {t('Ruaj Preferencat', 'Save Preferences')}
+                        </button>
+
+                        {/* Disable Notifications Button */}
+                        <button
+                            onClick={onDisableNotifications}
+                            className={`w-full px-6 py-3 rounded-xl transition-all font-medium border ${darkMode
+                                    ? 'border-red-500/30 text-red-400 hover:bg-red-500/10'
+                                    : 'border-red-200 text-red-600 hover:bg-red-50'
+                                }`}
+                        >
+                            {t('Çaktivizo Njoftimet', 'Disable Notifications')}
                         </button>
                     </div>
                 )}
@@ -1829,6 +1841,51 @@ const RinON = () => {
         }
     };
 
+    // Disable notifications completely
+    const disableNotifications = async () => {
+        if (!user) return;
+
+        try {
+            // 1. Delete FCM token from database
+            await supabase
+                .from('push_subscriptions')
+                .delete()
+                .eq('user_id', user.id);
+
+            // 2. Delete notification preferences
+            await supabase
+                .from('notification_preferences')
+                .delete()
+                .eq('user_id', user.id);
+
+            // 3. Unregister service worker to stop receiving notifications
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                }
+            }
+
+            // 4. Update local state
+            setNotificationsEnabled(false);
+            setPushSubscription(null);
+            setNotificationPreferences({ notify_news: true, notify_events: true });
+
+            // 5. Close the modal
+            setShowNotificationModal(false);
+
+            // 6. Show confirmation
+            alert(t(
+                'Njoftimet u çaktivizuan me sukses. Nuk do të marrësh më njoftime.',
+                'Notifications disabled successfully. You will no longer receive notifications.'
+            ));
+
+        } catch (error) {
+            console.error('Error disabling notifications:', error);
+            alert(t('Gabim në çaktivizimin e njoftimeve', 'Error disabling notifications'));
+        }
+    };
+
     // Check if notifications are already enabled
     const checkNotificationStatus = async () => {
         if (!user) return;
@@ -2189,14 +2246,18 @@ const RinON = () => {
             const messaging = getMessaging(firebaseApp);
 
             const unsubscribe = onMessage(messaging, (payload) => {
-                console.log('Foreground message received:', payload);
+                console.log('=== FOREGROUND MESSAGE RECEIVED ===');
+                console.log('Full payload:', JSON.stringify(payload, null, 2));
+                console.log('Notification permission:', Notification.permission);
 
                 if (Notification.permission === 'granted') {
+                    console.log('Creating notification...');
                     const notification = new Notification(payload.notification?.title || 'RinON', {
                         body: payload.notification?.body,
                         icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png',
                         data: payload.data // Pass through the data
                     });
+                    console.log('Notification created:', notification);
 
                     // Handle notification click
                     notification.onclick = async () => {
@@ -7913,6 +7974,7 @@ const RinON = () => {
                 setPreferences={setNotificationPreferences}
                 onSave={saveNotificationPreferences}
                 onEnableNotifications={enableNotifications}
+                onDisableNotifications={disableNotifications}
                 notificationsEnabled={notificationsEnabled}
                 isIOS={isIOS}
             />
