@@ -7,79 +7,73 @@
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-// Initialize Firebase in the service worker
+// ============================================
+// CRITICAL: This config MUST match your App.js
+// ============================================
 firebase.initializeApp({
-    apiKey: "AIzaSyDSQqZ4n81rLgPLPH5HZu5eN87dxkz5tr8",
-    authDomain: "rinon-39c00.firebaseapp.com",
-    projectId: "rinon-39c00",
-    storageBucket: "rinon-39c00.firebasestorage.app",
-    messagingSenderId: "815467562361",
-    appId: "1:815467562361:web:a0ea41b62f8df5b0cc8ac5",
-    measurementId: "G-9YB1S91QFP"
+    apiKey: "AIzaSyBQWErh4Kg0YPUniX3EfGjYBMl99n6LWN8",
+    authDomain: "rinon-notifications.firebaseapp.com",
+    projectId: "rinon-notifications",
+    storageBucket: "rinon-notifications.firebasestorage.app",
+    messagingSenderId: "1048258783490",
+    appId: "1:1048258783490:web:88da7361ad7b7d931a7a1b"
 });
 
 const messaging = firebase.messaging();
 
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
-    console.log('Background message received:', payload);
+    console.log('=== BACKGROUND MESSAGE RECEIVED ===');
+    console.log('Payload:', JSON.stringify(payload, null, 2));
 
     const notificationTitle = payload.notification?.title || 'RinON';
     const notificationOptions = {
         body: payload.notification?.body || '',
         icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png',
         badge: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png',
-        data: payload.data,
+        // Store URL data for click handling
+        data: {
+            url: payload.data?.url,
+            type: payload.data?.type
+        },
+        // Use unique tag to PREVENT duplicate notifications
+        tag: `rinon-${payload.data?.url || Date.now()}`,
         requireInteraction: false,
-        vibrate: [200, 100, 200]
+        vibrate: [200, 100, 200],
+        // Don't re-notify if same tag exists
+        renotify: false
     };
 
+    console.log('Notification options:', JSON.stringify(notificationOptions, null, 2));
     return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 // Handle notification click when app is in background or closed
 self.addEventListener('notificationclick', (event) => {
-    console.log('=== SERVICE WORKER: Notification clicked ===');
-    console.log('Event:', event);
+    console.log('=== NOTIFICATION CLICKED ===');
     console.log('Notification data:', event.notification.data);
-    console.log('Notification tag:', event.notification.tag);
 
     event.notification.close();
 
-    // Try multiple ways to get the URL data
-    const urlData = event.notification.data?.url || event.notification.data;
-    console.log('URL data extracted:', urlData);
+    // Get URL from notification data
+    const urlData = event.notification.data?.url;
+    console.log('URL data:', urlData);
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-            console.log('Clients found:', clientList.length);
+            console.log('Found clients:', clientList.length);
 
             let targetUrl = '/';
 
             if (urlData) {
-                console.log('Processing URL data:', urlData);
-
-                // Handle if urlData is a string with format "article:id"
-                if (typeof urlData === 'string' && urlData.includes(':')) {
-                    const parts = urlData.split(':');
+                // Parse format: "article:uuid" or "event:uuid"
+                const parts = urlData.split(':');
+                if (parts.length >= 2) {
                     const type = parts[0];
-                    const id = parts[1];
+                    // Join remaining parts in case UUID has colons
+                    const id = parts.slice(1).join(':');
 
-                    console.log('Parsed - type:', type, 'id:', id);
-
-                    if (type === 'article') {
-                        targetUrl = `/?openArticle=${id}`;
-                    } else if (type === 'event') {
-                        targetUrl = `/?openEvent=${id}`;
-                    }
-                }
-                // Handle if urlData is an object with url property
-                else if (typeof urlData === 'object' && urlData.url) {
-                    const parts = urlData.url.split(':');
-                    const type = parts[0];
-                    const id = parts[1];
-
-                    console.log('Parsed from object - type:', type, 'id:', id);
+                    console.log('Type:', type, 'ID:', id);
 
                     if (type === 'article') {
                         targetUrl = `/?openArticle=${id}`;
@@ -91,28 +85,26 @@ self.addEventListener('notificationclick', (event) => {
 
             console.log('Target URL:', targetUrl);
 
-            // Try to focus existing window
-            for (let i = 0; i < clientList.length; i++) {
-                const client = clientList[i];
-                console.log('Checking client:', client.url);
+            // Try to find and focus existing window
+            for (const client of clientList) {
                 if (client.url.includes(self.location.origin) && 'focus' in client) {
-                    console.log('Focusing existing window and sending message');
-                    client.focus();
-                    client.postMessage({
-                        type: 'NOTIFICATION_CLICK',
-                        url: urlData
+                    console.log('Focusing existing window');
+                    return client.focus().then(() => {
+                        // Send message to app
+                        client.postMessage({
+                            type: 'NOTIFICATION_CLICK',
+                            url: urlData
+                        });
+                        return client.navigate(targetUrl);
                     });
-                    return client.navigate(targetUrl);
                 }
             }
 
-            // Open new window if no existing window found
-            console.log('Opening new window with URL:', targetUrl);
+            // No existing window - open new one
+            console.log('Opening new window:', targetUrl);
             if (clients.openWindow) {
                 return clients.openWindow(targetUrl);
             }
         })
     );
-
-    console.log('=== SERVICE WORKER: Handler complete ===');
 });

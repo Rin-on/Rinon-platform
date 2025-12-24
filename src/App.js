@@ -28,6 +28,43 @@ const firebaseApp = initializeApp(firebaseConfig);
 // VAPID Key for web push
 const VAPID_KEY = 'BOfpnj9cj-R4dIiNLmwl9fZ4k49wdlFRHoWi-InN1jV3x-kgl-k4GnfItpdn6D_eOZTqypDFiVdxNgHljml06T0';
 
+// ============================================
+// SERVICE WORKER UPDATE MECHANISM
+// Change this version number when you update firebase-messaging-sw.js
+// This forces all users to get the new service worker
+// ============================================
+const SW_VERSION = '2.0.0';
+
+// Force update service worker if version changed
+if ('serviceWorker' in navigator) {
+    const currentVersion = localStorage.getItem('sw_version');
+
+    if (currentVersion !== SW_VERSION) {
+        // Version changed - unregister old service worker and register new one
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+            registrations.forEach((registration) => {
+                console.log('Unregistering old service worker...');
+                registration.unregister();
+            });
+
+            // Save new version
+            localStorage.setItem('sw_version', SW_VERSION);
+
+            // Reload to get fresh service worker
+            if (currentVersion !== null) {
+                // Only reload if there was an old version (not first visit)
+                console.log('Service worker updated! Reloading...');
+                window.location.reload();
+            }
+        });
+    } else {
+        // Same version - just make sure service worker is up to date
+        navigator.serviceWorker.ready.then((registration) => {
+            registration.update();
+        });
+    }
+}
+
 
 // Validation utilities
 const validateInput = {
@@ -2317,7 +2354,7 @@ const RinON = () => {
         } catch (error) {
             console.error('Error setting up foreground messaging:', error);
         }
-    }, [notificationsEnabled]);
+    }, [notificationsEnabled, articles, otherEvents]);
 
     // First-time visitor tooltip
     useEffect(() => {
