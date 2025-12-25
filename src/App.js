@@ -2384,7 +2384,8 @@ const RinON = () => {
     }, [user, showSignupPrompt]);
 
     // Listen for foreground messages
-    // When app is in foreground, we need to show notification manually
+    // DO NOT create notifications here - service worker handles ALL notifications
+    // This just logs that a message was received while app is in foreground
     useEffect(() => {
         if (!notificationsEnabled) return;
 
@@ -2392,124 +2393,21 @@ const RinON = () => {
             const messaging = getMessaging(firebaseApp);
 
             const unsubscribe = onMessage(messaging, async (payload) => {
-                console.log('=== FOREGROUND MESSAGE ===');
+                console.log('=== FOREGROUND MESSAGE RECEIVED ===');
                 console.log('Payload:', JSON.stringify(payload, null, 2));
 
-                // Extract data - FCM puts it in different places
-                const data = payload.data || {};
-                const notification = payload.notification || {};
+                // DO NOT create a new Notification() here!
+                // The service worker will show the notification.
+                // Creating one here causes DUPLICATE notifications.
 
-                const title = data.title || notification.title || 'RinON';
-                const body = data.body || notification.body || '';
-                const url = data.url || '';
-                const tag = data.tag || `rinon-${url || Date.now()}`;
-
-                if (Notification.permission === 'granted') {
-                    console.log('Creating foreground notification...');
-
-                    const notif = new Notification(title, {
-                        body: body,
-                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png',
-                        tag: tag, // Same tag as SW prevents duplicates
-                        data: { url: url }
-                    });
-
-                    notif.onclick = async (event) => {
-                        event.preventDefault();
-                        notif.close();
-                        window.focus();
-
-                        console.log('Foreground notification clicked, URL:', url);
-
-                        if (url) {
-                            const parts = url.split(':');
-                            const type = parts[0];
-                            const id = parts.slice(1).join(':');
-
-                            if (type === 'article') {
-                                let article = articles.find(a => a.id === id);
-
-                                if (!article) {
-                                    const { data: dbData } = await supabase
-                                        .from('articles')
-                                        .select('*')
-                                        .eq('id', id)
-                                        .single();
-
-                                    if (dbData) {
-                                        article = {
-                                            id: dbData.id,
-                                            titleAl: dbData.title_al,
-                                            titleEn: dbData.title_en,
-                                            contentAl: dbData.content_al,
-                                            contentEn: dbData.content_en,
-                                            category: dbData.category,
-                                            image: dbData.image,
-                                            source: dbData.source,
-                                            featured: dbData.featured,
-                                            postType: dbData.post_type || 'lajme',
-                                            date: new Date(dbData.created_at).toISOString().split('T')[0]
-                                        };
-                                    }
-                                }
-
-                                if (article) openArticle(article);
-                            } else if (type === 'event') {
-                                let evt = otherEvents.find(e => e.id === id);
-
-                                if (!evt) {
-                                    const { data: dbData } = await supabase
-                                        .from('events')
-                                        .select('*')
-                                        .eq('id', id)
-                                        .single();
-
-                                    if (dbData) {
-                                        evt = {
-                                            id: dbData.id,
-                                            titleAl: dbData.title_al,
-                                            titleEn: dbData.title_en,
-                                            dateAl: dbData.date_al,
-                                            dateEn: dbData.date_en,
-                                            type: dbData.type,
-                                            descAl: dbData.desc_al,
-                                            descEn: dbData.desc_en,
-                                            location: dbData.location,
-                                            image: dbData.image,
-                                            date: dbData.date,
-                                            time: dbData.time,
-                                            endTime: dbData.end_time,
-                                            address: dbData.address,
-                                            category: dbData.category,
-                                            spots_left: dbData.spots_left,
-                                            total_spots: dbData.total_spots,
-                                            is_free: dbData.is_free,
-                                            price: dbData.price,
-                                            attendees: dbData.attendees,
-                                            partner: dbData.partner,
-                                            registration_link: dbData.registration_link,
-                                            is_featured: dbData.is_featured,
-                                            is_trending: dbData.is_trending,
-                                            tags: dbData.tags
-                                        };
-                                    }
-                                }
-
-                                if (evt) {
-                                    setSelectedEvent(evt);
-                                    setShowEventModal(true);
-                                }
-                            }
-                        }
-                    };
-                }
+                console.log('Message received - service worker will display notification');
             });
 
             return () => unsubscribe();
         } catch (error) {
             console.error('Error setting up foreground messaging:', error);
         }
-    }, [notificationsEnabled, articles, otherEvents]);
+    }, [notificationsEnabled]);
 
     // First-time visitor tooltip
     useEffect(() => {
