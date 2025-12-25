@@ -33,7 +33,7 @@ const VAPID_KEY = 'BOfpnj9cj-R4dIiNLmwl9fZ4k49wdlFRHoWi-InN1jV3x-kgl-k4GnfItpdn6
 // Change this version number when you update firebase-messaging-sw.js
 // This forces all users to get the new service worker
 // ============================================
-const SW_VERSION = '2.0.0';
+const SW_VERSION = '2.1.0';
 
 // Force update service worker if version changed
 if ('serviceWorker' in navigator) {
@@ -1729,14 +1729,30 @@ const RinON = () => {
                 return null;
             }
 
+            if (!('serviceWorker' in navigator)) {
+                console.log('Service workers not supported');
+                return null;
+            }
+
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
                 console.log('Notification permission denied');
                 return null;
             }
 
+            // IMPORTANT: Wait for service worker to be ready BEFORE getting token
+            console.log('Waiting for service worker to be ready...');
+            const registration = await navigator.serviceWorker.ready;
+            console.log('Service worker ready:', registration);
+
+            // Small delay to ensure SW is fully active
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
             const messaging = getMessaging(firebaseApp);
-            const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+            const token = await getToken(messaging, {
+                vapidKey: VAPID_KEY,
+                serviceWorkerRegistration: registration
+            });
             console.log('FCM Token:', token);
             return token;
         } catch (error) {
@@ -1752,18 +1768,31 @@ const RinON = () => {
         try {
             const deviceInfo = `${navigator.userAgent.substring(0, 100)}`;
 
+            // First, delete any existing subscription for this user on this device
+            // This prevents duplicate tokens
+            await supabase
+                .from('push_subscriptions')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('device_info', deviceInfo);
+
+            // Also delete if this exact token exists (for any user)
+            await supabase
+                .from('push_subscriptions')
+                .delete()
+                .eq('fcm_token', token);
+
+            // Now insert the new subscription
             const { error } = await supabase
                 .from('push_subscriptions')
-                .upsert({
+                .insert({
                     user_id: user.id,
                     fcm_token: token,
                     device_info: deviceInfo
-                }, {
-                    onConflict: 'user_id,fcm_token'
                 });
 
             if (error) throw error;
-            console.log('Push subscription saved');
+            console.log('Push subscription saved successfully');
         } catch (error) {
             console.error('Error saving push subscription:', error);
         }
@@ -1798,16 +1827,37 @@ const RinON = () => {
         if (!user) return;
 
         try {
-            const { error } = await supabase
+            // First check if preferences exist
+            const { data: existing } = await supabase
                 .from('notification_preferences')
-                .upsert({
-                    user_id: user.id,
-                    notify_news: notificationPreferences.notify_news,
-                    notify_events: notificationPreferences.notify_events,
-                    updated_at: new Date().toISOString()
-                }, {
-                    onConflict: 'user_id'
-                });
+                .select('user_id')
+                .eq('user_id', user.id)
+                .single();
+
+            let error;
+            if (existing) {
+                // Update existing
+                const result = await supabase
+                    .from('notification_preferences')
+                    .update({
+                        notify_news: notificationPreferences.notify_news,
+                        notify_events: notificationPreferences.notify_events,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', user.id);
+                error = result.error;
+            } else {
+                // Insert new
+                const result = await supabase
+                    .from('notification_preferences')
+                    .insert({
+                        user_id: user.id,
+                        notify_news: notificationPreferences.notify_news,
+                        notify_events: notificationPreferences.notify_events,
+                        updated_at: new Date().toISOString()
+                    });
+                error = result.error;
+            }
 
             if (error) throw error;
 
@@ -1828,12 +1878,32 @@ const RinON = () => {
             setNotificationsEnabled(true);
             await savePushSubscription(token);
 
-            await supabase.from('notification_preferences').upsert({
-                user_id: user.id,
-                notify_news: true,
-                notify_events: true,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' });
+            // Check if preferences exist first
+            const { data: existing } = await supabase
+                .from('notification_preferences')
+                .select('user_id')
+                .eq('user_id', user.id)
+                .single();
+
+            if (existing) {
+                await supabase
+                    .from('notification_preferences')
+                    .update({
+                        notify_news: true,
+                        notify_events: true,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', user.id);
+            } else {
+                await supabase
+                    .from('notification_preferences')
+                    .insert({
+                        user_id: user.id,
+                        notify_news: true,
+                        notify_events: true,
+                        updated_at: new Date().toISOString()
+                    });
+            }
 
             if (isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
                 setShowIOSInstructions(true);
@@ -2239,6 +2309,8 @@ const RinON = () => {
     }, [user, showSignupPrompt]);
 
     // Listen for foreground messages
+    // NOTE: When app is in foreground, we DON'T show a notification here
+    // because the service worker will show it. We just log and prepare for click handling.
     useEffect(() => {
         if (!notificationsEnabled) return;
 
@@ -2248,174 +2320,21 @@ const RinON = () => {
             const unsubscribe = onMessage(messaging, (payload) => {
                 console.log('=== FOREGROUND MESSAGE RECEIVED ===');
                 console.log('Full payload:', JSON.stringify(payload, null, 2));
-                console.log('Notification permission:', Notification.permission);
 
-                if (Notification.permission === 'granted') {
-                    console.log('Creating notification...');
-                    const notification = new Notification(payload.notification?.title || 'RinON', {
-                        body: payload.notification?.body,
-                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png',
-                        data: payload.data // Pass through the data
-                    });
-                    console.log('Notification created:', notification);
+                // DON'T create a new Notification() here - this causes duplicates!
+                // The service worker's onBackgroundMessage will handle showing the notification.
+                // For foreground, FCM with webpush config will show notification automatically.
 
-                    // Handle notification click
-                    notification.onclick = async () => {
-                        console.log('=== NOTIFICATION CLICKED ===');
-                        window.focus();
-                        const url = payload.data?.url;
-                        console.log('Payload data:', payload.data);
-                        console.log('URL from payload:', url);
-
-                        if (url) {
-                            console.log('Notification clicked with URL:', url);
-                            // Parse deep link format: "article:123" or "event:456"
-                            const parts = url.split(':');
-                            const type = parts[0];
-                            const id = parts[1];
-
-                            console.log('Parsed type:', type);
-                            console.log('Parsed id:', id);
-
-                            if (type === 'article') {
-                                console.log('Articles in memory:', articles.length);
-                                // Try to find in memory first
-                                let article = articles.find(a => {
-                                    console.log('Checking article:', a.id, '===', id, '?', a.id === id);
-                                    return a.id === id;
-                                });
-
-                                console.log('Article found in memory:', !!article);
-
-                                // If not found, fetch from database
-                                if (!article) {
-                                    console.log('Article not in memory, fetching from database...');
-                                    try {
-                                        const { data, error } = await supabase
-                                            .from('articles')
-                                            .select('*')
-                                            .eq('id', id)
-                                            .single();
-
-                                        console.log('Database response:', data, error);
-
-                                        if (data) {
-                                            article = {
-                                                id: data.id,
-                                                titleAl: data.title_al,
-                                                titleEn: data.title_en,
-                                                contentAl: data.content_al,
-                                                contentEn: data.content_en,
-                                                category: data.category,
-                                                image: data.image,
-                                                source: data.source,
-                                                featured: data.featured,
-                                                postType: data.post_type || 'lajme',
-                                                date: new Date(data.created_at).toISOString().split('T')[0]
-                                            };
-                                            console.log('Article constructed from DB:', article);
-                                        }
-                                    } catch (err) {
-                                        console.error('Database fetch error:', err);
-                                    }
-                                }
-
-                                if (article) {
-                                    console.log('Opening article:', article.titleAl);
-                                    try {
-                                        openArticle(article);
-                                        console.log('openArticle called successfully');
-                                    } catch (err) {
-                                        console.error('Error calling openArticle:', err);
-                                    }
-                                } else {
-                                    console.error('Article not found after all attempts. ID:', id);
-                                }
-                            } else if (type === 'event') {
-                                console.log('Events in memory:', otherEvents.length);
-                                // Try to find in memory first
-                                let event = otherEvents.find(e => {
-                                    console.log('Checking event:', e.id, '===', id, '?', e.id === id);
-                                    return e.id === id;
-                                });
-
-                                console.log('Event found in memory:', !!event);
-
-                                // If not found, fetch from database
-                                if (!event) {
-                                    console.log('Event not in memory, fetching from database...');
-                                    try {
-                                        const { data, error } = await supabase
-                                            .from('events')
-                                            .select('*')
-                                            .eq('id', id)
-                                            .single();
-
-                                        console.log('Database response:', data, error);
-
-                                        if (data) {
-                                            event = {
-                                                id: data.id,
-                                                titleAl: data.title_al,
-                                                titleEn: data.title_en,
-                                                dateAl: data.date_al,
-                                                dateEn: data.date_en,
-                                                type: data.type,
-                                                descAl: data.desc_al,
-                                                descEn: data.desc_en,
-                                                location: data.location,
-                                                image: data.image,
-                                                date: data.date,
-                                                time: data.time,
-                                                endTime: data.end_time,
-                                                address: data.address,
-                                                category: data.category,
-                                                spots_left: data.spots_left,
-                                                total_spots: data.total_spots,
-                                                is_free: data.is_free,
-                                                price: data.price,
-                                                attendees: data.attendees,
-                                                partner: data.partner,
-                                                registration_link: data.registration_link,
-                                                is_featured: data.is_featured,
-                                                is_trending: data.is_trending,
-                                                tags: data.tags
-                                            };
-                                            console.log('Event constructed from DB:', event);
-                                        }
-                                    } catch (err) {
-                                        console.error('Database fetch error:', err);
-                                    }
-                                }
-
-                                if (event) {
-                                    console.log('Opening event:', event.titleAl);
-                                    try {
-                                        setSelectedEvent(event);
-                                        setShowEventModal(true);
-                                        console.log('Event modal opened successfully');
-                                    } catch (err) {
-                                        console.error('Error opening event modal:', err);
-                                    }
-                                } else {
-                                    console.error('Event not found after all attempts. ID:', id);
-                                }
-                            }
-                        } else {
-                            console.error('No URL in payload.data');
-                        }
-
-                        notification.close();
-                        console.log('=== NOTIFICATION HANDLER COMPLETE ===');
-                    };
-                }
+                // We can optionally show an in-app notification/toast instead
+                // For now, just log that we received it
+                console.log('Message received in foreground - service worker will display notification');
             });
 
             return () => unsubscribe();
         } catch (error) {
             console.error('Error setting up foreground messaging:', error);
         }
-    }, [notificationsEnabled, articles, otherEvents]);
+    }, [notificationsEnabled]);
 
     // First-time visitor tooltip
     useEffect(() => {
