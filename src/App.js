@@ -1724,39 +1724,67 @@ const RinON = () => {
     // Initialize Firebase Messaging
     const initializeFirebaseMessaging = async () => {
         try {
+            console.log('=== INITIALIZING FIREBASE MESSAGING ===');
+
             if (!('Notification' in window)) {
                 console.log('This browser does not support notifications');
+                alert('Ky shfletues nuk mbështet njoftimet / This browser does not support notifications');
                 return null;
             }
 
             if (!('serviceWorker' in navigator)) {
                 console.log('Service workers not supported');
+                alert('Ky shfletues nuk mbështet service workers');
                 return null;
             }
 
+            // Request notification permission first
+            console.log('Requesting notification permission...');
             const permission = await Notification.requestPermission();
+            console.log('Permission result:', permission);
+
             if (permission !== 'granted') {
                 console.log('Notification permission denied');
+                alert('Leja për njoftime u refuzua / Notification permission denied');
                 return null;
             }
 
-            // IMPORTANT: Wait for service worker to be ready BEFORE getting token
-            console.log('Waiting for service worker to be ready...');
-            const registration = await navigator.serviceWorker.ready;
-            console.log('Service worker ready:', registration);
+            // Register service worker if not already registered
+            console.log('Checking for service worker registration...');
+            let registration;
+
+            const existingRegistrations = await navigator.serviceWorker.getRegistrations();
+            const existingSW = existingRegistrations.find(r =>
+                r.active?.scriptURL?.includes('firebase-messaging-sw.js')
+            );
+
+            if (existingSW) {
+                console.log('Using existing service worker');
+                registration = existingSW;
+            } else {
+                console.log('Registering new service worker...');
+                registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                console.log('Service worker registered:', registration);
+
+                // Wait for it to be ready
+                await navigator.serviceWorker.ready;
+                console.log('Service worker is ready');
+            }
 
             // Small delay to ensure SW is fully active
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 500));
 
+            console.log('Getting FCM token...');
             const messaging = getMessaging(firebaseApp);
             const token = await getToken(messaging, {
                 vapidKey: VAPID_KEY,
                 serviceWorkerRegistration: registration
             });
-            console.log('FCM Token:', token);
+            console.log('FCM Token obtained:', token);
             return token;
         } catch (error) {
             console.error('Error initializing Firebase Messaging:', error);
+            alert('Gabim në aktivizimin e njoftimeve: ' + error.message);
             return null;
         }
     };
@@ -1871,43 +1899,55 @@ const RinON = () => {
 
     // Enable notifications
     const enableNotifications = async () => {
-        const token = await initializeFirebaseMessaging();
+        try {
+            console.log('=== ENABLE NOTIFICATIONS CLICKED ===');
 
-        if (token) {
-            setPushSubscription(token);
-            setNotificationsEnabled(true);
-            await savePushSubscription(token);
+            const token = await initializeFirebaseMessaging();
 
-            // Check if preferences exist first
-            const { data: existing } = await supabase
-                .from('notification_preferences')
-                .select('user_id')
-                .eq('user_id', user.id)
-                .single();
+            if (token) {
+                console.log('Token received, saving...');
+                setPushSubscription(token);
+                setNotificationsEnabled(true);
+                await savePushSubscription(token);
 
-            if (existing) {
-                await supabase
+                // Check if preferences exist first
+                const { data: existing } = await supabase
                     .from('notification_preferences')
-                    .update({
-                        notify_news: true,
-                        notify_events: true,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('user_id', user.id);
+                    .select('user_id')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (existing) {
+                    await supabase
+                        .from('notification_preferences')
+                        .update({
+                            notify_news: true,
+                            notify_events: true,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('user_id', user.id);
+                } else {
+                    await supabase
+                        .from('notification_preferences')
+                        .insert({
+                            user_id: user.id,
+                            notify_news: true,
+                            notify_events: true,
+                            updated_at: new Date().toISOString()
+                        });
+                }
+
+                console.log('Notifications enabled successfully!');
+
+                if (isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
+                    setShowIOSInstructions(true);
+                }
             } else {
-                await supabase
-                    .from('notification_preferences')
-                    .insert({
-                        user_id: user.id,
-                        notify_news: true,
-                        notify_events: true,
-                        updated_at: new Date().toISOString()
-                    });
+                console.log('No token received - notifications not enabled');
             }
-
-            if (isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
-                setShowIOSInstructions(true);
-            }
+        } catch (error) {
+            console.error('Error in enableNotifications:', error);
+            alert('Gabim: ' + error.message);
         }
     };
 
@@ -2309,32 +2349,133 @@ const RinON = () => {
     }, [user, showSignupPrompt]);
 
     // Listen for foreground messages
-    // NOTE: When app is in foreground, we DON'T show a notification here
-    // because the service worker will show it. We just log and prepare for click handling.
+    // When app is in foreground, we need to show notification manually
+    // (service worker only handles background messages)
     useEffect(() => {
         if (!notificationsEnabled) return;
 
         try {
             const messaging = getMessaging(firebaseApp);
 
-            const unsubscribe = onMessage(messaging, (payload) => {
+            const unsubscribe = onMessage(messaging, async (payload) => {
                 console.log('=== FOREGROUND MESSAGE RECEIVED ===');
                 console.log('Full payload:', JSON.stringify(payload, null, 2));
 
-                // DON'T create a new Notification() here - this causes duplicates!
-                // The service worker's onBackgroundMessage will handle showing the notification.
-                // For foreground, FCM with webpush config will show notification automatically.
+                // Show notification manually for foreground messages
+                // Service worker only handles BACKGROUND messages
+                if (Notification.permission === 'granted') {
+                    const notificationData = payload.data || {};
 
-                // We can optionally show an in-app notification/toast instead
-                // For now, just log that we received it
-                console.log('Message received in foreground - service worker will display notification');
+                    // Create notification with same tag as service worker to prevent duplicates
+                    const notification = new Notification(payload.notification?.title || 'RinON', {
+                        body: payload.notification?.body || '',
+                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png',
+                        tag: `rinon-${notificationData.url || Date.now()}`, // Same tag prevents duplicates
+                        data: notificationData,
+                        requireInteraction: false
+                    });
+
+                    // Handle click - open the article/event
+                    notification.onclick = async (event) => {
+                        event.preventDefault();
+                        notification.close();
+                        window.focus();
+
+                        const url = notificationData.url;
+                        console.log('Notification clicked, URL:', url);
+
+                        if (url) {
+                            const parts = url.split(':');
+                            const type = parts[0];
+                            const id = parts.slice(1).join(':'); // Handle UUIDs with colons
+
+                            if (type === 'article') {
+                                // Try memory first, then database
+                                let article = articles.find(a => a.id === id);
+
+                                if (!article) {
+                                    const { data } = await supabase
+                                        .from('articles')
+                                        .select('*')
+                                        .eq('id', id)
+                                        .single();
+
+                                    if (data) {
+                                        article = {
+                                            id: data.id,
+                                            titleAl: data.title_al,
+                                            titleEn: data.title_en,
+                                            contentAl: data.content_al,
+                                            contentEn: data.content_en,
+                                            category: data.category,
+                                            image: data.image,
+                                            source: data.source,
+                                            featured: data.featured,
+                                            postType: data.post_type || 'lajme',
+                                            date: new Date(data.created_at).toISOString().split('T')[0]
+                                        };
+                                    }
+                                }
+
+                                if (article) {
+                                    openArticle(article);
+                                }
+                            } else if (type === 'event') {
+                                let event = otherEvents.find(e => e.id === id);
+
+                                if (!event) {
+                                    const { data } = await supabase
+                                        .from('events')
+                                        .select('*')
+                                        .eq('id', id)
+                                        .single();
+
+                                    if (data) {
+                                        event = {
+                                            id: data.id,
+                                            titleAl: data.title_al,
+                                            titleEn: data.title_en,
+                                            dateAl: data.date_al,
+                                            dateEn: data.date_en,
+                                            type: data.type,
+                                            descAl: data.desc_al,
+                                            descEn: data.desc_en,
+                                            location: data.location,
+                                            image: data.image,
+                                            date: data.date,
+                                            time: data.time,
+                                            endTime: data.end_time,
+                                            address: data.address,
+                                            category: data.category,
+                                            spots_left: data.spots_left,
+                                            total_spots: data.total_spots,
+                                            is_free: data.is_free,
+                                            price: data.price,
+                                            attendees: data.attendees,
+                                            partner: data.partner,
+                                            registration_link: data.registration_link,
+                                            is_featured: data.is_featured,
+                                            is_trending: data.is_trending,
+                                            tags: data.tags
+                                        };
+                                    }
+                                }
+
+                                if (event) {
+                                    setSelectedEvent(event);
+                                    setShowEventModal(true);
+                                }
+                            }
+                        }
+                    };
+                }
             });
 
             return () => unsubscribe();
         } catch (error) {
             console.error('Error setting up foreground messaging:', error);
         }
-    }, [notificationsEnabled]);
+    }, [notificationsEnabled, articles, otherEvents]);
 
     // First-time visitor tooltip
     useEffect(() => {
