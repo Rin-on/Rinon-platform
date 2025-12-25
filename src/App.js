@@ -2384,8 +2384,8 @@ const RinON = () => {
     }, [user, showSignupPrompt]);
 
     // Listen for foreground messages
-    // DO NOT create notifications here - service worker handles ALL notifications
-    // This just logs that a message was received while app is in foreground
+    // When app is in foreground, service worker's onBackgroundMessage does NOT fire
+    // So we MUST show the notification here
     useEffect(() => {
         if (!notificationsEnabled) return;
 
@@ -2396,11 +2396,47 @@ const RinON = () => {
                 console.log('=== FOREGROUND MESSAGE RECEIVED ===');
                 console.log('Payload:', JSON.stringify(payload, null, 2));
 
-                // DO NOT create a new Notification() here!
-                // The service worker will show the notification.
-                // Creating one here causes DUPLICATE notifications.
+                // Extract data from payload
+                const data = payload.data || {};
+                const notification = payload.notification || {};
 
-                console.log('Message received - service worker will display notification');
+                const title = data.title || notification.title || 'RinON';
+                const body = data.body || notification.body || '';
+                const url = data.url || '';
+                const clickUrl = data.click_url || '';
+                const tag = data.tag || `rinon-${url || Date.now()}`;
+
+                // Show notification
+                if (Notification.permission === 'granted') {
+                    console.log('Showing foreground notification with tag:', tag);
+
+                    const notif = new Notification(title, {
+                        body: body,
+                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png',
+                        tag: tag,
+                        data: { url, clickUrl }
+                    });
+
+                    notif.onclick = (event) => {
+                        event.preventDefault();
+                        notif.close();
+
+                        // Navigate to the article/event
+                        if (clickUrl) {
+                            window.location.href = clickUrl;
+                        } else if (url) {
+                            const parts = url.replace(/["']/g, '').split(':');
+                            const type = parts[0];
+                            const id = parts.slice(1).join(':');
+
+                            if (type === 'article') {
+                                window.location.href = `/?openArticle=${id}`;
+                            } else if (type === 'event') {
+                                window.location.href = `/?openEvent=${id}`;
+                            }
+                        }
+                    };
+                }
             });
 
             return () => unsubscribe();
