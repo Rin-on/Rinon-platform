@@ -1795,20 +1795,31 @@ const RinON = () => {
 
         try {
             const deviceInfo = `${navigator.userAgent.substring(0, 100)}`;
+            console.log('Saving push subscription for user:', user.id);
+            console.log('Device info:', deviceInfo);
 
-            // First, delete any existing subscription for this user on this device
-            // This prevents duplicate tokens
-            await supabase
+            // Delete ALL existing subscriptions for this user first
+            const { error: deleteUserError } = await supabase
                 .from('push_subscriptions')
                 .delete()
-                .eq('user_id', user.id)
-                .eq('device_info', deviceInfo);
+                .eq('user_id', user.id);
 
-            // Also delete if this exact token exists (for any user)
-            await supabase
+            if (deleteUserError) {
+                console.log('Delete user tokens result:', deleteUserError);
+            }
+
+            // Also delete if this exact token exists (for any user) 
+            const { error: deleteTokenError } = await supabase
                 .from('push_subscriptions')
                 .delete()
                 .eq('fcm_token', token);
+
+            if (deleteTokenError) {
+                console.log('Delete token result:', deleteTokenError);
+            }
+
+            // Small delay to ensure deletes are committed
+            await new Promise(resolve => setTimeout(resolve, 100));
 
             // Now insert the new subscription
             const { error } = await supabase
