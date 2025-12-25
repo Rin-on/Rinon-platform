@@ -2100,8 +2100,11 @@ const RinON = () => {
 
         // Handle deep links from notifications (when app was closed)
         const urlParams = new URLSearchParams(window.location.search);
-        const openArticleId = urlParams.get('openArticle');
-        const openEventId = urlParams.get('openEvent');
+        // Clean the IDs - remove any trailing quotes or whitespace
+        const openArticleId = urlParams.get('openArticle')?.replace(/["']/g, '').trim();
+        const openEventId = urlParams.get('openEvent')?.replace(/["']/g, '').trim();
+
+        console.log('URL params - Article ID:', openArticleId, 'Event ID:', openEventId);
 
         const handleArticleOpen = async () => {
             if (!openArticleId) return;
@@ -2117,11 +2120,13 @@ const RinON = () => {
             if (!article) {
                 console.log('Article not loaded, fetching from database...');
                 try {
-                    const { data } = await supabase
+                    const { data, error } = await supabase
                         .from('articles')
                         .select('*')
-                        .eq('id', openArticleId)
+                        .eq('id', parseInt(openArticleId) || openArticleId)
                         .single();
+
+                    console.log('Database response:', data, error);
 
                     if (data) {
                         article = {

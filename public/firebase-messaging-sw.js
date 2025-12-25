@@ -66,14 +66,15 @@ self.addEventListener('notificationclick', (event) => {
     let targetUrl = '/';
 
     if (clickUrl) {
-        // Use pre-built click URL from server
-        targetUrl = clickUrl;
+        // Use pre-built click URL from server, but clean it
+        targetUrl = clickUrl.replace(/["']/g, '');
     } else if (url) {
         // Build URL from article/event format
-        const parts = url.split(':');
+        const cleanUrl = url.replace(/["']/g, ''); // Remove any quotes
+        const parts = cleanUrl.split(':');
         if (parts.length >= 2) {
             const type = parts[0];
-            const id = parts.slice(1).join(':');
+            const id = parts.slice(1).join(':').replace(/["']/g, ''); // Clean the ID
 
             if (type === 'article') {
                 targetUrl = `/?openArticle=${id}`;
