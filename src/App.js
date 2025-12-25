@@ -2350,7 +2350,6 @@ const RinON = () => {
 
     // Listen for foreground messages
     // When app is in foreground, we need to show notification manually
-    // (service worker only handles background messages)
     useEffect(() => {
         if (!notificationsEnabled) return;
 
@@ -2358,111 +2357,111 @@ const RinON = () => {
             const messaging = getMessaging(firebaseApp);
 
             const unsubscribe = onMessage(messaging, async (payload) => {
-                console.log('=== FOREGROUND MESSAGE RECEIVED ===');
-                console.log('Full payload:', JSON.stringify(payload, null, 2));
+                console.log('=== FOREGROUND MESSAGE ===');
+                console.log('Payload:', JSON.stringify(payload, null, 2));
 
-                // Show notification manually for foreground messages
-                // Service worker only handles BACKGROUND messages
+                // Extract data - FCM puts it in different places
+                const data = payload.data || {};
+                const notification = payload.notification || {};
+
+                const title = data.title || notification.title || 'RinON';
+                const body = data.body || notification.body || '';
+                const url = data.url || '';
+                const tag = data.tag || `rinon-${url || Date.now()}`;
+
                 if (Notification.permission === 'granted') {
-                    const notificationData = payload.data || {};
+                    console.log('Creating foreground notification...');
 
-                    // Create notification with same tag as service worker to prevent duplicates
-                    const notification = new Notification(payload.notification?.title || 'RinON', {
-                        body: payload.notification?.body || '',
+                    const notif = new Notification(title, {
+                        body: body,
                         icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png',
-                        tag: `rinon-${notificationData.url || Date.now()}`, // Same tag prevents duplicates
-                        data: notificationData,
-                        requireInteraction: false
+                        tag: tag, // Same tag as SW prevents duplicates
+                        data: { url: url }
                     });
 
-                    // Handle click - open the article/event
-                    notification.onclick = async (event) => {
+                    notif.onclick = async (event) => {
                         event.preventDefault();
-                        notification.close();
+                        notif.close();
                         window.focus();
 
-                        const url = notificationData.url;
-                        console.log('Notification clicked, URL:', url);
+                        console.log('Foreground notification clicked, URL:', url);
 
                         if (url) {
                             const parts = url.split(':');
                             const type = parts[0];
-                            const id = parts.slice(1).join(':'); // Handle UUIDs with colons
+                            const id = parts.slice(1).join(':');
 
                             if (type === 'article') {
-                                // Try memory first, then database
                                 let article = articles.find(a => a.id === id);
 
                                 if (!article) {
-                                    const { data } = await supabase
+                                    const { data: dbData } = await supabase
                                         .from('articles')
                                         .select('*')
                                         .eq('id', id)
                                         .single();
 
-                                    if (data) {
+                                    if (dbData) {
                                         article = {
-                                            id: data.id,
-                                            titleAl: data.title_al,
-                                            titleEn: data.title_en,
-                                            contentAl: data.content_al,
-                                            contentEn: data.content_en,
-                                            category: data.category,
-                                            image: data.image,
-                                            source: data.source,
-                                            featured: data.featured,
-                                            postType: data.post_type || 'lajme',
-                                            date: new Date(data.created_at).toISOString().split('T')[0]
+                                            id: dbData.id,
+                                            titleAl: dbData.title_al,
+                                            titleEn: dbData.title_en,
+                                            contentAl: dbData.content_al,
+                                            contentEn: dbData.content_en,
+                                            category: dbData.category,
+                                            image: dbData.image,
+                                            source: dbData.source,
+                                            featured: dbData.featured,
+                                            postType: dbData.post_type || 'lajme',
+                                            date: new Date(dbData.created_at).toISOString().split('T')[0]
                                         };
                                     }
                                 }
 
-                                if (article) {
-                                    openArticle(article);
-                                }
+                                if (article) openArticle(article);
                             } else if (type === 'event') {
-                                let event = otherEvents.find(e => e.id === id);
+                                let evt = otherEvents.find(e => e.id === id);
 
-                                if (!event) {
-                                    const { data } = await supabase
+                                if (!evt) {
+                                    const { data: dbData } = await supabase
                                         .from('events')
                                         .select('*')
                                         .eq('id', id)
                                         .single();
 
-                                    if (data) {
-                                        event = {
-                                            id: data.id,
-                                            titleAl: data.title_al,
-                                            titleEn: data.title_en,
-                                            dateAl: data.date_al,
-                                            dateEn: data.date_en,
-                                            type: data.type,
-                                            descAl: data.desc_al,
-                                            descEn: data.desc_en,
-                                            location: data.location,
-                                            image: data.image,
-                                            date: data.date,
-                                            time: data.time,
-                                            endTime: data.end_time,
-                                            address: data.address,
-                                            category: data.category,
-                                            spots_left: data.spots_left,
-                                            total_spots: data.total_spots,
-                                            is_free: data.is_free,
-                                            price: data.price,
-                                            attendees: data.attendees,
-                                            partner: data.partner,
-                                            registration_link: data.registration_link,
-                                            is_featured: data.is_featured,
-                                            is_trending: data.is_trending,
-                                            tags: data.tags
+                                    if (dbData) {
+                                        evt = {
+                                            id: dbData.id,
+                                            titleAl: dbData.title_al,
+                                            titleEn: dbData.title_en,
+                                            dateAl: dbData.date_al,
+                                            dateEn: dbData.date_en,
+                                            type: dbData.type,
+                                            descAl: dbData.desc_al,
+                                            descEn: dbData.desc_en,
+                                            location: dbData.location,
+                                            image: dbData.image,
+                                            date: dbData.date,
+                                            time: dbData.time,
+                                            endTime: dbData.end_time,
+                                            address: dbData.address,
+                                            category: dbData.category,
+                                            spots_left: dbData.spots_left,
+                                            total_spots: dbData.total_spots,
+                                            is_free: dbData.is_free,
+                                            price: dbData.price,
+                                            attendees: dbData.attendees,
+                                            partner: dbData.partner,
+                                            registration_link: dbData.registration_link,
+                                            is_featured: dbData.is_featured,
+                                            is_trending: dbData.is_trending,
+                                            tags: dbData.tags
                                         };
                                     }
                                 }
 
-                                if (event) {
-                                    setSelectedEvent(event);
+                                if (evt) {
+                                    setSelectedEvent(evt);
                                     setShowEventModal(true);
                                 }
                             }
