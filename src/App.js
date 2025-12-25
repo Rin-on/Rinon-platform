@@ -5,6 +5,21 @@ import DOMPurify from 'dompurify';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
+// ============================================
+// ERUDA MOBILE CONSOLE - Remove in production!
+// ============================================
+if (typeof window !== 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+    script.onload = () => {
+        if (window.eruda) {
+            window.eruda.init();
+            console.log('🔧 Eruda mobile console loaded!');
+        }
+    };
+    document.body.appendChild(script);
+}
+// ============================================
 
 // Initialize Supabase
 const supabase = createClient(
@@ -2093,8 +2108,10 @@ const RinON = () => {
 
             console.log('Opening article from URL:', openArticleId);
 
-            // Try to find in loaded articles first
-            let article = articles.find(a => a.id === openArticleId);
+            // Try to find in loaded articles first (compare as string AND number)
+            let article = articles.find(a =>
+                String(a.id) === String(openArticleId) || a.id === parseInt(openArticleId)
+            );
 
             // If not found, fetch from database
             if (!article) {
@@ -2140,8 +2157,10 @@ const RinON = () => {
 
             console.log('Opening event from URL:', openEventId);
 
-            // Try to find in loaded events first
-            let event = otherEvents.find(e => e.id === openEventId);
+            // Try to find in loaded events first (compare as string AND number)
+            let event = otherEvents.find(e =>
+                String(e.id) === String(openEventId) || e.id === parseInt(openEventId)
+            );
 
             // If not found, fetch from database
             if (!event) {
