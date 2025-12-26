@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1048258783490",
+    "project_id": "rinon-notifications",
+    "storage_bucket": "rinon-notifications.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048258783490:android:6d3a173abb3418451a7a1b",
+        "android_client_info": {
+          "package_name": "al.rinon.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYKE3hnuws2J8XAHRZHVcnp30iEm8LLUc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,32 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, BookmarkPlus, Sparkles, ArrowUp, ChevronUp, Smartphone, FileText } from 'lucide-react';
 import DOMPurify from 'dompurify';
+
+// Capacitor imports for native app
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { App as CapApp } from '@capacitor/app';
+
+// Firebase imports for web push
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
-// ============================================
-// ERUDA MOBILE CONSOLE - Remove in production!
-// ============================================
-if (typeof window !== 'undefined') {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/eruda';
-    script.onload = () => {
-        if (window.eruda) {
-            window.eruda.init();
-            console.log('🔧 Eruda mobile console loaded!');
-        }
-    };
-    document.body.appendChild(script);
-}
-// ============================================
+// Check if running as native app
+const isNativeApp = Capacitor.isNativePlatform();
 
-// Initialize Supabase
-const supabase = createClient(
-    'https://hslwkxwarflnvjfytsul.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHdreHdhcmZsbnZqZnl0c3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxNzY5NzcsImV4cCI6MjA3NTc1Mjk3N30.bwAqhvyRaNaec9vkJRytf_ktZRPrbbbViiTGcjWIus4'
-);
-
-// Firebase Configuration for Push Notifications
+// Firebase config
 const firebaseConfig = {
     apiKey: "AIzaSyBQWErh4Kg0YPUniX3EfGjYBMl99n6LWN8",
     authDomain: "rinon-notifications.firebaseapp.com",
@@ -37,49 +25,50 @@ const firebaseConfig = {
     appId: "1:1048258783490:web:88da7361ad7b7d931a7a1b"
 };
 
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
+// Initialize Firebase only for web
+let firebaseApp = null;
+if (!isNativeApp) {
+    try {
+        firebaseApp = initializeApp(firebaseConfig);
+    } catch (e) {
+        console.log('Firebase already initialized or error:', e);
+    }
+}
 
 // VAPID Key for web push
 const VAPID_KEY = 'BOfpnj9cj-R4dIiNLmwl9fZ4k49wdlFRHoWi-InN1jV3x-kgl-k4GnfItpdn6D_eOZTqypDFiVdxNgHljml06T0';
 
-// ============================================
-// SERVICE WORKER UPDATE MECHANISM
-// Change this version number when you update firebase-messaging-sw.js
-// This forces all users to get the new service worker
-// ============================================
+// Service worker version - only for web
 const SW_VERSION = '2.1.0';
 
-// Force update service worker if version changed
-if ('serviceWorker' in navigator) {
+// Service worker update mechanism - only for web
+if (!isNativeApp && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     const currentVersion = localStorage.getItem('sw_version');
 
     if (currentVersion !== SW_VERSION) {
-        // Version changed - unregister old service worker and register new one
         navigator.serviceWorker.getRegistrations().then((registrations) => {
             registrations.forEach((registration) => {
                 console.log('Unregistering old service worker...');
                 registration.unregister();
             });
-
-            // Save new version
             localStorage.setItem('sw_version', SW_VERSION);
-
-            // Reload to get fresh service worker
             if (currentVersion !== null) {
-                // Only reload if there was an old version (not first visit)
                 console.log('Service worker updated! Reloading...');
                 window.location.reload();
             }
         });
     } else {
-        // Same version - just make sure service worker is up to date
         navigator.serviceWorker.ready.then((registration) => {
             registration.update();
         });
     }
 }
 
+// Initialize Supabase
+const supabase = createClient(
+    'https://hslwkxwarflnvjfytsul.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHdreHdhcmZsbnZqZnl0c3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxNzY5NzcsImV4cCI6MjA3NTc1Mjk3N30.bwAqhvyRaNaec9vkJRytf_ktZRPrbbbViiTGcjWIus4'
+);
 
 // Validation utilities
 const validateInput = {
@@ -300,8 +289,8 @@ const NotificationModal = ({
                         <button
                             onClick={onDisableNotifications}
                             className={`w-full px-6 py-3 rounded-xl transition-all font-medium border ${darkMode
-                                    ? 'border-red-500/30 text-red-400 hover:bg-red-500/10'
-                                    : 'border-red-200 text-red-600 hover:bg-red-50'
+                                ? 'border-red-500/30 text-red-400 hover:bg-red-500/10'
+                                : 'border-red-200 text-red-600 hover:bg-red-50'
                                 }`}
                         >
                             {t('Çaktivizo Njoftimet', 'Disable Notifications')}
@@ -1736,69 +1725,88 @@ const RinON = () => {
     // Check if device is iOS
     const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-    // Initialize Firebase Messaging
-    const initializeFirebaseMessaging = async () => {
+    // Initialize Push Notifications (works for both native and web)
+    const initializePushNotifications = async () => {
         try {
-            console.log('=== INITIALIZING FIREBASE MESSAGING ===');
+            if (isNativeApp) {
+                // ============================================
+                // NATIVE APP - Use Capacitor Push Notifications
+                // ============================================
+                console.log('=== INITIALIZING NATIVE PUSH ===');
 
-            if (!('Notification' in window)) {
-                console.log('This browser does not support notifications');
-                alert('Ky shfletues nuk mbështet njoftimet / This browser does not support notifications');
-                return null;
-            }
+                const permResult = await PushNotifications.requestPermissions();
+                console.log('Permission result:', permResult);
 
-            if (!('serviceWorker' in navigator)) {
-                console.log('Service workers not supported');
-                alert('Ky shfletues nuk mbështet service workers');
-                return null;
-            }
+                if (permResult.receive !== 'granted') {
+                    console.log('Push notification permission denied');
+                    alert('Leja për njoftime u refuzua / Notification permission denied');
+                    return null;
+                }
 
-            // Request notification permission first
-            console.log('Requesting notification permission...');
-            const permission = await Notification.requestPermission();
-            console.log('Permission result:', permission);
+                await PushNotifications.register();
+                console.log('Registered for native push notifications');
+                return 'native-pending'; // Token will come via listener
 
-            if (permission !== 'granted') {
-                console.log('Notification permission denied');
-                alert('Leja për njoftime u refuzua / Notification permission denied');
-                return null;
-            }
-
-            // Register service worker if not already registered
-            console.log('Checking for service worker registration...');
-            let registration;
-
-            const existingRegistrations = await navigator.serviceWorker.getRegistrations();
-            const existingSW = existingRegistrations.find(r =>
-                r.active?.scriptURL?.includes('firebase-messaging-sw.js')
-            );
-
-            if (existingSW) {
-                console.log('Using existing service worker');
-                registration = existingSW;
             } else {
-                console.log('Registering new service worker...');
-                registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                console.log('Service worker registered:', registration);
+                // ============================================
+                // WEB - Use Firebase Web Push
+                // ============================================
+                console.log('=== INITIALIZING WEB PUSH ===');
 
-                // Wait for it to be ready
-                await navigator.serviceWorker.ready;
-                console.log('Service worker is ready');
+                if (!('Notification' in window)) {
+                    console.log('This browser does not support notifications');
+                    alert('Ky shfletues nuk mbështet njoftimet / This browser does not support notifications');
+                    return null;
+                }
+
+                if (!('serviceWorker' in navigator)) {
+                    console.log('Service workers not supported');
+                    alert('Ky shfletues nuk mbështet service workers');
+                    return null;
+                }
+
+                console.log('Requesting notification permission...');
+                const permission = await Notification.requestPermission();
+                console.log('Permission result:', permission);
+
+                if (permission !== 'granted') {
+                    console.log('Notification permission denied');
+                    alert('Leja për njoftime u refuzua / Notification permission denied');
+                    return null;
+                }
+
+                console.log('Checking for service worker registration...');
+                let registration;
+
+                const existingRegistrations = await navigator.serviceWorker.getRegistrations();
+                const existingSW = existingRegistrations.find(r =>
+                    r.active?.scriptURL?.includes('firebase-messaging-sw.js')
+                );
+
+                if (existingSW) {
+                    console.log('Using existing service worker');
+                    registration = existingSW;
+                } else {
+                    console.log('Registering new service worker...');
+                    registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                    console.log('Service worker registered:', registration);
+                    await navigator.serviceWorker.ready;
+                    console.log('Service worker is ready');
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                console.log('Getting FCM token...');
+                const messaging = getMessaging(firebaseApp);
+                const token = await getToken(messaging, {
+                    vapidKey: VAPID_KEY,
+                    serviceWorkerRegistration: registration
+                });
+                console.log('FCM Token obtained:', token);
+                return token;
             }
-
-            // Small delay to ensure SW is fully active
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            console.log('Getting FCM token...');
-            const messaging = getMessaging(firebaseApp);
-            const token = await getToken(messaging, {
-                vapidKey: VAPID_KEY,
-                serviceWorkerRegistration: registration
-            });
-            console.log('FCM Token obtained:', token);
-            return token;
         } catch (error) {
-            console.error('Error initializing Firebase Messaging:', error);
+            console.error('Error initializing push notifications:', error);
             alert('Gabim në aktivizimin e njoftimeve: ' + error.message);
             return null;
         }
@@ -1928,13 +1936,19 @@ const RinON = () => {
         try {
             console.log('=== ENABLE NOTIFICATIONS CLICKED ===');
 
-            const token = await initializeFirebaseMessaging();
+            const token = await initializePushNotifications();
 
             if (token) {
-                console.log('Token received, saving...');
-                setPushSubscription(token);
-                setNotificationsEnabled(true);
-                await savePushSubscription(token);
+                if (token === 'native-pending') {
+                    // Native app - token will come via listener
+                    setNotificationsEnabled(true);
+                } else {
+                    // Web - we have the token directly
+                    console.log('Token received, saving...');
+                    setPushSubscription(token);
+                    setNotificationsEnabled(true);
+                    await savePushSubscription(token);
+                }
 
                 // Check if preferences exist first
                 const { data: existing } = await supabase
@@ -1965,7 +1979,8 @@ const RinON = () => {
 
                 console.log('Notifications enabled successfully!');
 
-                if (isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
+                // Show iOS instructions only for web (not native app)
+                if (!isNativeApp && isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
                     setShowIOSInstructions(true);
                 }
             } else {
@@ -1994,8 +2009,10 @@ const RinON = () => {
                 .delete()
                 .eq('user_id', user.id);
 
-            // 3. Unregister service worker to stop receiving notifications
-            if ('serviceWorker' in navigator) {
+            // 3. Unregister - different for native vs web
+            if (isNativeApp) {
+                await PushNotifications.removeAllListeners();
+            } else if ('serviceWorker' in navigator) {
                 const registrations = await navigator.serviceWorker.getRegistrations();
                 for (const registration of registrations) {
                     await registration.unregister();
@@ -2383,20 +2400,196 @@ const RinON = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [user, showSignupPrompt]);
 
-    // Listen for foreground messages
-    // When app is in foreground, service worker's onBackgroundMessage does NOT fire
-    // So we MUST show the notification here
+    // ============================================
+    // NATIVE APP - Capacitor Push Notification Listeners
+    // ============================================
     useEffect(() => {
-        if (!notificationsEnabled) return;
+        if (!isNativeApp || !user) return;
+
+        // Handle registration - receive token
+        const registrationListener = PushNotifications.addListener('registration', async (token) => {
+            console.log('=== NATIVE PUSH REGISTRATION SUCCESS ===');
+            console.log('FCM Token:', token.value);
+
+            setPushSubscription(token.value);
+            await savePushSubscription(token.value);
+        });
+
+        // Handle registration error
+        const registrationErrorListener = PushNotifications.addListener('registrationError', (error) => {
+            console.error('Push registration error:', error);
+        });
+
+        // Handle notification received while app is in foreground
+        const notificationReceivedListener = PushNotifications.addListener('pushNotificationReceived', (notification) => {
+            console.log('=== NATIVE PUSH RECEIVED (Foreground) ===');
+            console.log('Notification:', notification);
+        });
+
+        // Handle notification click/tap
+        const notificationActionListener = PushNotifications.addListener('pushNotificationActionPerformed', async (action) => {
+            console.log('=== NATIVE PUSH CLICKED ===');
+            console.log('Action:', action);
+
+            const data = action.notification.data || {};
+            const url = data.url || '';
+
+            if (url) {
+                const parts = url.replace(/["']/g, '').split(':');
+                const type = parts[0];
+                const id = parts.slice(1).join(':');
+
+                if (type === 'article') {
+                    try {
+                        const { data: articleData } = await supabase
+                            .from('articles')
+                            .select('*')
+                            .eq('id', parseInt(id) || id)
+                            .single();
+
+                        if (articleData) {
+                            const article = {
+                                id: articleData.id,
+                                titleAl: articleData.title_al,
+                                titleEn: articleData.title_en,
+                                contentAl: articleData.content_al,
+                                contentEn: articleData.content_en,
+                                category: articleData.category,
+                                image: articleData.image,
+                                source: articleData.source,
+                                featured: articleData.featured,
+                                postType: articleData.post_type || 'lajme',
+                                date: new Date(articleData.created_at).toISOString().split('T')[0]
+                            };
+                            openArticle(article);
+                        }
+                    } catch (err) {
+                        console.error('Error fetching article:', err);
+                    }
+                } else if (type === 'event') {
+                    try {
+                        const { data: eventData } = await supabase
+                            .from('events')
+                            .select('*')
+                            .eq('id', parseInt(id) || id)
+                            .single();
+
+                        if (eventData) {
+                            setSelectedEvent(eventData);
+                            setShowEventModal(true);
+                        }
+                    } catch (err) {
+                        console.error('Error fetching event:', err);
+                    }
+                }
+            }
+        });
+
+        return () => {
+            registrationListener.then(l => l.remove());
+            registrationErrorListener.then(l => l.remove());
+            notificationReceivedListener.then(l => l.remove());
+            notificationActionListener.then(l => l.remove());
+        };
+    }, [user]);
+
+    // ============================================
+    // NATIVE APP - Navigation history for back button
+    // ============================================
+    const [navigationHistory, setNavigationHistory] = useState(['home']);
+    const [lastBackPress, setLastBackPress] = useState(0);
+
+    // Track page changes for navigation history
+    useEffect(() => {
+        if (isNativeApp && currentPage) {
+            setNavigationHistory(prev => {
+                // Don't add duplicate consecutive pages
+                if (prev[prev.length - 1] !== currentPage) {
+                    return [...prev.slice(-10), currentPage]; // Keep last 10 pages
+                }
+                return prev;
+            });
+        }
+    }, [currentPage]);
+
+    // ============================================
+    // NATIVE APP - Android Back Button Handler
+    // ============================================
+    useEffect(() => {
+        if (!isNativeApp) return;
+
+        const backButtonListener = CapApp.addListener('backButton', ({ canGoBack }) => {
+            // First, close any open modals
+            if (showArticleModal) {
+                setShowArticleModal(false);
+                return;
+            }
+            if (showEventModal) {
+                setShowEventModal(false);
+                return;
+            }
+            if (showNotificationModal) {
+                setShowNotificationModal(false);
+                return;
+            }
+            if (showAuthModal) {
+                setShowAuthModal(false);
+                return;
+            }
+            if (mobileMenuOpen) {
+                setMobileMenuOpen(false);
+                return;
+            }
+            if (showPreferences) {
+                setShowPreferences(false);
+                return;
+            }
+
+            // Navigate through history
+            if (navigationHistory.length > 1) {
+                const newHistory = [...navigationHistory];
+                newHistory.pop(); // Remove current page
+                const previousPage = newHistory[newHistory.length - 1];
+                setNavigationHistory(newHistory);
+                setCurrentPage(previousPage);
+                return;
+            }
+
+            // Double-tap to exit on home page
+            if (currentPage === 'home') {
+                const now = Date.now();
+                if (now - lastBackPress < 2000) {
+                    CapApp.exitApp();
+                } else {
+                    setLastBackPress(now);
+                    // Show toast-like message (using alert for now)
+                    // You could replace this with a proper toast
+                    console.log('Press back again to exit');
+                }
+            } else {
+                // Go to home if not in history
+                changePage('home');
+            }
+        });
+
+        return () => {
+            backButtonListener.then(l => l.remove());
+        };
+    }, [showArticleModal, showEventModal, showNotificationModal, showAuthModal, mobileMenuOpen, currentPage]);
+
+    // ============================================
+    // WEB - Foreground Message Handler
+    // ============================================
+    useEffect(() => {
+        if (isNativeApp || !notificationsEnabled) return;
 
         try {
             const messaging = getMessaging(firebaseApp);
 
             const unsubscribe = onMessage(messaging, async (payload) => {
-                console.log('=== FOREGROUND MESSAGE RECEIVED ===');
+                console.log('=== WEB FOREGROUND MESSAGE RECEIVED ===');
                 console.log('Payload:', JSON.stringify(payload, null, 2));
 
-                // Extract data from payload
                 const data = payload.data || {};
                 const notification = payload.notification || {};
 
@@ -2406,7 +2599,6 @@ const RinON = () => {
                 const clickUrl = data.click_url || '';
                 const tag = data.tag || `rinon-${url || Date.now()}`;
 
-                // Show notification
                 if (Notification.permission === 'granted') {
                     console.log('Showing foreground notification with tag:', tag);
 
@@ -2421,7 +2613,6 @@ const RinON = () => {
                         event.preventDefault();
                         notif.close();
 
-                        // Navigate to the article/event
                         if (clickUrl) {
                             window.location.href = clickUrl;
                         } else if (url) {
@@ -2444,6 +2635,52 @@ const RinON = () => {
             console.error('Error setting up foreground messaging:', error);
         }
     }, [notificationsEnabled]);
+
+    // ============================================
+    // SWIPE GESTURE HANDLING FOR PAGE NAVIGATION
+    // ============================================
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+
+    // Pages in order for swipe navigation
+    const pageOrder = ['home', 'events', 'lajme', 'komuniteti'];
+
+    // Minimum swipe distance to trigger navigation
+    const minSwipeDistance = 100;
+
+    const onTouchStart = (e) => {
+        // Don't capture swipes on modals or when scrolling horizontally
+        if (showArticleModal || showEventModal || showAuthModal) return;
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        if (showArticleModal || showEventModal || showAuthModal) return;
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        if (showArticleModal || showEventModal || showAuthModal) return;
+
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        const currentIndex = pageOrder.indexOf(currentPage);
+
+        if (isLeftSwipe && currentIndex < pageOrder.length - 1) {
+            // Swipe left - go to next page
+            changePage(pageOrder[currentIndex + 1]);
+        } else if (isRightSwipe && currentIndex > 0) {
+            // Swipe right - go to previous page
+            changePage(pageOrder[currentIndex - 1]);
+        }
+
+        setTouchStart(null);
+        setTouchEnd(null);
+    };
 
     // First-time visitor tooltip
     useEffect(() => {
@@ -4955,7 +5192,13 @@ const RinON = () => {
     };
 
     return (
-        <div className={`min-h-screen w-full transition-colors duration-300 ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}>
+        <div
+            className={`min-h-screen w-full transition-colors duration-300 ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 80px)' : '80px' }}
+        >
 
             <header className={`backdrop-blur-lg border-b sticky top-0 z-50 shadow-lg transition-colors duration-300 ${darkMode
                 ? 'bg-[#2D2A26]/80 border-amber-500/20 shadow-amber-500/10'
@@ -7783,12 +8026,15 @@ const RinON = () => {
             {/* ==========================================
                 MOBILE BOTTOM NAVIGATION BAR
                 Clean, elevated design with larger touch targets
+                Added safe-area padding for Android navigation bar
                ========================================== */}
             <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 transition-colors duration-300 ${darkMode
                 ? 'bg-[#1a1918]'
                 : 'bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
-                }`}>
-                <div className="flex items-center justify-around px-4 pt-3 pb-6">
+                }`}
+                style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 20px)' : '0px' }}
+            >
+                <div className={`flex items-center justify-around px-4 pt-3 ${isNativeApp ? 'pb-2' : 'pb-6'}`}>
                     {/* Home */}
                     <button
                         onClick={() => changePage('home')}
