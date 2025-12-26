@@ -1284,6 +1284,221 @@ const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
         </div>
     );
 };
+
+// Terms and Privacy Policy Modal Component
+const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
+    const [activeTab, setActiveTab] = useState('terms'); // 'terms' or 'privacy'
+    const [hasScrolledTerms, setHasScrolledTerms] = useState(false);
+    const [hasScrolledPrivacy, setHasScrolledPrivacy] = useState(false);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+
+    const handleScroll = (e, type) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+
+        if (isNearBottom) {
+            if (type === 'terms') setHasScrolledTerms(true);
+            if (type === 'privacy') setHasScrolledPrivacy(true);
+        }
+    };
+
+    if (!showTermsModal) return null;
+
+    const canAccept = agreedToTerms && agreedToPrivacy;
+
+    return (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+            <div className={`${darkMode ? 'bg-[#2D2A26]' : 'bg-white'} rounded-3xl max-w-2xl w-full shadow-2xl border ${darkMode ? 'border-amber-500/20' : 'border-amber-200'} max-h-[90vh] flex flex-col`}>
+                {/* Header */}
+                <div className={`p-6 border-b ${darkMode ? 'border-amber-500/20' : 'border-amber-200'}`}>
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent text-center">
+                        {t('Mirë se vini në RinON!', 'Welcome to RinON!')}
+                    </h2>
+                    <p className={`text-center mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {t('Ju lutemi lexoni dhe pranoni kushtet për të vazhduar', 'Please read and accept the terms to continue')}
+                    </p>
+                </div>
+
+                {/* Tabs */}
+                <div className={`flex border-b ${darkMode ? 'border-amber-500/20' : 'border-amber-200'}`}>
+                    <button
+                        onClick={() => setActiveTab('terms')}
+                        className={`flex-1 py-3 px-4 font-medium transition-all ${activeTab === 'terms'
+                                ? 'text-amber-500 border-b-2 border-amber-500'
+                                : darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                    >
+                        {t('Kushtet e Shërbimit', 'Terms of Service')}
+                        {agreedToTerms && <Check className="w-4 h-4 inline ml-2 text-green-500" />}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('privacy')}
+                        className={`flex-1 py-3 px-4 font-medium transition-all ${activeTab === 'privacy'
+                                ? 'text-amber-500 border-b-2 border-amber-500'
+                                : darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                    >
+                        {t('Politika e Privatësisë', 'Privacy Policy')}
+                        {agreedToPrivacy && <Check className="w-4 h-4 inline ml-2 text-green-500" />}
+                    </button>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-hidden">
+                    {activeTab === 'terms' && (
+                        <div
+                            className={`h-[300px] overflow-y-auto p-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                            onScroll={(e) => handleScroll(e, 'terms')}
+                        >
+                            <h3 className="text-lg font-semibold text-amber-500 mb-3">{t('Kushtet e Shërbimit', 'Terms of Service')}</h3>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('1. Pranimi i Kushteve', '1. Acceptance of Terms')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Duke përdorur aplikacionin RinON, ju pranoni të jeni të detyruar nga këto Kushte të Shërbimit.',
+                                'By using the RinON application, you agree to be bound by these Terms of Service.'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('2. Përshkrimi i Shërbimit', '2. Description of Service')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'RinON është një platformë për fuqizimin e rinisë në Shqipëri, duke ofruar informacion për ngjarje, lajme dhe mundësi.',
+                                'RinON is a platform for youth empowerment in Albania, providing information about events, news and opportunities.'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('3. Llogaritë e Përdoruesve', '3. User Accounts')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Ju pranoni të jepni informacion të saktë, të mbroni fjalëkalimin tuaj, dhe të jeni përgjegjës për aktivitetet nën llogarinë tuaj.',
+                                'You agree to provide accurate information, protect your password, and be responsible for activities under your account.'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('4. Sjellja e Pranueshme', '4. Acceptable Behavior')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Ju pranoni të MOS postoni përmbajtje ofenduese, të mos ngacmoni përdorues të tjerë, dhe të mos shpërndani informacion të rremë.',
+                                'You agree NOT to post offensive content, harass other users, or spread false information.'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('5. Ndërprerja', '5. Termination')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Ne mund të pezullojmë ose fshijmë llogarinë tuaj nëse shkelni këto kushte.',
+                                'We may suspend or delete your account if you violate these terms.'
+                            )}</p>
+
+                            <p className="mt-4 text-xs text-gray-500">
+                                {t('Lexoni versionin e plotë në', 'Read the full version at')}:
+                                <a href="https://rinon.al/terms-of-service.html" target="_blank" rel="noopener noreferrer" className="text-amber-500 ml-1 hover:underline">
+                                    rinon.al/terms-of-service
+                                </a>
+                            </p>
+                        </div>
+                    )}
+
+                    {activeTab === 'privacy' && (
+                        <div
+                            className={`h-[300px] overflow-y-auto p-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                            onScroll={(e) => handleScroll(e, 'privacy')}
+                        >
+                            <h3 className="text-lg font-semibold text-amber-500 mb-3">{t('Politika e Privatësisë', 'Privacy Policy')}</h3>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('1. Të Dhënat që Mbledhim', '1. Data We Collect')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Ne mbledhim: adresën e email-it, emrin, informacionin e pajisjes për njoftimet, dhe përmbajtjen që krijoni.',
+                                'We collect: email address, name, device information for notifications, and content you create.'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('2. Si i Përdorim të Dhënat', '2. How We Use Data')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Të dhënat përdoren për: menaxhimin e llogarisë, dërgimin e njoftimeve, dhe përmirësimin e shërbimeve.',
+                                'Data is used for: account management, sending notifications, and improving services.'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('3. Ruajtja e të Dhënave', '3. Data Storage')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Të dhënat ruhen në serverat e sigurt të Supabase në Bashkimin Evropian.',
+                                'Data is stored on secure Supabase servers in the European Union.'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('4. Ndarja e të Dhënave', '4. Data Sharing')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Ne NUK shesim të dhënat tuaja. Ndajmë vetëm me ofruesit e shërbimeve (Supabase, Firebase).',
+                                'We DO NOT sell your data. We only share with service providers (Supabase, Firebase).'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('5. Të Drejtat Tuaja', '5. Your Rights')}</h4>
+                            <p className="mb-3 text-sm">{t(
+                                'Ju keni të drejtën të aksesoni, korrigjoni, dhe fshini të dhënat tuaja në çdo kohë.',
+                                'You have the right to access, correct, and delete your data at any time.'
+                            )}</p>
+
+                            <h4 className="font-semibold mt-4 mb-2">{t('6. Kontakti', '6. Contact')}</h4>
+                            <p className="mb-3 text-sm">
+                                Email: <a href="mailto:rinonalbania@gmail.com" className="text-amber-500 hover:underline">rinonalbania@gmail.com</a>
+                            </p>
+
+                            <p className="mt-4 text-xs text-gray-500">
+                                {t('Lexoni versionin e plotë në', 'Read the full version at')}:
+                                <a href="https://rinon.al/privacy-policy.html" target="_blank" rel="noopener noreferrer" className="text-amber-500 ml-1 hover:underline">
+                                    rinon.al/privacy-policy
+                                </a>
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Checkboxes */}
+                <div className={`p-4 border-t ${darkMode ? 'border-amber-500/20' : 'border-amber-200'} space-y-3`}>
+                    <label className={`flex items-start gap-3 cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <input
+                            type="checkbox"
+                            checked={agreedToTerms}
+                            onChange={(e) => setAgreedToTerms(e.target.checked)}
+                            className="w-5 h-5 mt-0.5 rounded border-amber-500/30 bg-transparent text-amber-500 focus:ring-amber-500/20"
+                        />
+                        <span className="text-sm">
+                            {t('Kam lexuar dhe pranoj', 'I have read and accept the')} <span className="text-amber-500 font-medium">{t('Kushtet e Shërbimit', 'Terms of Service')}</span>
+                        </span>
+                    </label>
+                    <label className={`flex items-start gap-3 cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        <input
+                            type="checkbox"
+                            checked={agreedToPrivacy}
+                            onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                            className="w-5 h-5 mt-0.5 rounded border-amber-500/30 bg-transparent text-amber-500 focus:ring-amber-500/20"
+                        />
+                        <span className="text-sm">
+                            {t('Kam lexuar dhe pranoj', 'I have read and accept the')} <span className="text-amber-500 font-medium">{t('Politikën e Privatësisë', 'Privacy Policy')}</span>
+                        </span>
+                    </label>
+                </div>
+
+                {/* Buttons */}
+                <div className={`p-6 border-t ${darkMode ? 'border-amber-500/20' : 'border-amber-200'} flex gap-3`}>
+                    <button
+                        onClick={onReject}
+                        className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${darkMode
+                                ? 'bg-[#3D3A36] text-gray-300 hover:bg-[#4D4A46]'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            }`}
+                    >
+                        {t('Refuzo', 'Decline')}
+                    </button>
+                    <button
+                        onClick={onAccept}
+                        disabled={!canAccept}
+                        className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${canAccept
+                                ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white hover:from-amber-500 hover:to-[#FF5252] shadow-lg shadow-amber-500/30'
+                                : darkMode
+                                    ? 'bg-[#3D3A36] text-gray-500 cursor-not-allowed'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            }`}
+                    >
+                        {t('Pranoj dhe Vazhdo', 'Accept & Continue')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Auth Modal Component
 const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, handleSignup, handleLogin, setShowPreferences, darkMode, t }) => {
     const [email, setEmail] = useState('');
@@ -1528,6 +1743,8 @@ const RinON = () => {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [authMode, setAuthMode] = useState('login');
     const [showPreferences, setShowPreferences] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [pendingUser, setPendingUser] = useState(null); // User waiting to accept terms
     const [topics, setTopics] = useState([]);
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [topicPosts, setTopicPosts] = useState([]);
@@ -2401,37 +2618,76 @@ const RinON = () => {
     }, [user, showSignupPrompt]);
 
     // ============================================
+    // NATIVE APP - Handle notification that launched the app
+    // This catches notifications clicked when app was completely closed
+    // ============================================
+    useEffect(() => {
+        if (!isNativeApp) return;
+
+        const checkLaunchNotification = async () => {
+            try {
+                const notificationList = await PushNotifications.getDeliveredNotifications();
+                console.log('Delivered notifications:', notificationList);
+
+                // Check if app was launched from a notification
+                // by checking URL parameters or deep link
+                const urlParams = new URLSearchParams(window.location.search);
+                const openArticle = urlParams.get('openArticle');
+                const openEvent = urlParams.get('openEvent');
+
+                if (openArticle) {
+                    const { data: articleData } = await supabase
+                        .from('articles')
+                        .select('*')
+                        .eq('id', parseInt(openArticle))
+                        .single();
+
+                    if (articleData) {
+                        const article = {
+                            id: articleData.id,
+                            titleAl: articleData.title_al,
+                            titleEn: articleData.title_en,
+                            contentAl: articleData.content_al,
+                            contentEn: articleData.content_en,
+                            category: articleData.category,
+                            image: articleData.image,
+                            source: articleData.source,
+                            featured: articleData.featured,
+                            postType: articleData.post_type || 'lajme',
+                            date: new Date(articleData.created_at).toISOString().split('T')[0]
+                        };
+                        setTimeout(() => openArticle(article), 500);
+                    }
+                } else if (openEvent) {
+                    const { data: eventData } = await supabase
+                        .from('events')
+                        .select('*')
+                        .eq('id', parseInt(openEvent))
+                        .single();
+
+                    if (eventData) {
+                        setTimeout(() => {
+                            setSelectedEvent(eventData);
+                            setShowEventModal(true);
+                        }, 500);
+                    }
+                }
+            } catch (err) {
+                console.error('Error checking launch notification:', err);
+            }
+        };
+
+        checkLaunchNotification();
+    }, []);
+
+    // ============================================
     // NATIVE APP - Capacitor Push Notification Listeners
     // ============================================
     useEffect(() => {
         if (!isNativeApp || !user) return;
 
-        // Handle registration - receive token
-        const registrationListener = PushNotifications.addListener('registration', async (token) => {
-            console.log('=== NATIVE PUSH REGISTRATION SUCCESS ===');
-            console.log('FCM Token:', token.value);
-
-            setPushSubscription(token.value);
-            await savePushSubscription(token.value);
-        });
-
-        // Handle registration error
-        const registrationErrorListener = PushNotifications.addListener('registrationError', (error) => {
-            console.error('Push registration error:', error);
-        });
-
-        // Handle notification received while app is in foreground
-        const notificationReceivedListener = PushNotifications.addListener('pushNotificationReceived', (notification) => {
-            console.log('=== NATIVE PUSH RECEIVED (Foreground) ===');
-            console.log('Notification:', notification);
-        });
-
-        // Handle notification click/tap
-        const notificationActionListener = PushNotifications.addListener('pushNotificationActionPerformed', async (action) => {
-            console.log('=== NATIVE PUSH CLICKED ===');
-            console.log('Action:', action);
-
-            const data = action.notification.data || {};
+        // Helper function to handle notification data
+        const handleNotificationData = async (data: any) => {
             const url = data.url || '';
 
             if (url) {
@@ -2483,6 +2739,35 @@ const RinON = () => {
                     }
                 }
             }
+        };
+
+        // Handle registration - receive token
+        const registrationListener = PushNotifications.addListener('registration', async (token) => {
+            console.log('=== NATIVE PUSH REGISTRATION SUCCESS ===');
+            console.log('FCM Token:', token.value);
+
+            setPushSubscription(token.value);
+            await savePushSubscription(token.value);
+        });
+
+        // Handle registration error
+        const registrationErrorListener = PushNotifications.addListener('registrationError', (error) => {
+            console.error('Push registration error:', error);
+        });
+
+        // Handle notification received while app is in foreground
+        const notificationReceivedListener = PushNotifications.addListener('pushNotificationReceived', (notification) => {
+            console.log('=== NATIVE PUSH RECEIVED (Foreground) ===');
+            console.log('Notification:', notification);
+        });
+
+        // Handle notification click/tap
+        const notificationActionListener = PushNotifications.addListener('pushNotificationActionPerformed', async (action) => {
+            console.log('=== NATIVE PUSH CLICKED ===');
+            console.log('Action:', action);
+
+            const data = action.notification.data || {};
+            await handleNotificationData(data);
         });
 
         return () => {
@@ -3015,6 +3300,11 @@ const RinON = () => {
             if (data) {
                 setUserProfile(data);
                 if (data.is_admin) setShowAdmin(true);
+
+                // Check if user has accepted terms (for existing users)
+                if (data.terms_accepted !== true) {
+                    setShowTermsModal(true);
+                }
             }
         } catch (err) {
             console.error(handleError(err, 'loadUserProfile'));
@@ -3127,7 +3417,9 @@ const RinON = () => {
                 await supabase.from('user_profiles').insert([{
                     id: data.user.id,
                     display_name: validateInput.sanitizeHtml(displayName),
-                    preferences: []
+                    preferences: [],
+                    terms_accepted: false,
+                    terms_accepted_at: null
                 }]);
 
                 // Set session persistence based on rememberMe
@@ -3137,13 +3429,45 @@ const RinON = () => {
                     localStorage.removeItem('rememberMe');
                 }
 
-                setShowPreferences(true);
+                // Store pending user and show terms modal
+                setPendingUser(data.user);
+                setShowTermsModal(true);
             }
 
             return { data, error };
         } catch (err) {
             return { error: { message: handleError(err, 'handleSignup') } };
         }
+    };
+
+    // Handle terms acceptance
+    const handleAcceptTerms = async () => {
+        if (!pendingUser && !user) return;
+
+        const userId = pendingUser?.id || user?.id;
+
+        try {
+            await supabase.from('user_profiles').update({
+                terms_accepted: true,
+                terms_accepted_at: new Date().toISOString()
+            }).eq('id', userId);
+
+            setShowTermsModal(false);
+            setPendingUser(null);
+            setShowPreferences(true); // Show preferences after accepting terms
+        } catch (err) {
+            console.error('Error accepting terms:', err);
+        }
+    };
+
+    // Handle terms rejection - log out the user
+    const handleRejectTerms = async () => {
+        setShowTermsModal(false);
+        setPendingUser(null);
+        await supabase.auth.signOut();
+        alert(language === 'sq'
+            ? 'Duhet të pranoni kushtet për të përdorur RinON.'
+            : 'You must accept the terms to use RinON.');
     };
 
     const handleLogin = async (email, password, rememberMe = true) => {
@@ -6640,6 +6964,14 @@ const RinON = () => {
                 handleSignup={handleSignup}
                 handleLogin={handleLogin}
                 setShowPreferences={setShowPreferences}
+                darkMode={darkMode}
+                t={t}
+            />
+
+            <TermsModal
+                showTermsModal={showTermsModal}
+                onAccept={handleAcceptTerms}
+                onReject={handleRejectTerms}
                 darkMode={darkMode}
                 t={t}
             />

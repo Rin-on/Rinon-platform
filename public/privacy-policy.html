@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politika e Privatësisë - RinON</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7; color: #333; background: #f9fafb;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        .header {
+            text-align: center; margin-bottom: 40px;
+            padding-bottom: 20px; border-bottom: 2px solid #f59e0b;
+        }
+        .logo { font-size: 2.5rem; font-weight: bold; color: #f59e0b; margin-bottom: 10px; }
+        h1 { color: #1f2937; font-size: 1.8rem; margin-bottom: 10px; }
+        .last-updated { color: #6b7280; font-size: 0.9rem; }
+        .language-toggle { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .language-toggle button {
+            padding: 10px 20px; border: 2px solid #f59e0b; background: white;
+            color: #f59e0b; font-weight: 600; border-radius: 8px; cursor: pointer;
+        }
+        .language-toggle button.active { background: #f59e0b; color: white; }
+        .language-toggle button:hover { background: #f59e0b; color: white; }
+        .content {
+            background: white; padding: 40px; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        h2 {
+            color: #f59e0b; font-size: 1.3rem; margin: 30px 0 15px 0;
+            padding-bottom: 8px; border-bottom: 1px solid #fef3c7;
+        }
+        h2:first-of-type { margin-top: 0; }
+        p { margin-bottom: 15px; color: #4b5563; }
+        ul { margin: 15px 0; padding-left: 25px; }
+        li { margin-bottom: 10px; color: #4b5563; }
+        .contact-box {
+            background: #fef3c7; padding: 20px; border-radius: 8px; margin-top: 30px;
+        }
+        .contact-box h3 { color: #92400e; margin-bottom: 10px; }
+        .contact-box a { color: #f59e0b; text-decoration: none; }
+        .contact-box a:hover { text-decoration: underline; }
+        .section { display: none; }
+        .section.active { display: block; }
+        @media (max-width: 600px) { .content { padding: 25px; } h1 { font-size: 1.5rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">RinON</div>
+            <h1>Politika e Privatësisë / Privacy Policy</h1>
+            <p class="last-updated">Përditësuar më / Last updated: January 2025</p>
+        </div>
+
+        <div class="language-toggle">
+            <button id="btn-sq" class="active" onclick="showLanguage('sq')">🇦🇱 Shqip</button>
+            <button id="btn-en" onclick="showLanguage('en')">🇬🇧 English</button>
+        </div>
+
+        <div class="content">
+            <!-- ALBANIAN VERSION -->
+            <div id="content-sq" class="section active">
+                <h2>1. Hyrje</h2>
+                <p>Mirë se vini në RinON ("ne", "tonë", "platforma"). Ne respektojmë privatësinë tuaj dhe jemi të përkushtuar të mbrojmë të dhënat tuaja personale. Kjo politikë privatësie shpjegon se si mbledhim, përdorim dhe mbrojmë informacionin tuaj kur përdorni aplikacionin dhe shërbimet tona.</p>
+                <p>RinON është një platformë për fuqizimin e rinisë në Shqipëri, duke ofruar informacion për ngjarje, lajme dhe mundësi për të rinjtë.</p>
+
+                <h2>2. Të Dhënat që Mbledhim</h2>
+                <p>Ne mbledhim llojet e mëposhtme të të dhënave:</p>
+                <ul>
+                    <li><strong>Informacioni i llogarisë:</strong> Adresa e email-it, emri i shfaqur (opsional), dhe fjalëkalimi (i enkriptuar)</li>
+                    <li><strong>Informacioni i pajisjes:</strong> Lloji i pajisjes, sistemi operativ, dhe identifikues unik të pajisjes për njoftimet push</li>
+                    <li><strong>Të dhënat e përdorimit:</strong> Faqet e vizituara, artikujt e lexuar, eventet e shikuara</li>
+                    <li><strong>Tokenat e njoftimeve:</strong> Firebase Cloud Messaging tokens për dërgimin e njoftimeve push</li>
+                    <li><strong>Përmbajtja e krijuar:</strong> Komentet, postimet në forum, dhe artikujt e ruajtur</li>
+                </ul>
+
+                <h2>3. Si i Përdorim të Dhënat</h2>
+                <p>Të dhënat tuaja përdoren për:</p>
+                <ul>
+                    <li>Krijimin dhe menaxhimin e llogarisë suaj</li>
+                    <li>Dërgimin e njoftimeve për lajme dhe evente të reja</li>
+                    <li>Personalizimin e përvojës suaj në platformë</li>
+                    <li>Përmirësimin e shërbimeve tona</li>
+                    <li>Komunikimin me ju për përditësime të rëndësishme</li>
+                </ul>
+
+                <h2>4. Ruajtja e të Dhënave</h2>
+                <p>Të dhënat tuaja ruhen në serverat e sigurt të Supabase, të cilat janë të vendosura në Bashkimin Evropian. Ne zbatojmë masa të sigurisë teknike dhe organizative për të mbrojtur të dhënat tuaja nga aksesi i paautorizuar.</p>
+
+                <h2>5. Ndarja e të Dhënave</h2>
+                <p>Ne <strong>NUK</strong> shesim, tregtojmë, ose transferojmë të dhënat tuaja personale te palët e treta, përveç:</p>
+                <ul>
+                    <li>Ofruesve të shërbimeve që na ndihmojnë të operojmë platformën (Supabase, Firebase)</li>
+                    <li>Kur kërkohet me ligj ose për të mbrojtur të drejtat tona</li>
+                </ul>
+
+                <h2>6. Të Drejtat Tuaja</h2>
+                <p>Ju keni të drejtën të:</p>
+                <ul>
+                    <li><strong>Aksesoni</strong> të dhënat tuaja personale</li>
+                    <li><strong>Korrigjoni</strong> informacionin e pasaktë</li>
+                    <li><strong>Fshini</strong> llogarinë dhe të dhënat tuaja</li>
+                    <li><strong>Çaktivizoni</strong> njoftimet push në çdo kohë</li>
+                    <li><strong>Eksportoni</strong> të dhënat tuaja</li>
+                </ul>
+                <p>Për të ushtruar këto të drejta, na kontaktoni në email-in më poshtë.</p>
+
+                <h2>7. Fshirja e të Dhënave</h2>
+                <p>Për të fshirë llogarinë dhe të gjitha të dhënat tuaja:</p>
+                <ul>
+                    <li>Shkoni te Cilësimet e Profilit në aplikacion</li>
+                    <li>Zgjidhni "Fshi Llogarinë"</li>
+                    <li>Ose na dërgoni email në adresën më poshtë</li>
+                </ul>
+                <p>Pas fshirjes, të gjitha të dhënat tuaja do të hiqen brenda 30 ditëve.</p>
+
+                <h2>8. Siguria e të Dhënave</h2>
+                <p>Ne zbatojmë masa sigurie duke përfshirë:</p>
+                <ul>
+                    <li>Enkriptim SSL/TLS për të gjitha komunikimet</li>
+                    <li>Fjalëkalime të enkriptuara me algoritme të sigurta</li>
+                    <li>Politika të sigurisë Row Level Security (RLS) në databazë</li>
+                </ul>
+
+                <h2>9. Të Miturit</h2>
+                <p>RinON është e destinuar për përdoruesit mbi 13 vjeç. Ne nuk mbledhim me vetëdije informacion nga fëmijët nën 13 vjeç.</p>
+
+                <h2>10. Ndryshimet në Politikë</h2>
+                <p>Ne mund të përditësojmë këtë politikë privatësie herë pas here. Do t'ju njoftojmë për ndryshime të rëndësishme përmes aplikacionit ose email-it.</p>
+
+                <div class="contact-box">
+                    <h3>📧 Na Kontaktoni</h3>
+                    <p>Për çdo pyetje rreth privatësisë:</p>
+                    <p>Email: <a href="mailto:rinonalbania@gmail.com">rinonalbania@gmail.com</a></p>
+                    <p>Website: <a href="https://rinon.al">rinon.al</a></p>
+                </div>
+            </div>
+
+            <!-- ENGLISH VERSION -->
+            <div id="content-en" class="section">
+                <h2>1. Introduction</h2>
+                <p>Welcome to RinON ("we", "our", "platform"). We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and protect your information when you use our application and services.</p>
+                <p>RinON is a platform for youth empowerment in Albania, providing information about events, news, and opportunities for young people.</p>
+
+                <h2>2. Data We Collect</h2>
+                <p>We collect the following types of data:</p>
+                <ul>
+                    <li><strong>Account information:</strong> Email address, display name (optional), and password (encrypted)</li>
+                    <li><strong>Device information:</strong> Device type, operating system, and unique device identifiers for push notifications</li>
+                    <li><strong>Usage data:</strong> Pages visited, articles read, events viewed</li>
+                    <li><strong>Notification tokens:</strong> Firebase Cloud Messaging tokens for sending push notifications</li>
+                    <li><strong>User-generated content:</strong> Comments, forum posts, and saved articles</li>
+                </ul>
+
+                <h2>3. How We Use Your Data</h2>
+                <p>Your data is used for:</p>
+                <ul>
+                    <li>Creating and managing your account</li>
+                    <li>Sending notifications about new news and events</li>
+                    <li>Personalizing your experience on the platform</li>
+                    <li>Improving our services</li>
+                    <li>Communicating with you about important updates</li>
+                </ul>
+
+                <h2>4. Data Storage</h2>
+                <p>Your data is stored on secure Supabase servers located in the European Union. We implement technical and organizational security measures to protect your data from unauthorized access.</p>
+
+                <h2>5. Data Sharing</h2>
+                <p>We <strong>DO NOT</strong> sell, trade, or transfer your personal data to third parties, except:</p>
+                <ul>
+                    <li>Service providers who help us operate the platform (Supabase, Firebase)</li>
+                    <li>When required by law or to protect our rights</li>
+                </ul>
+
+                <h2>6. Your Rights</h2>
+                <p>You have the right to:</p>
+                <ul>
+                    <li><strong>Access</strong> your personal data</li>
+                    <li><strong>Correct</strong> inaccurate information</li>
+                    <li><strong>Delete</strong> your account and data</li>
+                    <li><strong>Disable</strong> push notifications at any time</li>
+                    <li><strong>Export</strong> your data</li>
+                </ul>
+                <p>To exercise these rights, contact us at the email below.</p>
+
+                <h2>7. Data Deletion</h2>
+                <p>To delete your account and all your data:</p>
+                <ul>
+                    <li>Go to Profile Settings in the app</li>
+                    <li>Select "Delete Account"</li>
+                    <li>Or send us an email at the address below</li>
+                </ul>
+                <p>After deletion, all your data will be removed within 30 days.</p>
+
+                <h2>8. Data Security</h2>
+                <p>We implement security measures including:</p>
+                <ul>
+                    <li>SSL/TLS encryption for all communications</li>
+                    <li>Passwords encrypted with secure algorithms</li>
+                    <li>Row Level Security (RLS) policies in database</li>
+                </ul>
+
+                <h2>9. Minors</h2>
+                <p>RinON is intended for users over 13 years of age. We do not knowingly collect information from children under 13.</p>
+
+                <h2>10. Changes to Policy</h2>
+                <p>We may update this privacy policy from time to time. We will notify you of significant changes through the app or email.</p>
+
+                <div class="contact-box">
+                    <h3>📧 Contact Us</h3>
+                    <p>For any privacy questions:</p>
+                    <p>Email: <a href="mailto:rinonalbania@gmail.com">rinonalbania@gmail.com</a></p>
+                    <p>Website: <a href="https://rinon.al">rinon.al</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showLanguage(lang) {
+            var sections = document.querySelectorAll('.section');
+            var buttons = document.querySelectorAll('.language-toggle button');
+            for (var i = 0; i < sections.length; i++) {
+                sections[i].classList.remove('active');
+            }
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+            document.getElementById('content-' + lang).classList.add('active');
+            document.getElementById('btn-' + lang).classList.add('active');
+        }
+    </script>
+</body>
+</html>
