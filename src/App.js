@@ -172,9 +172,24 @@ const NotificationModal = ({
     if (!show) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-            <div className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'
-                }`}>
+        <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                    onClose();
+                }
+            }}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+        >
+            <div
+                className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'}`}
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
+            >
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 p-2 hover:bg-amber-500/20 rounded-lg transition-all"
@@ -364,6 +379,95 @@ const SignupPromptPopup = ({ show, onClose, onSignup, darkMode, t }) => {
                                 }`}
                         >
                             {t('Jo Tani', 'Not Now')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Anonymous Notification Prompt Popup
+const AnonymousNotificationPrompt = ({ show, onClose, onEnable, darkMode, t, isIOS }) => {
+    if (!show) return null;
+
+    return (
+        <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
+        >
+            <div
+                className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'}`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 hover:bg-amber-500/20 rounded-lg transition-all"
+                >
+                    <X className="w-5 h-5 text-gray-400" />
+                </button>
+
+                <div className="text-center">
+                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50 animate-pulse">
+                        <Bell className="w-8 h-8 text-white" />
+                    </div>
+
+                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                        {t('Njoftohu për Lajme & Evente', 'Get Notified for News & Events')}
+                    </h3>
+
+                    <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {t(
+                            'Aktivizo njoftimet për të mos humbur eventet dhe lajmet më të rëndësishme për të rinjtë.',
+                            'Enable notifications so you never miss important events and news for youth.'
+                        )}
+                    </p>
+
+                    <div className={`text-left space-y-2 mb-6 p-4 rounded-xl ${darkMode ? 'bg-[#3D3A36]' : 'bg-gray-50'}`}>
+                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <Calendar className="w-4 h-4 text-amber-500" />
+                            {t('Evente të reja në qytetin tënd', 'New events in your city')}
+                        </p>
+                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <Newspaper className="w-4 h-4 text-amber-500" />
+                            {t('Lajme të rëndësishme për të rinjtë', 'Important news for youth')}
+                        </p>
+                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <Award className="w-4 h-4 text-amber-500" />
+                            {t('Mundësi karriere dhe bursa', 'Career opportunities & scholarships')}
+                        </p>
+                    </div>
+
+                    {isIOS && (
+                        <div className={`mb-4 p-3 rounded-xl text-left text-sm ${darkMode ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-amber-50 border border-amber-200'}`}>
+                            <p className={darkMode ? 'text-amber-300' : 'text-amber-700'}>
+                                <strong>📱 iPhone:</strong> {t(
+                                    'Shto RinON në ekranin bazë për njoftime: Share → Add to Home Screen',
+                                    'Add RinON to home screen for notifications: Share → Add to Home Screen'
+                                )}
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={onEnable}
+                            className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold flex items-center justify-center gap-2"
+                        >
+                            <Bell className="w-5 h-5" />
+                            {t('Aktivizo Njoftimet', 'Enable Notifications')}
+                        </button>
+
+                        <button
+                            onClick={onClose}
+                            className={`w-full px-6 py-3 rounded-xl border transition-all ${darkMode
+                                ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
+                                : 'border-gray-300 text-gray-600 hover:bg-gray-100'
+                                }`}
+                        >
+                            {t('Më Vonë', 'Maybe Later')}
                         </button>
                     </div>
                 </div>
@@ -699,9 +803,24 @@ END:VCALENDAR`;
 
             {/* Day Modal */}
             {showDayModal && selectedDate && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className={`rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-2xl ${darkMode ? 'bg-[#2D2A26] border-amber-500/20' : 'bg-white border-amber-200'
-                        }`}>
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowDayModal(false);
+                        }
+                    }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
+                >
+                    <div
+                        className={`rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-2xl ${darkMode ? 'bg-[#2D2A26] border-amber-500/20' : 'bg-white border-amber-200'}`}
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                    >
                         <div className="sticky top-0 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] p-6 flex justify-between items-center">
                             <h3 className="text-2xl font-bold text-white">
                                 {selectedDate.day} {monthNames[language][month]} {year}
@@ -1544,18 +1663,24 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
     if (!showAuthModal) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#2D2A26] rounded-3xl p-8 max-w-md w-full shadow-2xl border border-amber-500/20">
+        <div
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            onClick={(e) => e.target === e.currentTarget && setShowAuthModal(false)}
+        >
+            <div className={`rounded-2xl p-6 max-w-sm w-full ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                    <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                         {authMode === 'login' ? t('Hyr', 'Login') : t('Regjistrohu', 'Sign Up')}
                     </h2>
-                    <button onClick={() => setShowAuthModal(false)} className="p-2 hover:bg-amber-500/20 rounded-lg transition-all">
-                        <X className="w-5 h-5 text-gray-400" />
+                    <button
+                        onClick={() => setShowAuthModal(false)}
+                        className={`p-1.5 rounded-lg transition-colors ${darkMode ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                    >
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {authMode === 'signup' && (
                         <input
                             type="text"
@@ -1563,7 +1688,10 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
                             maxLength="50"
-                            className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                            className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors outline-none ${darkMode
+                                    ? 'bg-[#3D3A36] border border-[#4D4A46] text-white placeholder-gray-500 focus:border-amber-500'
+                                    : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:bg-white'
+                                }`}
                         />
                     )}
                     <input
@@ -1571,7 +1699,10 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors outline-none ${darkMode
+                                ? 'bg-[#3D3A36] border border-[#4D4A46] text-white placeholder-gray-500 focus:border-amber-500'
+                                : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:bg-white'
+                            }`}
                     />
                     <div className="relative">
                         <input
@@ -1579,37 +1710,46 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                             placeholder={t('Fjalëkalimi', 'Password')}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 pr-12 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                            className={`w-full px-4 py-2.5 pr-10 rounded-lg text-sm transition-colors outline-none ${darkMode
+                                    ? 'bg-[#3D3A36] border border-[#4D4A46] text-white placeholder-gray-500 focus:border-amber-500'
+                                    : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:bg-white'
+                                }`}
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-amber-500 transition-colors"
+                            className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                         >
-                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                     </div>
 
-                    <label className="flex items-center gap-3 text-gray-300 cursor-pointer">
+                    <label className={`flex items-center gap-2 cursor-pointer ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         <input
                             type="checkbox"
                             checked={rememberMe}
                             onChange={(e) => setRememberMe(e.target.checked)}
-                            className="w-4 h-4 rounded border-amber-500/30 bg-[#3D3A36] text-amber-600 focus:ring-amber-500/20"
+                            className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500/20"
                         />
                         <span className="text-sm">{t('Më mbaj mend', 'Remember me')}</span>
                     </label>
 
-                    {error && <p className="text-[#FF6B6B] text-sm">{error}</p>}
+                    {error && <p className="text-red-500 text-sm">{error}</p>}
 
-                    <button onClick={handleSubmit} className="w-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white py-3 rounded-xl font-semibold hover:from-amber-500 hover:to-[#FF5252] transform hover:scale-[1.02] transition-all shadow-lg shadow-amber-500/50">
+                    <button
+                        onClick={handleSubmit}
+                        className="w-full bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+                    >
                         {authMode === 'login' ? t('Hyr', 'Login') : t('Regjistrohu', 'Sign Up')}
                     </button>
                 </div>
 
-                <p className="text-center text-sm mt-4 text-gray-400">
+                <p className={`text-center text-sm mt-4 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                     {authMode === 'login' ? t('Nuk keni llogari?', "Don't have an account?") : t('Keni llogari?', 'Have an account?')}
-                    <button onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')} className="ml-2 text-amber-500 font-medium hover:text-amber-400">
+                    <button
+                        onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+                        className="ml-1 text-amber-500 font-medium hover:underline"
+                    >
                         {authMode === 'login' ? t('Regjistrohu', 'Sign up') : t('Hyr', 'Login')}
                     </button>
                 </p>
@@ -1727,6 +1867,7 @@ const RinON = () => {
     const [pushSubscription, setPushSubscription] = useState(null);
     const [notificationsEnabled, setNotificationsEnabled] = useState(false);
     const [showSignupPrompt, setShowSignupPrompt] = useState(false);
+    const [showAnonNotificationPrompt, setShowAnonNotificationPrompt] = useState(false);
     const [articlesScrolled, setArticlesScrolled] = useState(0);
     const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
@@ -2616,6 +2757,59 @@ const RinON = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, [user, showSignupPrompt]);
+
+    // Show notification prompt for anonymous users after 10 seconds
+    useEffect(() => {
+        // Only show for non-logged-in users who haven't seen it and haven't enabled notifications
+        if (user) return; // Don't show if logged in
+        if (notificationsEnabled) return; // Don't show if already enabled
+        if (localStorage.getItem('rinon_anon_notification_prompt_shown')) return; // Don't show if already shown
+
+        const timer = setTimeout(() => {
+            setShowAnonNotificationPrompt(true);
+            localStorage.setItem('rinon_anon_notification_prompt_shown', 'true');
+        }, 10000); // Show after 10 seconds
+
+        return () => clearTimeout(timer);
+    }, [user, notificationsEnabled]);
+
+    // Handle anonymous notification enable
+    const handleAnonEnableNotifications = async () => {
+        setShowAnonNotificationPrompt(false);
+
+        // Request notification permission and register
+        try {
+            if (isNativeApp) {
+                // Native app notification registration
+                const permStatus = await PushNotifications.requestPermissions();
+                if (permStatus.receive === 'granted') {
+                    await PushNotifications.register();
+                }
+            } else {
+                // Web notification registration
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted' && firebaseApp) {
+                    const messaging = getMessaging(firebaseApp);
+                    const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+
+                    if (token) {
+                        // Save token with null user_id for anonymous user
+                        await supabase.from('push_subscriptions').upsert({
+                            fcm_token: token,
+                            user_id: null, // Anonymous user
+                            device_info: navigator.userAgent,
+                            preferences: { news: true, events: true, updates: true }
+                        }, { onConflict: 'fcm_token' });
+
+                        setNotificationsEnabled(true);
+                        localStorage.setItem('notifications_enabled', 'true');
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error enabling notifications:', err);
+        }
+    };
 
     // ============================================
     // NATIVE APP - Handle notification that launched the app
@@ -5524,57 +5718,57 @@ const RinON = () => {
             style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 80px)' : '80px' }}
         >
 
-            <header className={`backdrop-blur-lg border-b sticky top-0 z-50 shadow-lg transition-colors duration-300 ${darkMode
-                ? 'bg-[#2D2A26]/80 border-amber-500/20 shadow-amber-500/10'
-                : 'bg-white/80 border-amber-200 shadow-amber-200/20'
+            <header className={`border-b sticky top-0 z-50 transition-colors duration-200 ${darkMode
+                ? 'bg-[#2D2A26] border-[#3D3A36]'
+                : 'bg-white border-gray-200'
                 }`}>
-                <div className="max-w-7xl mx-auto px-4 py-4">
+                <div className="max-w-7xl mx-auto px-4 py-3">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => changePage('home')}>
+                        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => changePage('home')}>
                             <img
                                 src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png"
                                 alt="RinON Logo"
-                                className="w-20 h-20 object-contain group-hover:scale-110 transition-transform"
+                                className="w-12 h-12 object-contain"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextElementSibling.style.display = 'flex';
                                 }}
                             />
-                            <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full hidden items-center justify-center shadow-lg shadow-amber-500/50 group-hover:scale-110 transition-transform">
-                                <span className="text-white font-bold text-xl">R</span>
+                            <div className="w-10 h-10 bg-amber-500 rounded-lg hidden items-center justify-center">
+                                <span className="text-white font-semibold text-lg">R</span>
                             </div>
                             <div className="hidden sm:block">
-                                <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">RinON</h1>
-                                <p className="text-xs text-amber-500 uppercase tracking-wide">
+                                <h1 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>RinON</h1>
+                                <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                                     {t('Aktivizo Rininë Tënde', 'Activate Your Youth')}
                                 </p>
                             </div>
                         </div>
 
-                        <nav className="hidden md:flex items-center space-x-6">
-                            <button onClick={() => changePage('home')} className={`font-medium transition-all ${currentPage === 'home' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                        <nav className="hidden md:flex items-center space-x-1">
+                            <button onClick={() => changePage('home')} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === 'home' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
                                 {t('Home', 'Home')}
                             </button>
-                            <button onClick={() => changePage('lajme')} className={`font-medium transition-all ${currentPage === 'lajme' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                            <button onClick={() => changePage('lajme')} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === 'lajme' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
                                 {t('Lajme', 'News')}
                             </button>
-                            <button onClick={() => changePage('events')} className={`font-medium transition-all ${currentPage === 'events' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                            <button onClick={() => changePage('events')} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === 'events' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
                                 {t('Evente', 'Events')}
                             </button>
-                            <button onClick={() => changePage('schools')} className={`font-medium flex items-center gap-1 transition-all ${currentPage === 'schools' || currentPage === 'school-portal' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                            <button onClick={() => changePage('schools')} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${currentPage === 'schools' || currentPage === 'school-portal' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
                                 <School className="w-4 h-4" />
                                 {t('Shkollat', 'Schools')}
                             </button>
 
-                            <button onClick={() => changePage('partners')} className={`font-medium flex items-center gap-1 transition-all ${currentPage === 'partners' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                            <button onClick={() => changePage('partners')} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${currentPage === 'partners' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
                                 <Users className="w-4 h-4" />
                                 {t('Bashkëpunime', 'Cooperations')}
                             </button>
-                            <button onClick={() => changePage('komuniteti')} className={`font-medium flex items-center gap-2 transition-all ${currentPage === 'komuniteti' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                            <button onClick={() => changePage('komuniteti')} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${currentPage === 'komuniteti' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
                                 <MessageCircle className="w-4 h-4" />
                                 {t('Komuniteti', 'Community')}
                             </button>
-                            <button onClick={() => changePage('about')} className={`font-medium transition-all ${currentPage === 'about' ? 'text-amber-500' : darkMode ? 'text-gray-400 hover:text-amber-500' : 'text-gray-600 hover:text-amber-600'}`}>
+                            <button onClick={() => changePage('about')} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === 'about' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
                                 {t('Rreth Nesh', 'About')}
                             </button>
                         </nav>
@@ -5584,9 +5778,9 @@ const RinON = () => {
                             {/* Mobile Search Button */}
                             <button
                                 onClick={() => setShowSearchBar(!showSearchBar)}
-                                className={`p-2 rounded-lg transition-all border ${showSearchBar
-                                    ? 'bg-amber-500 text-white border-amber-500'
-                                    : 'bg-amber-500/20 text-amber-500 border-amber-500/30 hover:bg-amber-500/30'
+                                className={`p-2 rounded-lg transition-colors ${showSearchBar
+                                    ? 'bg-amber-500 text-white'
+                                    : darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-100'
                                     }`}
                             >
                                 <Search className="h-5 w-5" />
@@ -5596,14 +5790,14 @@ const RinON = () => {
                             {user && (
                                 <button
                                     onClick={() => setShowNotificationModal(true)}
-                                    className={`relative p-2 rounded-lg transition-all border ${notificationsEnabled
-                                        ? 'bg-amber-500/20 text-amber-500 border-amber-500/30'
-                                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-                                        }`}
+                                    className={`relative p-2 rounded-lg transition-colors ${notificationsEnabled
+                                        ? 'text-amber-500'
+                                        : darkMode ? 'text-gray-400' : 'text-gray-500'
+                                        } ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-100'}`}
                                 >
                                     <Bell className="h-5 w-5" />
                                     {!notificationsEnabled && (
-                                        <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full" />
                                     )}
                                 </button>
                             )}
@@ -5612,13 +5806,11 @@ const RinON = () => {
                             {user ? (
                                 <button
                                     onClick={() => setShowPreferences(true)}
-                                    className="p-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-lg transition-all shadow-lg shadow-amber-500/30"
+                                    className="w-9 h-9 bg-amber-500 text-white rounded-lg flex items-center justify-center"
                                 >
-                                    <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                                        <span className="text-[10px] font-bold">
-                                            {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
-                                        </span>
-                                    </div>
+                                    <span className="text-sm font-medium">
+                                        {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+                                    </span>
                                 </button>
                             ) : (
                                 <button
@@ -8078,8 +8270,25 @@ const RinON = () => {
             </main>
 
             {showArticleModal && selectedArticle && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-[#2D2A26] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-amber-500/20 shadow-2xl">
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowArticleModal(false);
+                            window.history.pushState({}, '', '/');
+                        }
+                    }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
+                >
+                    <div
+                        className="bg-[#2D2A26] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-amber-500/20 shadow-2xl"
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                    >
                         <div className="relative h-80">
                             <img
                                 src={selectedArticle.image}
@@ -8121,8 +8330,26 @@ const RinON = () => {
             )}
             {/* Event Modal */}
             {showEventModal && selectedEvent && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className={`rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-2xl ${darkMode ? 'bg-[#2D2A26] border-amber-500/20' : 'bg-white border-gray-200'}`}>
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+                    onClick={(e) => {
+                        // Only close if clicking the backdrop itself, not the modal content
+                        if (e.target === e.currentTarget) {
+                            setShowEventModal(false);
+                            window.history.pushState({}, '', '/events');
+                        }
+                    }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
+                >
+                    <div
+                        className={`rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-2xl ${darkMode ? 'bg-[#2D2A26] border-amber-500/20' : 'bg-white border-gray-200'}`}
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchMove={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                    >
                         {/* Header Image */}
                         <div className="relative h-72">
                             <img
@@ -8360,20 +8587,20 @@ const RinON = () => {
                 Clean, elevated design with larger touch targets
                 Added safe-area padding for Android navigation bar
                ========================================== */}
-            <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 transition-colors duration-300 ${darkMode
-                ? 'bg-[#1a1918]'
-                : 'bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)]'
+            <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t ${darkMode
+                ? 'bg-[#1a1918] border-[#2D2A26]'
+                : 'bg-white border-gray-200'
                 }`}
                 style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 20px)' : '0px' }}
             >
-                <div className={`flex items-center justify-around px-4 pt-3 ${isNativeApp ? 'pb-2' : 'pb-6'}`}>
+                <div className={`flex items-center justify-around px-2 pt-2 ${isNativeApp ? 'pb-1' : 'pb-4'}`}>
                     {/* Home */}
                     <button
                         onClick={() => changePage('home')}
-                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'home' ? (darkMode ? 'text-[#fbbf24]' : 'text-[#f59e0b]') : (darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600')}`}
+                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${currentPage === 'home' ? 'text-amber-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
                     >
-                        <Home className={`w-6 h-6 mb-1 ${currentPage === 'home' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[11px] ${currentPage === 'home' ? 'font-semibold' : 'font-normal'}`}>
+                        <Home className={`w-5 h-5 mb-0.5 ${currentPage === 'home' ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[10px] ${currentPage === 'home' ? 'font-medium' : 'font-normal'}`}>
                             Home
                         </span>
                     </button>
@@ -8381,32 +8608,32 @@ const RinON = () => {
                     {/* Events */}
                     <button
                         onClick={() => changePage('events')}
-                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'events' ? (darkMode ? 'text-[#fbbf24]' : 'text-[#f59e0b]') : (darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600')}`}
+                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${currentPage === 'events' ? 'text-amber-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
                     >
-                        <Calendar className={`w-6 h-6 mb-1 ${currentPage === 'events' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[11px] ${currentPage === 'events' ? 'font-semibold' : 'font-normal'}`}>
+                        <Calendar className={`w-5 h-5 mb-0.5 ${currentPage === 'events' ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[10px] ${currentPage === 'events' ? 'font-medium' : 'font-normal'}`}>
                             Evente
                         </span>
                     </button>
 
-                    {/* Lajme - Center position (replaces admin button) */}
+                    {/* Lajme - Center position */}
                     <button
                         onClick={() => changePage('lajme')}
-                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'lajme' ? (darkMode ? 'text-[#fbbf24]' : 'text-[#f59e0b]') : (darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600')}`}
+                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${currentPage === 'lajme' ? 'text-amber-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
                     >
-                        <Newspaper className={`w-6 h-6 mb-1 ${currentPage === 'lajme' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[11px] ${currentPage === 'lajme' ? 'font-semibold' : 'font-normal'}`}>
+                        <Newspaper className={`w-5 h-5 mb-0.5 ${currentPage === 'lajme' ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[10px] ${currentPage === 'lajme' ? 'font-medium' : 'font-normal'}`}>
                             Lajme
                         </span>
                     </button>
 
-                    {/* Komuniteti (Articles + Discussions) */}
+                    {/* Komuniteti */}
                     <button
                         onClick={() => changePage('komuniteti')}
-                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${currentPage === 'komuniteti' ? (darkMode ? 'text-[#fbbf24]' : 'text-[#f59e0b]') : (darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600')}`}
+                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${currentPage === 'komuniteti' ? 'text-amber-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
                     >
-                        <MessageCircle className={`w-6 h-6 mb-1 ${currentPage === 'komuniteti' ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[11px] ${currentPage === 'komuniteti' ? 'font-semibold' : 'font-normal'}`}>
+                        <MessageCircle className={`w-5 h-5 mb-0.5 ${currentPage === 'komuniteti' ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
+                        <span className={`text-[10px] ${currentPage === 'komuniteti' ? 'font-medium' : 'font-normal'}`}>
                             Komuniteti
                         </span>
                     </button>
@@ -8414,18 +8641,18 @@ const RinON = () => {
                     {/* Profile/Account */}
                     <button
                         onClick={() => user ? setShowPreferences(true) : (setShowAuthModal(true), setAuthMode('login'))}
-                        className={`flex flex-col items-center justify-center min-w-[64px] min-h-[56px] rounded-2xl transition-all active:scale-95 ${darkMode ? 'text-gray-500 active:text-gray-300' : 'text-gray-400 active:text-gray-600'}`}
+                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}
                     >
                         {user ? (
-                            <div className="w-7 h-7 mb-1 rounded-full bg-gradient-to-br from-[#fbbf24] to-orange-500 flex items-center justify-center ring-2 ring-offset-2 ring-offset-transparent ring-yellow-400/30">
-                                <span className="text-white text-xs font-semibold">
+                            <div className="w-5 h-5 mb-0.5 rounded-full bg-amber-500 flex items-center justify-center">
+                                <span className="text-white text-[9px] font-medium">
                                     {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                                 </span>
                             </div>
                         ) : (
-                            <User className="w-6 h-6 mb-1 stroke-[1.5px]" />
+                            <User className="w-5 h-5 mb-0.5 stroke-[1.5px]" />
                         )}
-                        <span className={`text-[11px] font-normal`}>
+                        <span className="text-[10px] font-normal">
                             {user ? t('Profil', 'Profile') : t('Hyr', 'Login')}
                         </span>
                     </button>
@@ -8596,6 +8823,16 @@ const RinON = () => {
                 }}
                 darkMode={darkMode}
                 t={t}
+            />
+
+            {/* Anonymous Notification Prompt */}
+            <AnonymousNotificationPrompt
+                show={showAnonNotificationPrompt}
+                onClose={() => setShowAnonNotificationPrompt(false)}
+                onEnable={handleAnonEnableNotifications}
+                darkMode={darkMode}
+                t={t}
+                isIOS={isIOS}
             />
 
             {/* iOS Instructions Banner */}
