@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, BookmarkPlus, Sparkles, ArrowUp, ChevronUp, Smartphone, FileText } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, BookmarkPlus, Sparkles, ArrowUp, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
@@ -511,7 +511,7 @@ const IOSInstructionsBanner = ({ show, onClose, darkMode, t }) => {
 };
 
 // Event Calendar Component
-const EventCalendar = React.memo(({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t, openShareModal, openEvent, currentDate, setCurrentDate }) => {
+const EventCalendar = React.memo(({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t, openShareModal, openEvent, currentDate, setCurrentDate, eventInterests, userEventInterests, toggleEventInterest }) => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [showOnlyFree, setShowOnlyFree] = useState(false);
@@ -965,13 +965,35 @@ END:VCALENDAR`;
                                         </div>
                                     )}
 
+                                    {/* Who's Interested Counter */}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <button
+                                            onClick={() => toggleEventInterest(event.id)}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${userEventInterests.includes(event.id)
+                                                    ? 'bg-amber-500 text-white'
+                                                    : darkMode
+                                                        ? 'bg-[#3D3A36] text-gray-300 hover:bg-amber-500/20 hover:text-amber-400'
+                                                        : 'bg-gray-100 text-gray-600 hover:bg-amber-100 hover:text-amber-600'
+                                                }`}
+                                        >
+                                            <Heart className={`w-4 h-4 ${userEventInterests.includes(event.id) ? 'fill-current' : ''}`} />
+                                            {userEventInterests.includes(event.id)
+                                                ? t('Më Intereson', 'Interested')
+                                                : t('Më Intereson?', 'Interested?')
+                                            }
+                                        </button>
+                                        <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {eventInterests[event.id] || 0} {t('të interesuar', 'interested')}
+                                        </span>
+                                    </div>
+
                                     <div className="flex gap-3">
                                         {event.registration_link && (
                                             <a
                                                 href={event.registration_link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex-1 px-4 py-2 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-lg hover:from-amber-500 hover:to-[#FF5252] transition-all text-center flex items-center justify-center gap-2"
+                                                className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all text-center flex items-center justify-center gap-2"
                                             >
                                                 <ExternalLink className="w-4 h-4" />
                                                 {t('Regjistrohu', 'Register')}
@@ -985,7 +1007,7 @@ END:VCALENDAR`;
                                                 }`}
                                         >
                                             <CalendarIcon className="w-4 h-4" />
-                                            {t('Eksporto', 'Export')}
+                                            {t('Kalendar', 'Calendar')}
                                         </button>
                                     </div>
                                 </div>
@@ -1619,78 +1641,121 @@ const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
 };
 
 // Auth Modal Component
-const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, handleSignup, handleLogin, setShowPreferences, darkMode, t }) => {
+const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, handleSignup, handleLogin, handleGoogleSignIn, setShowPreferences, darkMode, t }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleSubmit = async () => {
         setError('');
+        setIsLoading(true);
 
         if (authMode === 'signup') {
             if (!validateInput.email(email)) {
-                setError(t('Email i pavlefshëm', 'Invalid email address'));
+                setError(t('Email i pavlefshëm', 'Invalid email'));
+                setIsLoading(false);
                 return;
             }
-
             const passwordCheck = validatePassword(password);
             if (!passwordCheck.valid) {
                 setError(passwordCheck.message);
+                setIsLoading(false);
                 return;
             }
-
             if (!validateInput.text(displayName, 50)) {
                 setError(t('Emri duhet të jetë 1-50 karaktere', 'Name must be 1-50 characters'));
+                setIsLoading(false);
                 return;
             }
-
             const { error } = await handleSignup(email, password, displayName, rememberMe);
             if (error) setError(error.message);
             else setShowAuthModal(false);
         } else {
             if (!validateInput.email(email)) {
-                setError(t('Email i pavlefshëm', 'Invalid email address'));
+                setError(t('Email i pavlefshëm', 'Invalid email'));
+                setIsLoading(false);
                 return;
             }
-
             const { error } = await handleLogin(email, password, rememberMe);
             if (error) setError(error.message);
             else setShowAuthModal(false);
         }
+        setIsLoading(false);
     };
+
+    const onGoogleClick = async () => {
+        setError('');
+        setIsLoading(true);
+        const { error } = await handleGoogleSignIn();
+        if (error) setError(error.message);
+        setIsLoading(false);
+    };
+
     if (!showAuthModal) return null;
 
     return (
         <div
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
             onClick={(e) => e.target === e.currentTarget && setShowAuthModal(false)}
         >
-            <div className={`rounded-2xl p-6 max-w-sm w-full ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                        {authMode === 'login' ? t('Hyr', 'Login') : t('Regjistrohu', 'Sign Up')}
+            <div className={`w-full max-w-sm rounded-xl p-5 ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
+                <div className="flex items-center justify-between mb-5">
+                    <h2 className={`text-lg font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {authMode === 'login' ? t('Hyr', 'Log in') : t('Regjistrohu', 'Sign up')}
                     </h2>
                     <button
                         onClick={() => setShowAuthModal(false)}
-                        className={`p-1.5 rounded-lg transition-colors ${darkMode ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                        className={`p-1 rounded ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                     >
                         <X className="w-5 h-5" />
                     </button>
+                </div>
+
+                {/* Google Sign-In Button */}
+                <button
+                    onClick={onGoogleClick}
+                    disabled={isLoading}
+                    className={`w-full flex items-center justify-center gap-3 py-2.5 rounded-lg text-sm font-medium mb-4 border transition-colors ${darkMode
+                            ? 'bg-white text-gray-800 hover:bg-gray-100 border-transparent'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
+                        } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                    {t('Vazhdo me Google', 'Continue with Google')}
+                </button>
+
+                {/* Divider */}
+                <div className="relative mb-4">
+                    <div className={`absolute inset-0 flex items-center`}>
+                        <div className={`w-full border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                        <span className={`px-2 ${darkMode ? 'bg-[#2D2A26] text-gray-500' : 'bg-white text-gray-400'}`}>
+                            {t('ose', 'or')}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="space-y-3">
                     {authMode === 'signup' && (
                         <input
                             type="text"
-                            placeholder={t('Emri juaj', 'Your name')}
+                            placeholder={t('Emri', 'Name')}
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
                             maxLength="50"
-                            className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors outline-none ${darkMode
-                                    ? 'bg-[#3D3A36] border border-[#4D4A46] text-white placeholder-gray-500 focus:border-amber-500'
-                                    : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:bg-white'
+                            className={`w-full px-3 py-2 rounded-lg text-sm outline-none ${darkMode
+                                    ? 'bg-[#3D3A36] text-white placeholder-gray-500 focus:ring-1 focus:ring-gray-600'
+                                    : 'bg-gray-50 text-gray-900 placeholder-gray-400 focus:ring-1 focus:ring-gray-200'
                                 }`}
                         />
                     )}
@@ -1699,9 +1764,9 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`w-full px-4 py-2.5 rounded-lg text-sm transition-colors outline-none ${darkMode
-                                ? 'bg-[#3D3A36] border border-[#4D4A46] text-white placeholder-gray-500 focus:border-amber-500'
-                                : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:bg-white'
+                        className={`w-full px-3 py-2 rounded-lg text-sm outline-none ${darkMode
+                                ? 'bg-[#3D3A36] text-white placeholder-gray-500 focus:ring-1 focus:ring-gray-600'
+                                : 'bg-gray-50 text-gray-900 placeholder-gray-400 focus:ring-1 focus:ring-gray-200'
                             }`}
                     />
                     <div className="relative">
@@ -1710,47 +1775,39 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
                             placeholder={t('Fjalëkalimi', 'Password')}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className={`w-full px-4 py-2.5 pr-10 rounded-lg text-sm transition-colors outline-none ${darkMode
-                                    ? 'bg-[#3D3A36] border border-[#4D4A46] text-white placeholder-gray-500 focus:border-amber-500'
-                                    : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:bg-white'
+                            className={`w-full px-3 py-2 pr-10 rounded-lg text-sm outline-none ${darkMode
+                                    ? 'bg-[#3D3A36] text-white placeholder-gray-500 focus:ring-1 focus:ring-gray-600'
+                                    : 'bg-gray-50 text-gray-900 placeholder-gray-400 focus:ring-1 focus:ring-gray-200'
                                 }`}
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+                            className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}
                         >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                     </div>
 
-                    <label className={`flex items-center gap-2 cursor-pointer ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        <input
-                            type="checkbox"
-                            checked={rememberMe}
-                            onChange={(e) => setRememberMe(e.target.checked)}
-                            className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500/20"
-                        />
-                        <span className="text-sm">{t('Më mbaj mend', 'Remember me')}</span>
-                    </label>
-
                     {error && <p className="text-red-500 text-sm">{error}</p>}
 
                     <button
                         onClick={handleSubmit}
-                        className="w-full bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+                        disabled={isLoading}
+                        className={`w-full bg-amber-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-amber-600 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        {authMode === 'login' ? t('Hyr', 'Login') : t('Regjistrohu', 'Sign Up')}
+                        {isLoading ? '...' : (authMode === 'login' ? t('Hyr', 'Log in') : t('Regjistrohu', 'Sign up'))}
                     </button>
                 </div>
 
-                <p className={`text-center text-sm mt-4 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                    {authMode === 'login' ? t('Nuk keni llogari?', "Don't have an account?") : t('Keni llogari?', 'Have an account?')}
+                <p className={`text-center text-sm mt-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                    {authMode === 'login' ? t('Nuk ke llogari?', "Don't have an account?") : t('Ke llogari?', 'Have an account?')}
+                    {' '}
                     <button
                         onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-                        className="ml-1 text-amber-500 font-medium hover:underline"
+                        className="text-amber-500 hover:underline"
                     >
-                        {authMode === 'login' ? t('Regjistrohu', 'Sign up') : t('Hyr', 'Login')}
+                        {authMode === 'login' ? t('Regjistrohu', 'Sign up') : t('Hyr', 'Log in')}
                     </button>
                 </p>
             </div>
@@ -1760,69 +1817,197 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
 
 // Preferences Modal Component
 // Preferences Modal Component
-const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t, onDeleteAccount }) => {
-    const [selected, setSelected] = useState(userProfile?.preferences || []);
+const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t, onDeleteAccount, onLogout, userBadges, user }) => {
+    const [editingName, setEditingName] = useState(false);
+    const [newDisplayName, setNewDisplayName] = useState(userProfile?.display_name || '');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-    const toggleCategory = (cat) => {
-        setSelected(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
+    // Badge definitions
+    const badgeDefinitions = {
+        early_adopter: { icon: '🌟', nameAl: 'Pionier', nameEn: 'Early Adopter', descAl: 'Nga të parët në RinON', descEn: 'Among the first on RinON' },
+        event_explorer: { icon: '📅', nameAl: 'Eksplorues Eventesh', nameEn: 'Event Explorer', descAl: '5+ evente të ndjekura', descEn: '5+ events attended' },
+        community_voice: { icon: '💬', nameAl: 'Zëri i Komunitetit', nameEn: 'Community Voice', descAl: '10+ sondazhe të votuar', descEn: '10+ polls voted' },
+        volunteer_spirit: { icon: '💚', nameAl: 'Shpirt Vullnetar', nameEn: 'Volunteer Spirit', descAl: '3+ aktivitete vullnetare', descEn: '3+ volunteer activities' },
+        super_sharer: { icon: '📤', nameAl: 'Super Shpërndarës', nameEn: 'Super Sharer', descAl: '10+ evente të shpërndara', descEn: '10+ events shared' }
+    };
+
+    const handleSaveName = async () => {
+        if (newDisplayName.trim() && newDisplayName !== userProfile?.display_name) {
+            await updatePreferences(null, newDisplayName.trim());
+        }
+        setEditingName(false);
     };
 
     if (!showPreferences) return null;
 
+    const memberSince = userProfile?.joined_at ? new Date(userProfile.joined_at).toLocaleDateString(language === 'al' ? 'sq-AL' : 'en-US', { month: 'long', year: 'numeric' }) : '';
+
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#2D2A26] rounded-3xl p-8 max-w-md w-full shadow-2xl border border-amber-500/20 max-h-[90vh] overflow-y-auto">
-                <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">{t('Zgjidhni Preferencat', 'Choose Preferences')}</h2>
-                <p className="text-gray-400 mb-6">{t('Zgjidhni temat që ju interesojnë', 'Select topics that interest you')}</p>
-
-                <div className="space-y-3 mb-6">
-                    {categories.filter(c => c.al !== 'Te Gjitha').map(cat => (
-                        <button
-                            key={cat.al}
-                            onClick={() => toggleCategory(cat.al)}
-                            className={`w-full px-4 py-3 rounded-xl border-2 transition-all transform hover:scale-[1.02] ${selected.includes(cat.al)
-                                ? 'border-amber-500 bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 shadow-lg shadow-amber-500/30'
-                                : 'border-[#3D3A36] text-gray-400 hover:border-amber-500/50'
-                                }`}
-                        >
-                            {language === 'al' ? cat.al : cat.en}
-                        </button>
-                    ))}
-                </div>
-
-                <div className="flex gap-3 mb-8">
-                    <button onClick={() => setShowPreferences(false)} className="flex-1 px-4 py-3 border border-[#3D3A36] rounded-xl text-gray-400 hover:border-[#4D4A46] transition-all">
-                        {t('Anulo', 'Cancel')}
-                    </button>
-                    <button onClick={() => { updatePreferences(selected); setShowPreferences(false); }} className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50">
-                        {t('Ruaj', 'Save')}
+        <div
+            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+            onClick={(e) => e.target === e.currentTarget && setShowPreferences(false)}
+        >
+            <div className={`w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
+                {/* Header with close button */}
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {t('Profili Im', 'My Profile')}
+                    </h2>
+                    <button
+                        onClick={() => setShowPreferences(false)}
+                        className={`p-1 rounded ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
+
+                {/* Profile Header */}
+                <div className="flex items-center gap-4 mb-6">
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
+                        {userProfile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
+                    </div>
+                    <div className="flex-1">
+                        {editingName ? (
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={newDisplayName}
+                                    onChange={(e) => setNewDisplayName(e.target.value)}
+                                    className={`flex-1 px-3 py-1 rounded-lg text-sm ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-100 text-gray-900'}`}
+                                    autoFocus
+                                />
+                                <button onClick={handleSaveName} className="text-amber-500 text-sm font-medium">
+                                    {t('Ruaj', 'Save')}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                    {userProfile?.display_name || t('Pa emër', 'No name')}
+                                </h3>
+                                <button
+                                    onClick={() => setEditingName(true)}
+                                    className={`p-1 rounded ${darkMode ? 'text-gray-500 hover:text-amber-400' : 'text-gray-400 hover:text-amber-600'}`}
+                                >
+                                    <Edit className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                        <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                            {user?.email}
+                        </p>
+                        {memberSince && (
+                            <p className={`text-xs ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                {t('Anëtar që nga', 'Member since')} {memberSince}
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Badges Section */}
+                <div className="mb-6">
+                    <h4 className={`text-sm font-medium mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        🏆 {t('Distinktivat', 'Badges')}
+                    </h4>
+                    {userBadges && userBadges.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                            {userBadges.map((badge) => {
+                                const def = badgeDefinitions[badge.badge_type];
+                                if (!def) return null;
+                                return (
+                                    <div
+                                        key={badge.badge_type}
+                                        className={`px-3 py-1.5 rounded-full text-sm flex items-center gap-1.5 ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}
+                                        title={language === 'al' ? def.descAl : def.descEn}
+                                    >
+                                        <span>{def.icon}</span>
+                                        <span>{language === 'al' ? def.nameAl : def.nameEn}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className={`text-sm ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                            {t('Ende pa distinktiva. Vazhdo të eksplorosh!', 'No badges yet. Keep exploring!')}
+                        </p>
+                    )}
+                </div>
+
+                {/* Activity Stats */}
+                <div className={`p-4 rounded-xl mb-6 ${darkMode ? 'bg-[#3D3A36]' : 'bg-gray-50'}`}>
+                    <h4 className={`text-sm font-medium mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        📊 {t('Aktiviteti', 'Activity')}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <div className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {userProfile?.events_attended || 0}
+                            </div>
+                            <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                {t('Evente', 'Events')}
+                            </div>
+                        </div>
+                        <div>
+                            <div className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {userProfile?.polls_voted || 0}
+                            </div>
+                            <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                {t('Sondazhe', 'Polls')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Logout Button */}
+                <button
+                    onClick={() => {
+                        setShowPreferences(false);
+                        onLogout();
+                    }}
+                    className={`w-full px-4 py-3 mb-4 rounded-xl flex items-center justify-center gap-2 transition-all ${darkMode
+                            ? 'border border-gray-700 text-gray-300 hover:bg-gray-800'
+                            : 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+                        }`}
+                >
+                    <LogOut className="w-4 h-4" />
+                    {t('Dil nga llogaria', 'Log out')}
+                </button>
 
                 {/* Danger Zone - Delete Account */}
-                <div className="border-t border-red-500/30 pt-6">
-                    <h3 className="text-lg font-bold text-red-400 mb-3 flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5" />
-                        {t('Zona e Rrezikshme', 'Danger Zone')}
-                    </h3>
-                    <p className="text-gray-400 text-sm mb-4">
-                        {t(
-                            'Fshirja e llogarisë është e përhershme dhe nuk mund të zhbëhet.',
-                            'Deleting your account is permanent and cannot be undone.'
-                        )}
-                    </p>
+                <div className={`border-t pt-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                     <button
-                        onClick={() => {
-                            setShowPreferences(false);
-                            onDeleteAccount();
-                        }}
-                        className="w-full px-4 py-3 bg-gradient-to-r from-[#FF6B6B] to-[#FF5252] text-white rounded-xl hover:from-[#FF5252] hover:to-[#FF4040] transition-all flex items-center justify-center gap-2"
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="text-red-500 text-sm hover:underline"
                     >
-                        <Trash2 className="w-4 h-4" />
-                        {t('Fshi Llogarinë', 'Delete Account')}
+                        {t('Fshi llogarinë', 'Delete account')}
                     </button>
                 </div>
+
+                {/* Delete Confirmation */}
+                {showDeleteConfirm && (
+                    <div className={`mt-4 p-4 rounded-xl border ${darkMode ? 'bg-red-500/10 border-red-500/30' : 'bg-red-50 border-red-200'}`}>
+                        <p className={`text-sm mb-3 ${darkMode ? 'text-red-400' : 'text-red-600'}`}>
+                            {t('Je i sigurt? Kjo veprim nuk mund të zhbëhet.', 'Are you sure? This action cannot be undone.')}
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className={`flex-1 px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}
+                            >
+                                {t('Anulo', 'Cancel')}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowPreferences(false);
+                                    onDeleteAccount();
+                                }}
+                                className="flex-1 px-3 py-2 rounded-lg text-sm bg-red-500 text-white hover:bg-red-600"
+                            >
+                                {t('Fshi', 'Delete')}
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -1935,6 +2120,29 @@ const RinON = () => {
     const [otherEvents, setOtherEvents] = useState([]);
     const [partners, setPartners] = useState([]);
     const [staffMembers, setStaffMembers] = useState([]);
+
+    // ==========================================
+    // POLLS FEATURE - STATE VARIABLES
+    // ==========================================
+    const [activePoll, setActivePoll] = useState(null);
+    const [userPollVote, setUserPollVote] = useState(null);
+    const [pollResults, setPollResults] = useState({});
+    const [showPollAdmin, setShowPollAdmin] = useState(false);
+    const [pollFormData, setPollFormData] = useState({
+        questionAl: '', questionEn: '', options: ['', '', '']
+    });
+
+    // ==========================================
+    // EVENT INTERESTS ("Who's Going?")
+    // ==========================================
+    const [eventInterests, setEventInterests] = useState({}); // { eventId: count }
+    const [userEventInterests, setUserEventInterests] = useState([]); // array of event IDs user is interested in
+
+    // ==========================================
+    // USER BADGES
+    // ==========================================
+    const [userBadges, setUserBadges] = useState([]);
+
     // ==========================================
     // SCHOOLS FEATURE - STATE VARIABLES
     // ==========================================
@@ -3209,6 +3417,8 @@ const RinON = () => {
         await Promise.all([
             loadArticles(),
             loadEvents(),
+            loadActivePoll(),
+            loadEventInterests(),
         ]);
         setTimeout(() => setIsRefreshing(false), 1000);
     };
@@ -3440,7 +3650,19 @@ const RinON = () => {
         loadPartners();
         loadTeamMembers();
         loadSchools();
+        loadActivePoll();
+        loadEventInterests();
     }, []);
+
+    // Load user-specific data when user changes
+    useEffect(() => {
+        if (user) {
+            loadUserBadges();
+            loadActivePoll(); // Reload to check if user has voted
+            loadEventInterests(); // Reload to get user's interests
+        }
+    }, [user]);
+
     useEffect(() => {
         if (selectedSchool) {
             loadSchoolPosts(selectedSchool.id);
@@ -3533,6 +3755,234 @@ const RinON = () => {
             setTopics(data || []);
         } catch (err) {
             console.error(handleError(err, 'loadTopics'));
+        }
+    };
+
+    // Load active poll
+    const loadActivePoll = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('polls')
+                .select('*')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
+            setActivePoll(data || null);
+
+            // If there's an active poll and user is logged in, check if they've voted
+            if (data && user) {
+                const { data: voteData } = await supabase
+                    .from('poll_votes')
+                    .select('selected_option')
+                    .eq('poll_id', data.id)
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (voteData) {
+                    setUserPollVote(voteData.selected_option);
+                    // Load results if user has voted
+                    loadPollResults(data.id);
+                }
+            }
+        } catch (err) {
+            console.error(handleError(err, 'loadActivePoll'));
+        }
+    };
+
+    // Load poll results
+    const loadPollResults = async (pollId) => {
+        try {
+            const { data, error } = await supabase
+                .from('poll_votes')
+                .select('selected_option')
+                .eq('poll_id', pollId);
+
+            if (error) throw error;
+
+            // Count votes per option
+            const results = {};
+            data.forEach(vote => {
+                results[vote.selected_option] = (results[vote.selected_option] || 0) + 1;
+            });
+            setPollResults(results);
+        } catch (err) {
+            console.error(handleError(err, 'loadPollResults'));
+        }
+    };
+
+    // Vote on poll
+    const votePoll = async (optionIndex) => {
+        if (!user || !activePoll || userPollVote !== null) return;
+
+        try {
+            const { error } = await supabase
+                .from('poll_votes')
+                .insert({
+                    poll_id: activePoll.id,
+                    user_id: user.id,
+                    selected_option: optionIndex
+                });
+
+            if (error) throw error;
+
+            setUserPollVote(optionIndex);
+            loadPollResults(activePoll.id);
+
+            // Update poll total votes
+            await supabase
+                .from('polls')
+                .update({ total_votes: (activePoll.total_votes || 0) + 1 })
+                .eq('id', activePoll.id);
+
+        } catch (err) {
+            console.error(handleError(err, 'votePoll'));
+        }
+    };
+
+    // Create new poll (admin only)
+    const createPoll = async () => {
+        if (!userProfile?.is_admin) return;
+
+        try {
+            // Deactivate current active poll
+            await supabase
+                .from('polls')
+                .update({ is_active: false })
+                .eq('is_active', true);
+
+            // Create new poll
+            const options = pollFormData.options.filter(o => o.trim() !== '');
+            const { data, error } = await supabase
+                .from('polls')
+                .insert({
+                    question_al: pollFormData.questionAl,
+                    question_en: pollFormData.questionEn || pollFormData.questionAl,
+                    options: options,
+                    is_active: true
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            setActivePoll(data);
+            setUserPollVote(null);
+            setPollResults({});
+            setShowPollAdmin(false);
+            setPollFormData({ questionAl: '', questionEn: '', options: ['', '', ''] });
+
+            // Send notification to all users
+            sendPollNotification(data);
+
+        } catch (err) {
+            console.error(handleError(err, 'createPoll'));
+        }
+    };
+
+    // Send poll notification
+    const sendPollNotification = async (poll) => {
+        try {
+            const { data: subscriptions } = await supabase
+                .from('push_subscriptions')
+                .select('fcm_token')
+                .not('fcm_token', 'is', null);
+
+            // For now, we'll just log it - actual FCM sending requires server-side code
+            console.log('Would send poll notification to', subscriptions?.length || 0, 'users');
+            console.log('Poll:', poll.question_al);
+        } catch (err) {
+            console.error('Error sending poll notification:', err);
+        }
+    };
+
+    // Load event interests (who's interested counts)
+    const loadEventInterests = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('event_interests')
+                .select('event_id');
+
+            if (error) throw error;
+
+            // Count interests per event
+            const counts = {};
+            data?.forEach(item => {
+                counts[item.event_id] = (counts[item.event_id] || 0) + 1;
+            });
+            setEventInterests(counts);
+
+            // If user is logged in, get their interests
+            if (user) {
+                const { data: userInterests } = await supabase
+                    .from('event_interests')
+                    .select('event_id')
+                    .eq('user_id', user.id);
+
+                setUserEventInterests(userInterests?.map(i => i.event_id) || []);
+            }
+        } catch (err) {
+            console.error(handleError(err, 'loadEventInterests'));
+        }
+    };
+
+    // Toggle interest in event
+    const toggleEventInterest = async (eventId) => {
+        if (!user) {
+            setShowAuthModal(true);
+            setAuthMode('login');
+            return;
+        }
+
+        const isInterested = userEventInterests.includes(eventId);
+
+        try {
+            if (isInterested) {
+                // Remove interest
+                await supabase
+                    .from('event_interests')
+                    .delete()
+                    .eq('event_id', eventId)
+                    .eq('user_id', user.id);
+
+                setUserEventInterests(prev => prev.filter(id => id !== eventId));
+                setEventInterests(prev => ({
+                    ...prev,
+                    [eventId]: Math.max((prev[eventId] || 1) - 1, 0)
+                }));
+            } else {
+                // Add interest
+                await supabase
+                    .from('event_interests')
+                    .insert({ event_id: eventId, user_id: user.id });
+
+                setUserEventInterests(prev => [...prev, eventId]);
+                setEventInterests(prev => ({
+                    ...prev,
+                    [eventId]: (prev[eventId] || 0) + 1
+                }));
+            }
+        } catch (err) {
+            console.error(handleError(err, 'toggleEventInterest'));
+        }
+    };
+
+    // Load user badges
+    const loadUserBadges = async () => {
+        if (!user) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('user_badges')
+                .select('badge_type, earned_at')
+                .eq('user_id', user.id);
+
+            if (error) throw error;
+            setUserBadges(data || []);
+        } catch (err) {
+            console.error(handleError(err, 'loadUserBadges'));
         }
     };
 
@@ -3684,6 +4134,30 @@ const RinON = () => {
         }
     };
 
+    // Google Sign-In
+    const handleGoogleSignIn = async () => {
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    }
+                }
+            });
+
+            if (error) {
+                return { error };
+            }
+
+            return { data };
+        } catch (err) {
+            return { error: { message: handleError(err, 'handleGoogleSignIn') } };
+        }
+    };
+
     const handleLogout = async () => {
         try {
             localStorage.removeItem('rememberMe');
@@ -3733,10 +4207,16 @@ const RinON = () => {
             alert(handleError(err, 'handleDeleteAccount'));
         }
     };
-    const updatePreferences = async (prefs) => {
+    const updatePreferences = async (prefs, newDisplayName = null) => {
         if (!user) return;
         try {
-            const { error } = await supabase.from('user_profiles').update({ preferences: prefs }).eq('id', user.id);
+            const updateData = {};
+            if (prefs !== null) updateData.preferences = prefs;
+            if (newDisplayName) updateData.display_name = newDisplayName;
+
+            if (Object.keys(updateData).length === 0) return;
+
+            const { error } = await supabase.from('user_profiles').update(updateData).eq('id', user.id);
             if (error) throw error;
             loadUserProfile(user.id);
         } catch (err) {
@@ -4847,6 +5327,9 @@ const RinON = () => {
                     openEvent={openEvent}
                     currentDate={calendarDate}
                     setCurrentDate={setCalendarDate}
+                    eventInterests={eventInterests}
+                    userEventInterests={userEventInterests}
+                    toggleEventInterest={toggleEventInterest}
                 />
             ) : (
                 otherEvents.length === 0 ? (
@@ -5718,235 +6201,219 @@ const RinON = () => {
             style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 80px)' : '80px' }}
         >
 
-            <header className={`border-b sticky top-0 z-50 transition-colors duration-200 ${darkMode
-                ? 'bg-[#2D2A26] border-[#3D3A36]'
-                : 'bg-white border-gray-200'
-                }`}>
-                <div className="max-w-7xl mx-auto px-4 py-3">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => changePage('home')}>
+            <header className={`border-b sticky top-0 z-50 ${darkMode ? 'bg-[#2D2A26] border-[#3D3A36]' : 'bg-white border-gray-100'}`}>
+                <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => changePage('home')}>
                             <img
                                 src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinonrinon.png"
-                                alt="RinON Logo"
-                                className="w-12 h-12 object-contain"
+                                alt="RinON"
+                                className="h-8 w-8 object-contain"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextElementSibling.style.display = 'flex';
                                 }}
                             />
-                            <div className="w-10 h-10 bg-amber-500 rounded-lg hidden items-center justify-center">
-                                <span className="text-white font-semibold text-lg">R</span>
+                            <div className="h-8 w-8 bg-amber-500 rounded hidden items-center justify-center">
+                                <span className="text-white font-medium text-sm">R</span>
                             </div>
-                            <div className="hidden sm:block">
-                                <h1 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>RinON</h1>
-                                <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    {t('Aktivizo Rininë Tënde', 'Activate Your Youth')}
-                                </p>
-                            </div>
+                            <span className={`font-medium hidden sm:block ${darkMode ? 'text-white' : 'text-gray-900'}`}>RinON</span>
                         </div>
 
-                        <nav className="hidden md:flex items-center space-x-1">
-                            <button onClick={() => changePage('home')} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === 'home' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
-                                {t('Home', 'Home')}
-                            </button>
-                            <button onClick={() => changePage('lajme')} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === 'lajme' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
-                                {t('Lajme', 'News')}
-                            </button>
-                            <button onClick={() => changePage('events')} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === 'events' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
-                                {t('Evente', 'Events')}
-                            </button>
-                            <button onClick={() => changePage('schools')} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${currentPage === 'schools' || currentPage === 'school-portal' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
-                                <School className="w-4 h-4" />
-                                {t('Shkollat', 'Schools')}
-                            </button>
-
-                            <button onClick={() => changePage('partners')} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${currentPage === 'partners' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
-                                <Users className="w-4 h-4" />
-                                {t('Bashkëpunime', 'Cooperations')}
-                            </button>
-                            <button onClick={() => changePage('komuniteti')} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 transition-colors ${currentPage === 'komuniteti' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
-                                <MessageCircle className="w-4 h-4" />
-                                {t('Komuniteti', 'Community')}
-                            </button>
-                            <button onClick={() => changePage('about')} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${currentPage === 'about' ? 'text-amber-600 bg-amber-500/10' : darkMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}>
-                                {t('Rreth Nesh', 'About')}
-                            </button>
+                        <nav className="hidden md:flex items-center gap-1">
+                            {[
+                                { key: 'home', label: t('Home', 'Home') },
+                                { key: 'lajme', label: t('Lajme', 'News') },
+                                { key: 'events', label: t('Evente', 'Events') },
+                                { key: 'komuniteti', label: t('Komuniteti', 'Community') },
+                            ].map(item => (
+                                <button
+                                    key={item.key}
+                                    onClick={() => changePage(item.key)}
+                                    className={`px-3 py-1.5 text-sm rounded transition-colors ${currentPage === item.key
+                                            ? darkMode ? 'text-white bg-white/10' : 'text-gray-900 bg-gray-100'
+                                            : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-900'
+                                        }`}
+                                >
+                                    {item.label}
+                                </button>
+                            ))}
                         </nav>
+                    </div>
 
-                        {/* Mobile Action Buttons - Search, Login, Menu */}
-                        <div className="md:hidden flex items-center gap-2">
-                            {/* Mobile Search Button */}
+                    <div className="flex items-center gap-2">
+                        {/* Admin Toggle - Desktop */}
+                        {userProfile?.is_admin && (
                             <button
-                                onClick={() => setShowSearchBar(!showSearchBar)}
-                                className={`p-2 rounded-lg transition-colors ${showSearchBar
-                                    ? 'bg-amber-500 text-white'
-                                    : darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-100'
+                                onClick={() => setShowAdmin(!showAdmin)}
+                                className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors ${showAdmin
+                                        ? 'bg-amber-500 text-white'
+                                        : darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'
                                     }`}
                             >
-                                <Search className="h-5 w-5" />
+                                <Shield className="w-4 h-4" />
+                                <span>Admin</span>
                             </button>
+                        )}
 
-                            {/* Mobile Notification Bell - Only for logged in users */}
+                        {/* Language Toggle - Desktop */}
+                        <button
+                            onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
+                            className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded text-sm transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'
+                                }`}
+                        >
+                            <Globe className="w-4 h-4" />
+                            <span>{language.toUpperCase()}</span>
+                        </button>
+
+                        {/* Dark Mode Toggle - Desktop */}
+                        <button
+                            onClick={() => setDarkMode(!darkMode)}
+                            className={`hidden md:flex p-2 rounded transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'
+                                }`}
+                        >
+                            {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
+
+                        {/* Search - desktop */}
+                        <button
+                            onClick={() => setShowSearchBar(!showSearchBar)}
+                            className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded text-sm transition-colors ${darkMode
+                                    ? 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                                }`}
+                        >
+                            <Search className="w-4 h-4" />
+                        </button>
+
+                        {/* Mobile icons */}
+                        <div className="flex md:hidden items-center gap-1">
+                            <button
+                                onClick={() => setShowSearchBar(!showSearchBar)}
+                                className={`p-2 rounded ${darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'}`}
+                            >
+                                <Search className="w-5 h-5" />
+                            </button>
                             {user && (
                                 <button
                                     onClick={() => setShowNotificationModal(true)}
-                                    className={`relative p-2 rounded-lg transition-colors ${notificationsEnabled
-                                        ? 'text-amber-500'
-                                        : darkMode ? 'text-gray-400' : 'text-gray-500'
-                                        } ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-100'}`}
+                                    className={`p-2 rounded relative ${darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'}`}
                                 >
-                                    <Bell className="h-5 w-5" />
+                                    <Bell className="w-5 h-5" />
                                     {!notificationsEnabled && (
-                                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-amber-500 rounded-full" />
+                                        <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-amber-500 rounded-full" />
                                     )}
                                 </button>
                             )}
-
-                            {/* Mobile Login/Profile Button - ALWAYS VISIBLE */}
-                            {user ? (
-                                <button
-                                    onClick={() => setShowPreferences(true)}
-                                    className="w-9 h-9 bg-amber-500 text-white rounded-lg flex items-center justify-center"
-                                >
-                                    <span className="text-sm font-medium">
-                                        {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
-                                    </span>
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
-                                    className="flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-lg hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/30"
-                                >
-                                    <LogIn className="w-4 h-4" />
-                                    <span className="text-sm font-semibold">{t('Hyr', 'Login')}</span>
-                                </button>
-                            )}
-
-                            {/* Hamburger Menu */}
-                            <button
-                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                className="p-2 bg-amber-500/20 text-amber-500 rounded-lg hover:bg-amber-500/30 transition-all border border-amber-500/30"
-                            >
-                                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                            </button>
                         </div>
 
-                        <div className="hidden md:flex items-center space-x-4">
-                            {/* Desktop Search Bar */}
-                            <div className={`relative ${showSearchBar ? 'w-64' : 'w-10'} transition-all duration-300`}>
-                                {showSearchBar ? (
-                                    <div className="flex items-center">
-                                        <input
-                                            type="text"
-                                            placeholder={t('Kërko lajme, evente...', 'Search news, events...')}
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            className={`w-full pl-10 pr-4 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${darkMode
-                                                ? 'bg-[#3D3A36] border-amber-500/30 text-white placeholder-gray-400'
-                                                : 'bg-white border-amber-200 text-[#2D2A26] placeholder-gray-400'
-                                                }`}
-                                            autoFocus
-                                        />
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
-                                        <button
-                                            onClick={() => { setShowSearchBar(false); setSearchQuery(''); }}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-amber-500/20 rounded-full"
-                                        >
-                                            <X className="w-4 h-4 text-gray-400" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <button
-                                        onClick={() => setShowSearchBar(true)}
-                                        className="p-2 bg-amber-500/20 text-amber-500 rounded-lg hover:bg-amber-500/30 transition-all border border-amber-500/30"
-                                    >
-                                        <Search className="h-5 w-5" />
-                                    </button>
-                                )}
-                            </div>
-
+                        {/* Auth */}
+                        {user ? (
                             <button
-                                onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
-                                className="flex items-center space-x-1 px-3 py-1.5 bg-amber-500/20 text-amber-500 rounded-lg hover:bg-amber-500/30 transition-all border border-amber-500/30"
+                                onClick={() => setShowPreferences(true)}
+                                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${darkMode ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-700'
+                                    }`}
                             >
-                                <Globe className="h-4 w-4" />
-                                <span className="font-medium text-sm">{language.toUpperCase()}</span>
+                                {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                             </button>
-
+                        ) : (
                             <button
-                                onClick={() => setDarkMode(!darkMode)}
-                                className="p-2 bg-amber-500/20 text-amber-500 rounded-lg hover:bg-amber-500/30 transition-all border border-amber-500/30"
-                                title={darkMode ? t('Light Mode', 'Light Mode') : t('Dark Mode', 'Dark Mode')}
+                                onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
+                                className={`text-sm font-medium ${darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
                             >
-                                {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                                {t('Hyr', 'Login')}
                             </button>
+                        )}
 
-                            {/* Notification Bell - Only for logged in users */}
-                            {user && (
-                                <button
-                                    onClick={() => setShowNotificationModal(true)}
-                                    className={`relative p-2 rounded-lg transition-all border ${notificationsEnabled
-                                        ? 'bg-amber-500/20 text-amber-500 border-amber-500/30 hover:bg-amber-500/30'
-                                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30 hover:bg-gray-500/30'
-                                        }`}
-                                    title={t('Njoftimet', 'Notifications')}
-                                >
-                                    <Bell className="h-5 w-5" />
-                                    {!notificationsEnabled && (
-                                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-                                    )}
-                                </button>
-                            )}
-
-                            {user ? (
-                                <div className="flex items-center gap-3">
-                                    <span className={`text-sm hidden sm:inline ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{userProfile?.display_name || user.email}</span>
-                                    <button onClick={() => setShowPreferences(true)} className={`p-2 rounded-lg transition-all ${darkMode ? 'hover:bg-amber-500/20' : 'hover:bg-amber-50'}`}>
-                                        <Settings className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
-                                    </button>
-                                    <button onClick={handleLogout} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FF6B6B] to-[#FF5252] text-white rounded-lg hover:from-[#FF5252] hover:to-[#FF4040] transition-all shadow-lg shadow-pink-500/50">
-                                        <LogOut className="w-4 h-4" />
-                                        <span className="hidden sm:inline">{t('Dil', 'Logout')}</span>
-                                    </button>
-                                </div>
-                            ) : (
-                                <button onClick={() => { setShowAuthModal(true); setAuthMode('login'); }} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-lg hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50">
-                                    <LogIn className="w-4 h-4" />
-                                    {t('Hyr', 'Login')}
-                                </button>
-                            )}
-                        </div>
+                        {/* Hamburger Menu - Mobile */}
+                        <button
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className={`md:hidden p-2 rounded ${darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'}`}
+                        >
+                            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                        </button>
                     </div>
                 </div>
 
-                {/* Mobile Search Bar - Expandable */}
-                {showSearchBar && (
-                    <div className={`md:hidden px-4 pb-4 animate-slideDown ${darkMode ? 'bg-[#2D2A26]/95' : 'bg-white/95'}`}>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder={t('Kërko lajme, evente...', 'Search news, events...')}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className={`w-full pl-10 pr-10 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${darkMode
-                                    ? 'bg-[#3D3A36] border-amber-500/30 text-white placeholder-gray-400'
-                                    : 'bg-gray-50 border-amber-200 text-[#2D2A26] placeholder-gray-400'
-                                    }`}
-                                autoFocus
-                            />
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-500" />
-                            {searchQuery && (
+                {/* Mobile Menu */}
+                {mobileMenuOpen && (
+                    <div className={`md:hidden border-t ${darkMode ? 'border-[#3D3A36] bg-[#2D2A26]' : 'border-gray-100 bg-white'}`}>
+                        <div className="px-4 py-3 space-y-1">
+                            {[
+                                { key: 'home', label: t('Home', 'Home') },
+                                { key: 'lajme', label: t('Lajme', 'News') },
+                                { key: 'events', label: t('Evente', 'Events') },
+                                { key: 'schools', label: t('Shkollat', 'Schools') },
+                                { key: 'partners', label: t('Bashkëpunime', 'Partners') },
+                                { key: 'komuniteti', label: t('Komuniteti', 'Community') },
+                                { key: 'about', label: t('Rreth Nesh', 'About') },
+                            ].map(item => (
                                 <button
-                                    onClick={() => setSearchQuery('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-amber-500/20 rounded-full"
+                                    key={item.key}
+                                    onClick={() => { changePage(item.key); setMobileMenuOpen(false); }}
+                                    className={`block w-full text-left px-3 py-2 rounded text-sm ${currentPage === item.key
+                                            ? darkMode ? 'text-white bg-white/10' : 'text-gray-900 bg-gray-100'
+                                            : darkMode ? 'text-gray-400' : 'text-gray-600'
+                                        }`}
                                 >
-                                    <X className="w-4 h-4 text-gray-400" />
+                                    {item.label}
                                 </button>
-                            )}
+                            ))}
+                            <div className={`flex items-center gap-4 pt-3 mt-2 border-t ${darkMode ? 'border-[#3D3A36]' : 'border-gray-100'}`}>
+                                <button
+                                    onClick={() => setLanguage(language === 'al' ? 'en' : 'al')}
+                                    className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
+                                >
+                                    {language === 'al' ? 'English' : 'Shqip'}
+                                </button>
+                                <button
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
+                                >
+                                    {darkMode ? t('Light', 'Light') : t('Dark', 'Dark')}
+                                </button>
+                                {userProfile?.is_admin && (
+                                    <button
+                                        onClick={() => setShowAdmin(!showAdmin)}
+                                        className={`text-sm flex items-center gap-1 ${showAdmin ? 'text-amber-500' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}
+                                    >
+                                        <Shield className="w-4 h-4" />
+                                        Admin
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}
             </header>
+
+            {/* Search overlay - simplified */}
+            {showSearchBar && (
+                <div className={`sticky top-14 z-40 border-b ${darkMode ? 'bg-[#2D2A26] border-[#3D3A36]' : 'bg-white border-gray-100'}`}>
+                    <div className="max-w-6xl mx-auto px-4 py-3">
+                        <div className="relative">
+                            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                            <input
+                                type="text"
+                                placeholder={t('Kërko...', 'Search...')}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className={`w-full pl-10 pr-10 py-2 rounded-lg text-sm outline-none ${darkMode
+                                        ? 'bg-[#3D3A36] text-white placeholder-gray-500'
+                                        : 'bg-gray-50 text-gray-900 placeholder-gray-400'
+                                    }`}
+                                autoFocus
+                            />
+                            <button
+                                onClick={() => { setShowSearchBar(false); setSearchQuery(''); }}
+                                className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* ==========================================
                 HORIZONTAL CATEGORY PILLS - Mobile
@@ -7155,6 +7622,7 @@ const RinON = () => {
                 setAuthMode={setAuthMode}
                 handleSignup={handleSignup}
                 handleLogin={handleLogin}
+                handleGoogleSignIn={handleGoogleSignIn}
                 setShowPreferences={setShowPreferences}
                 darkMode={darkMode}
                 t={t}
@@ -7178,6 +7646,9 @@ const RinON = () => {
                 darkMode={darkMode}
                 t={t}
                 onDeleteAccount={handleDeleteAccount}
+                onLogout={handleLogout}
+                userBadges={userBadges}
+                user={user}
             />
             <ShareModal
                 isOpen={showShareModal}
@@ -7714,15 +8185,15 @@ const RinON = () => {
                                     {/* Main headline - punchy and direct */}
                                     <div className="space-y-4">
                                         <h1 className={`text-4xl md:text-6xl lg:text-7xl font-black leading-tight ${darkMode ? 'text-white' : 'text-black'}`}>
-                                            <span className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent animate-gradient">
-                                                Platforma #1
+                                            <span className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent">
+                                                {t('Gjej çfarë po ndodh', 'Find what\'s happening')}
                                             </span>
                                             <br />
-                                            {t('për Rininë në Tiranë', 'for Youth in Tirana')}
+                                            {t('për të rinjtë në Tiranë', 'for youth in Tirana')}
                                         </h1>
                                         <p className={`text-lg md:text-2xl max-w-3xl mx-auto font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            {t('Çdo ngjarje, lajm, mundësi dhe komunitet që të duhet - në një vend',
-                                                'Every event, news, opportunity and community you need - in one place')}
+                                            {t('Evente, mundësi dhe komunitet — të gjitha në një vend',
+                                                'Events, opportunities and community — all in one place')}
                                         </p>
                                     </div>
 
@@ -7730,15 +8201,15 @@ const RinON = () => {
                                     <div className="flex flex-wrap justify-center gap-4 md:gap-8 pt-4">
                                         <div className={`px-6 py-3 rounded-2xl backdrop-blur-sm ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
                                             <div className="text-3xl font-black bg-gradient-to-r from-[#fbbf24] to-orange-500 bg-clip-text text-transparent">500+</div>
-                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Anëtarë Aktivë', 'Active Members')}</div>
+                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Anëtarë', 'Members')}</div>
                                         </div>
                                         <div className={`px-6 py-3 rounded-2xl backdrop-blur-sm ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
-                                            <div className="text-3xl font-black bg-gradient-to-r from-orange-500 to-[#FF6B6B] bg-clip-text text-transparent">10+</div>
-                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Evente/Muaj', 'Events/Month')}</div>
+                                            <div className="text-3xl font-black bg-gradient-to-r from-orange-500 to-[#FF6B6B] bg-clip-text text-transparent">{otherEvents.length}+</div>
+                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Evente', 'Events')}</div>
                                         </div>
                                         <div className={`px-6 py-3 rounded-2xl backdrop-blur-sm ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-black/5 border border-black/10'}`}>
-                                            <div className="text-3xl font-black bg-gradient-to-r from-[#fbbf24] to-orange-500 bg-clip-text text-transparent">24/7</div>
-                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Info të Freskët', 'Fresh Info')}</div>
+                                            <div className="text-3xl font-black bg-gradient-to-r from-[#fbbf24] to-orange-500 bg-clip-text text-transparent">100%</div>
+                                            <div className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Falas', 'Free')}</div>
                                         </div>
                                     </div>
 
@@ -7771,6 +8242,210 @@ const RinON = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* ==========================================
+                            WEEKLY POLL - Sondazhi i Javës
+                           ========================================== */}
+                        {activePoll && (
+                            <div className={`py-8 ${darkMode ? 'bg-[#2D2A26]' : 'bg-amber-50'}`}>
+                                <div className="max-w-2xl mx-auto px-4">
+                                    <div className={`rounded-2xl p-6 ${darkMode ? 'bg-[#3D3A36]' : 'bg-white shadow-sm'}`}>
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-2xl">📊</span>
+                                                <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                    {t('Sondazhi i Javës', 'Poll of the Week')}
+                                                </h3>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                {/* Share Button */}
+                                                <button
+                                                    onClick={() => {
+                                                        const shareText = `📊 ${activePoll.question_al}\n\nVoto tani në RinON!`;
+                                                        const shareUrl = `https://rinon.al`;
+                                                        if (navigator.share) {
+                                                            navigator.share({ title: 'RinON Sondazh', text: shareText, url: shareUrl });
+                                                        } else {
+                                                            window.open(`https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`, '_blank');
+                                                        }
+                                                    }}
+                                                    className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
+                                                >
+                                                    <Share2 className="w-4 h-4" />
+                                                </button>
+                                                {/* Admin Controls */}
+                                                {userProfile?.is_admin && showAdmin && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (window.confirm(t('Je i sigurt që dëshiron të fshish këtë sondazh?', 'Are you sure you want to delete this poll?'))) {
+                                                                await supabase.from('polls').delete().eq('id', activePoll.id);
+                                                                setActivePoll(null);
+                                                                setUserPollVote(null);
+                                                                setPollResults({});
+                                                            }
+                                                        }}
+                                                        className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-red-400 hover:bg-red-500/20' : 'text-red-500 hover:bg-red-50'}`}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <p className={`text-lg mb-6 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                            {language === 'al' ? activePoll.question_al : (activePoll.question_en || activePoll.question_al)}
+                                        </p>
+
+                                        {userPollVote === null ? (
+                                            // Show voting options
+                                            <div className="space-y-3">
+                                                {activePoll.options?.map((option, index) => (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => user ? votePoll(index) : (setShowAuthModal(true), setAuthMode('login'))}
+                                                        className={`w-full text-left px-4 py-3 rounded-xl transition-all ${darkMode
+                                                                ? 'bg-[#2D2A26] hover:bg-amber-500/20 text-gray-200 hover:text-amber-400 border border-gray-700 hover:border-amber-500'
+                                                                : 'bg-gray-50 hover:bg-amber-100 text-gray-700 hover:text-amber-700 border border-gray-200 hover:border-amber-400'
+                                                            }`}
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                                {!user && (
+                                                    <p className={`text-sm text-center mt-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                        {t('Hyr për të votuar', 'Log in to vote')}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            // Show results
+                                            <div className="space-y-3">
+                                                {activePoll.options?.map((option, index) => {
+                                                    const totalVotes = Object.values(pollResults).reduce((a, b) => a + b, 0);
+                                                    const votes = pollResults[index] || 0;
+                                                    const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+                                                    const isUserVote = userPollVote === index;
+
+                                                    return (
+                                                        <div key={index} className="relative">
+                                                            <div className={`relative z-10 px-4 py-3 rounded-xl flex justify-between items-center ${isUserVote
+                                                                    ? 'bg-amber-500/20 border border-amber-500'
+                                                                    : darkMode ? 'bg-[#2D2A26] border border-gray-700' : 'bg-gray-50 border border-gray-200'
+                                                                }`}>
+                                                                <span className={`${isUserVote ? 'font-medium' : ''} ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                                    {option} {isUserVote && '✓'}
+                                                                </span>
+                                                                <span className={`font-semibold ${isUserVote ? 'text-amber-500' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                    {percentage}%
+                                                                </span>
+                                                            </div>
+                                                            <div
+                                                                className={`absolute inset-0 rounded-xl ${isUserVote ? 'bg-amber-500/10' : darkMode ? 'bg-gray-700/30' : 'bg-gray-200/50'}`}
+                                                                style={{ width: `${percentage}%` }}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                                <p className={`text-sm text-center mt-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                    {Object.values(pollResults).reduce((a, b) => a + b, 0)} {t('vota', 'votes')}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Admin: Create Poll Button */}
+                        {userProfile?.is_admin && showAdmin && (
+                            <div className="max-w-2xl mx-auto px-4 py-4">
+                                <button
+                                    onClick={() => setShowPollAdmin(true)}
+                                    className="w-full py-3 rounded-xl bg-amber-500 text-white font-medium hover:bg-amber-600 flex items-center justify-center gap-2"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    {t('Krijo Sondazh të Ri', 'Create New Poll')}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Poll Admin Modal */}
+                        {showPollAdmin && (
+                            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                                <div className={`w-full max-w-md rounded-xl p-6 ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {t('Sondazh i Ri', 'New Poll')}
+                                        </h3>
+                                        <button onClick={() => setShowPollAdmin(false)} className={`p-1 rounded ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}>
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Pyetja (Shqip)', 'Question (Albanian)')}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={pollFormData.questionAl}
+                                                onChange={(e) => setPollFormData({ ...pollFormData, questionAl: e.target.value })}
+                                                className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                                placeholder="Cila është pyetja?"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Pyetja (Anglisht)', 'Question (English)')}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={pollFormData.questionEn}
+                                                onChange={(e) => setPollFormData({ ...pollFormData, questionEn: e.target.value })}
+                                                className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                                placeholder="What is the question?"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Opsionet', 'Options')}
+                                            </label>
+                                            {pollFormData.options.map((option, index) => (
+                                                <input
+                                                    key={index}
+                                                    type="text"
+                                                    value={option}
+                                                    onChange={(e) => {
+                                                        const newOptions = [...pollFormData.options];
+                                                        newOptions[index] = e.target.value;
+                                                        setPollFormData({ ...pollFormData, options: newOptions });
+                                                    }}
+                                                    className={`w-full px-3 py-2 rounded-lg mb-2 ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                                    placeholder={`${t('Opsioni', 'Option')} ${index + 1}`}
+                                                />
+                                            ))}
+                                            <button
+                                                onClick={() => setPollFormData({ ...pollFormData, options: [...pollFormData.options, ''] })}
+                                                className={`text-sm ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}
+                                            >
+                                                + {t('Shto opsion', 'Add option')}
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            onClick={createPoll}
+                                            disabled={!pollFormData.questionAl || pollFormData.options.filter(o => o.trim()).length < 2}
+                                            className="w-full py-3 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {t('Publiko Sondazhin', 'Publish Poll')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* ==========================================
                             WHAT IS RINON - Quick explainer
@@ -8115,6 +8790,92 @@ const RinON = () => {
                                 {t('Artikuj dhe diskutime nga komuniteti rinor', 'Articles and discussions from the youth community')}
                             </p>
 
+                            {/* Poll Section in Community */}
+                            {activePoll && (
+                                <div className={`rounded-2xl p-6 mb-8 ${darkMode ? 'bg-[#2D2A26]' : 'bg-amber-50'}`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-2xl">📊</span>
+                                            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {t('Sondazhi i Javës', 'Poll of the Week')}
+                                            </h3>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                const shareText = `📊 ${activePoll.question_al}\n\nVoto tani në RinON!`;
+                                                const shareUrl = `https://rinon.al`;
+                                                if (navigator.share) {
+                                                    navigator.share({ title: 'RinON Sondazh', text: shareText, url: shareUrl });
+                                                } else {
+                                                    window.open(`https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`, '_blank');
+                                                }
+                                            }}
+                                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
+                                        >
+                                            <Share2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <p className={`text-lg mb-4 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                        {language === 'al' ? activePoll.question_al : (activePoll.question_en || activePoll.question_al)}
+                                    </p>
+
+                                    {userPollVote === null ? (
+                                        <div className="space-y-2">
+                                            {activePoll.options?.map((option, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => user ? votePoll(index) : (setShowAuthModal(true), setAuthMode('login'))}
+                                                    className={`w-full text-left px-4 py-3 rounded-xl transition-all ${darkMode
+                                                            ? 'bg-[#3D3A36] hover:bg-amber-500/20 text-gray-200 hover:text-amber-400 border border-gray-700 hover:border-amber-500'
+                                                            : 'bg-white hover:bg-amber-100 text-gray-700 hover:text-amber-700 border border-gray-200 hover:border-amber-400'
+                                                        }`}
+                                                >
+                                                    {option}
+                                                </button>
+                                            ))}
+                                            {!user && (
+                                                <p className={`text-sm text-center mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                    {t('Hyr për të votuar', 'Log in to vote')}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {activePoll.options?.map((option, index) => {
+                                                const totalVotes = Object.values(pollResults).reduce((a, b) => a + b, 0);
+                                                const votes = pollResults[index] || 0;
+                                                const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+                                                const isUserVote = userPollVote === index;
+
+                                                return (
+                                                    <div key={index} className="relative">
+                                                        <div className={`relative z-10 px-4 py-3 rounded-xl flex justify-between items-center ${isUserVote
+                                                                ? 'bg-amber-500/20 border border-amber-500'
+                                                                : darkMode ? 'bg-[#3D3A36] border border-gray-700' : 'bg-white border border-gray-200'
+                                                            }`}>
+                                                            <span className={`${isUserVote ? 'font-medium' : ''} ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                                {option} {isUserVote && '✓'}
+                                                            </span>
+                                                            <span className={`font-semibold ${isUserVote ? 'text-amber-500' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                {percentage}%
+                                                            </span>
+                                                        </div>
+                                                        <div
+                                                            className={`absolute inset-0 rounded-xl ${isUserVote ? 'bg-amber-500/10' : darkMode ? 'bg-gray-700/30' : 'bg-gray-200/50'}`}
+                                                            style={{ width: `${percentage}%` }}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
+                                            <p className={`text-sm text-center mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                {Object.values(pollResults).reduce((a, b) => a + b, 0)} {t('vota', 'votes')}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Articles Section */}
                             <div className="mb-12">
                                 <h2 className={`text-2xl md:text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
@@ -8124,7 +8885,7 @@ const RinON = () => {
                                     <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
                                         <FileText className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
                                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                            {t('Asnjë artikull ende', 'No articles yet')}
+                                            {t('Asnjë artikull ende. Bëhu i pari që shkruan! ✍️', 'No articles yet. Be the first to write! ✍️')}
                                         </p>
                                     </div>
                                 ) : (
@@ -8587,74 +9348,43 @@ const RinON = () => {
                 Clean, elevated design with larger touch targets
                 Added safe-area padding for Android navigation bar
                ========================================== */}
-            <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t ${darkMode
-                ? 'bg-[#1a1918] border-[#2D2A26]'
-                : 'bg-white border-gray-200'
-                }`}
-                style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 20px)' : '0px' }}
+            <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t ${darkMode ? 'bg-[#1a1918] border-[#2D2A26]' : 'bg-white border-gray-100'}`}
+                style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 16px)' : '0px' }}
             >
-                <div className={`flex items-center justify-around px-2 pt-2 ${isNativeApp ? 'pb-1' : 'pb-4'}`}>
-                    {/* Home */}
-                    <button
-                        onClick={() => changePage('home')}
-                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${currentPage === 'home' ? 'text-amber-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
-                    >
-                        <Home className={`w-5 h-5 mb-0.5 ${currentPage === 'home' ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[10px] ${currentPage === 'home' ? 'font-medium' : 'font-normal'}`}>
-                            Home
-                        </span>
-                    </button>
-
-                    {/* Events */}
-                    <button
-                        onClick={() => changePage('events')}
-                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${currentPage === 'events' ? 'text-amber-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
-                    >
-                        <Calendar className={`w-5 h-5 mb-0.5 ${currentPage === 'events' ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[10px] ${currentPage === 'events' ? 'font-medium' : 'font-normal'}`}>
-                            Evente
-                        </span>
-                    </button>
-
-                    {/* Lajme - Center position */}
-                    <button
-                        onClick={() => changePage('lajme')}
-                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${currentPage === 'lajme' ? 'text-amber-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
-                    >
-                        <Newspaper className={`w-5 h-5 mb-0.5 ${currentPage === 'lajme' ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[10px] ${currentPage === 'lajme' ? 'font-medium' : 'font-normal'}`}>
-                            Lajme
-                        </span>
-                    </button>
-
-                    {/* Komuniteti */}
-                    <button
-                        onClick={() => changePage('komuniteti')}
-                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${currentPage === 'komuniteti' ? 'text-amber-500' : (darkMode ? 'text-gray-500' : 'text-gray-400')}`}
-                    >
-                        <MessageCircle className={`w-5 h-5 mb-0.5 ${currentPage === 'komuniteti' ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
-                        <span className={`text-[10px] ${currentPage === 'komuniteti' ? 'font-medium' : 'font-normal'}`}>
-                            Komuniteti
-                        </span>
-                    </button>
-
-                    {/* Profile/Account */}
+                <div className={`flex items-center justify-around ${isNativeApp ? 'pt-2 pb-1' : 'py-2'}`}>
+                    {[
+                        { key: 'home', icon: Home, label: 'Home' },
+                        { key: 'events', icon: Calendar, label: 'Evente' },
+                        { key: 'lajme', icon: Newspaper, label: 'Lajme' },
+                        { key: 'komuniteti', icon: MessageCircle, label: 'Komuniteti' },
+                    ].map(item => {
+                        const Icon = item.icon;
+                        const isActive = currentPage === item.key;
+                        return (
+                            <button
+                                key={item.key}
+                                onClick={() => changePage(item.key)}
+                                className={`flex flex-col items-center min-w-[64px] py-1 ${isActive ? 'text-amber-500' : darkMode ? 'text-gray-500' : 'text-gray-400'}`}
+                            >
+                                <Icon className="w-5 h-5" strokeWidth={isActive ? 2 : 1.5} />
+                                <span className={`text-[10px] mt-1 ${isActive ? 'font-medium' : ''}`}>{item.label}</span>
+                            </button>
+                        );
+                    })}
                     <button
                         onClick={() => user ? setShowPreferences(true) : (setShowAuthModal(true), setAuthMode('login'))}
-                        className={`flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-colors ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}
+                        className={`flex flex-col items-center min-w-[64px] py-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}
                     >
                         {user ? (
-                            <div className="w-5 h-5 mb-0.5 rounded-full bg-amber-500 flex items-center justify-center">
+                            <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center">
                                 <span className="text-white text-[9px] font-medium">
                                     {userProfile?.display_name?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
                                 </span>
                             </div>
                         ) : (
-                            <User className="w-5 h-5 mb-0.5 stroke-[1.5px]" />
+                            <User className="w-5 h-5" strokeWidth={1.5} />
                         )}
-                        <span className="text-[10px] font-normal">
-                            {user ? t('Profil', 'Profile') : t('Hyr', 'Login')}
-                        </span>
+                        <span className="text-[10px] mt-1">{user ? 'Profil' : 'Hyr'}</span>
                     </button>
                 </div>
             </nav>

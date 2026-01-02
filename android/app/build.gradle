@@ -3,6 +3,16 @@ apply plugin: 'com.android.application'
 android {
     namespace = "al.rinon.app"
     compileSdk = rootProject.ext.compileSdkVersion
+    
+    signingConfigs {
+        release {
+            storeFile file('../rinon-release-key.keystore')
+            storePassword 'Rinoff231'
+            keyAlias 'rinon'
+            keyPassword 'Rinoff231'
+        }
+    }
+    
     defaultConfig {
         applicationId "al.rinon.app"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -18,18 +28,17 @@ android {
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
-
 repositories {
     flatDir{
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
     }
 }
-
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
@@ -43,9 +52,7 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:34.7.0')
     implementation 'com.google.firebase:firebase-messaging'
 }
-
 apply from: 'capacitor.build.gradle'
-
 try {
     def servicesJSON = file('google-services.json')
     if (servicesJSON.text) {
