@@ -3336,14 +3336,22 @@ const RinON = () => {
     const minSwipeDistance = 100;
 
     const onTouchStart = (e) => {
-        // Don't capture swipes on modals or when scrolling horizontally
+        // Don't capture swipes on modals, buttons, or interactive elements
         if (showArticleModal || showEventModal || showAuthModal) return;
+
+        // Don't capture if touching a button, link, or interactive element
+        const target = e.target;
+        const interactiveElements = ['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT'];
+        if (interactiveElements.includes(target.tagName)) return;
+        if (target.closest('button') || target.closest('a') || target.closest('nav')) return;
+
         setTouchEnd(null);
         setTouchStart(e.targetTouches[0].clientX);
     };
 
     const onTouchMove = (e) => {
         if (showArticleModal || showEventModal || showAuthModal) return;
+        if (!touchStart) return; // Only track if we started a swipe
         setTouchEnd(e.targetTouches[0].clientX);
     };
 
