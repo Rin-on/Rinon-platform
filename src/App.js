@@ -2144,6 +2144,21 @@ const RinON = () => {
     const [userBadges, setUserBadges] = useState([]);
 
     // ==========================================
+    // SHIKO (VIDEOS) FEATURE - STATE VARIABLES
+    // ==========================================
+    const [videos, setVideos] = useState([]);
+    const [selectedVideo, setSelectedVideo] = useState(null);
+    const [showVideoModal, setShowVideoModal] = useState(false);
+    const [videoCategory, setVideoCategory] = useState('all');
+    const [savedVideos, setSavedVideos] = useState([]);
+    const [showAddVideoForm, setShowAddVideoForm] = useState(false);
+    const [videoFormData, setVideoFormData] = useState({
+        titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: '',
+        youtubeId: '', thumbnail: '', category: 'podcast',
+        duration: '', isRinONOriginal: true, isFeatured: false
+    });
+
+    // ==========================================
     // SCHOOLS FEATURE - STATE VARIABLES
     // ==========================================
     const [schools, setSchools] = useState([]);
@@ -3660,6 +3675,7 @@ const RinON = () => {
         loadSchools();
         loadActivePoll();
         loadEventInterests();
+        loadVideos();
     }, []);
 
     // Load user-specific data when user changes
@@ -3668,6 +3684,7 @@ const RinON = () => {
             loadUserBadges();
             loadActivePoll(); // Reload to check if user has voted
             loadEventInterests(); // Reload to get user's interests
+            loadSavedVideos(); // Load user's saved videos
         }
     }, [user]);
 
@@ -4042,6 +4059,144 @@ const RinON = () => {
             if (data && data.length > 0) setStaffMembers(data);
         } catch (err) {
             console.error(handleError(err, 'loadTeamMembers'));
+        }
+    };
+
+    // ==========================================
+    // SHIKO (VIDEOS) - DATA LOADING
+    // ==========================================
+    const loadVideos = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('videos')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setVideos(data || []);
+        } catch (err) {
+            console.error(handleError(err, 'loadVideos'));
+        }
+    };
+
+    const loadSavedVideos = async () => {
+        if (!user) return;
+        try {
+            const { data, error } = await supabase
+                .from('video_saves')
+                .select('video_id')
+                .eq('user_id', user.id);
+
+            if (error) throw error;
+            setSavedVideos(data?.map(v => v.video_id) || []);
+        } catch (err) {
+            console.error(handleError(err, 'loadSavedVideos'));
+        }
+    };
+
+    const toggleSaveVideo = async (videoId) => {
+        if (!user) {
+            setShowAuthModal(true);
+            setAuthMode('login');
+            return;
+        }
+
+        const isSaved = savedVideos.includes(videoId);
+
+        try {
+            if (isSaved) {
+                await supabase
+                    .from('video_saves')
+                    .delete()
+                    .eq('video_id', videoId)
+                    .eq('user_id', user.id);
+
+                setSavedVideos(prev => prev.filter(id => id !== videoId));
+            } else {
+                await supabase
+                    .from('video_saves')
+                    .insert({ video_id: videoId, user_id: user.id });
+
+                setSavedVideos(prev => [...prev, videoId]);
+            }
+        } catch (err) {
+            console.error(handleError(err, 'toggleSaveVideo'));
+        }
+    };
+
+    const incrementVideoViews = async (videoId) => {
+        try {
+            const { data } = await supabase
+                .from('videos')
+                .select('view_count')
+                .eq('id', videoId)
+                .single();
+
+            await supabase
+                .from('videos')
+                .update({ view_count: (data?.view_count || 0) + 1 })
+                .eq('id', videoId);
+        } catch (err) {
+            console.error(handleError(err, 'incrementVideoViews'));
+        }
+    };
+
+    const openVideo = (video) => {
+        setSelectedVideo(video);
+        setShowVideoModal(true);
+        incrementVideoViews(video.id);
+    };
+
+    const closeVideo = () => {
+        setSelectedVideo(null);
+        setShowVideoModal(false);
+    };
+
+    const submitVideo = async () => {
+        if (!userProfile?.is_admin) return;
+
+        try {
+            const videoData = {
+                title_al: videoFormData.titleAl,
+                title_en: videoFormData.titleEn || videoFormData.titleAl,
+                description_al: videoFormData.descriptionAl,
+                description_en: videoFormData.descriptionEn,
+                youtube_id: videoFormData.youtubeId,
+                thumbnail: videoFormData.thumbnail || `https://img.youtube.com/vi/${videoFormData.youtubeId}/maxresdefault.jpg`,
+                category: videoFormData.category,
+                duration: videoFormData.duration,
+                is_rinon_original: videoFormData.isRinONOriginal,
+                is_featured: videoFormData.isFeatured
+            };
+
+            const { error } = await supabase.from('videos').insert([videoData]);
+
+            if (error) throw error;
+
+            loadVideos();
+            setShowAddVideoForm(false);
+            setVideoFormData({
+                titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: '',
+                youtubeId: '', thumbnail: '', category: 'podcast',
+                duration: '', isRinONOriginal: true, isFeatured: false
+            });
+        } catch (err) {
+            console.error(handleError(err, 'submitVideo'));
+        }
+    };
+
+    const deleteVideo = async (videoId) => {
+        if (!userProfile?.is_admin) return;
+        if (!window.confirm(t('Je i sigurt?', 'Are you sure?'))) return;
+
+        try {
+            await supabase.from('videos').delete().eq('id', videoId);
+            loadVideos();
+            if (selectedVideo?.id === videoId) {
+                closeVideo();
+            }
+        } catch (err) {
+            console.error(handleError(err, 'deleteVideo'));
         }
     };
 
@@ -5542,6 +5697,301 @@ const RinON = () => {
         );
     };
 
+    // ==========================================
+    // SHIKO PAGE - Videos, Podcasts, Documentaries
+    // ==========================================
+    const ShikoPage = () => {
+        const videoCategories = [
+            { id: 'all', labelAl: 'Të Gjitha', labelEn: 'All', icon: '🎬' },
+            { id: 'podcast', labelAl: 'Podcast', labelEn: 'Podcast', icon: '🎙️' },
+            { id: 'events', labelAl: 'Evente', labelEn: 'Events', icon: '📹' },
+            { id: 'interviews', labelAl: 'Intervista', labelEn: 'Interviews', icon: '🎤' },
+            { id: 'external', labelAl: 'Të Jashtme', labelEn: 'External', icon: '🌍' },
+        ];
+
+        const filteredVideos = videoCategory === 'all'
+            ? videos
+            : videos.filter(v => v.category === videoCategory);
+
+        const featuredVideo = videos.find(v => v.is_featured) || videos[0];
+
+        const formatViews = (count) => {
+            if (!count) return '0';
+            if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+            return count.toString();
+        };
+
+        return (
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Page Header */}
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <span className="text-3xl">🎬</span>
+                        <div>
+                            <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {t('Shiko', 'Watch')}
+                            </h1>
+                            <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                {t('Video, podcast dhe më shumë', 'Videos, podcasts and more')}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Admin: Add Video Button */}
+                    {userProfile?.is_admin && showAdmin && (
+                        <button
+                            onClick={() => setShowAddVideoForm(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                        >
+                            <Plus className="w-4 h-4" />
+                            {t('Shto Video', 'Add Video')}
+                        </button>
+                    )}
+                </div>
+
+                {/* Featured Video */}
+                {featuredVideo && (
+                    <div
+                        className={`relative rounded-2xl overflow-hidden mb-8 cursor-pointer group ${darkMode ? 'bg-[#3D3A36]' : 'bg-white'}`}
+                        onClick={() => openVideo(featuredVideo)}
+                    >
+                        <div className="aspect-video md:aspect-[21/9] relative">
+                            <img
+                                src={featuredVideo.thumbnail || `https://img.youtube.com/vi/${featuredVideo.youtube_id}/maxresdefault.jpg`}
+                                alt={language === 'al' ? featuredVideo.title_al : featuredVideo.title_en}
+                                className="w-full h-full object-cover"
+                            />
+                            {/* Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+                            {/* Play Button */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-16 h-16 rounded-full bg-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <Play className="w-7 h-7 text-white ml-1" fill="white" />
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="absolute bottom-0 left-0 right-0 p-6">
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {featuredVideo.is_rinon_original && (
+                                        <span className="px-3 py-1 bg-amber-500 text-white text-xs font-medium rounded-full">
+                                            🌟 RinON Original
+                                        </span>
+                                    )}
+                                    <span className={`px-3 py-1 text-white text-xs font-medium rounded-full ${darkMode ? 'bg-white/20' : 'bg-black/30'}`}>
+                                        {videoCategories.find(c => c.id === featuredVideo.category)?.icon} {language === 'al'
+                                            ? videoCategories.find(c => c.id === featuredVideo.category)?.labelAl
+                                            : videoCategories.find(c => c.id === featuredVideo.category)?.labelEn}
+                                    </span>
+                                </div>
+
+                                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+                                    {language === 'al' ? featuredVideo.title_al : featuredVideo.title_en}
+                                </h3>
+
+                                <p className="text-gray-300 text-sm mb-3 line-clamp-2 max-w-2xl">
+                                    {language === 'al' ? featuredVideo.description_al : featuredVideo.description_en}
+                                </p>
+
+                                <div className="flex items-center gap-4 text-gray-400 text-sm">
+                                    <span className="flex items-center gap-1">
+                                        <Clock className="w-4 h-4" />
+                                        {featuredVideo.duration || '0:00'}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <Eye className="w-4 h-4" />
+                                        {formatViews(featuredVideo.view_count)} {t('shikime', 'views')}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Category Filters */}
+                <div className="flex gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
+                    {videoCategories.map(cat => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setVideoCategory(cat.id)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-colors ${videoCategory === cat.id
+                                    ? 'bg-amber-500 text-white'
+                                    : darkMode
+                                        ? 'bg-[#3D3A36] text-gray-300 hover:bg-[#4D4A46]'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                        >
+                            <span>{cat.icon}</span>
+                            <span className="font-medium">{language === 'al' ? cat.labelAl : cat.labelEn}</span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Videos Grid */}
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {videoCategory === 'all'
+                            ? t('Të Gjitha Videot', 'All Videos')
+                            : `${videoCategories.find(c => c.id === videoCategory)?.icon} ${language === 'al'
+                                ? videoCategories.find(c => c.id === videoCategory)?.labelAl
+                                : videoCategories.find(c => c.id === videoCategory)?.labelEn}`
+                        }
+                    </h3>
+                    <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {filteredVideos.length} video
+                    </span>
+                </div>
+
+                {filteredVideos.length === 0 ? (
+                    <div className={`text-center py-16 rounded-2xl ${darkMode ? 'bg-[#3D3A36]' : 'bg-gray-50'}`}>
+                        <Play className={`w-12 h-12 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                        <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {t('Asnjë video në këtë kategori ende 🎬', 'No videos in this category yet 🎬')}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {filteredVideos.map(video => (
+                            <div
+                                key={video.id}
+                                className={`rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.02] ${darkMode ? 'bg-[#3D3A36] hover:bg-[#4D4A46]' : 'bg-white hover:bg-gray-50 border border-gray-200'
+                                    }`}
+                                onClick={() => openVideo(video)}
+                            >
+                                {/* Thumbnail */}
+                                <div className="relative aspect-video">
+                                    <img
+                                        src={video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg`}
+                                        alt={language === 'al' ? video.title_al : video.title_en}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.src = `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`;
+                                        }}
+                                    />
+
+                                    {/* Duration Badge */}
+                                    <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs font-medium rounded">
+                                        {video.duration || '0:00'}
+                                    </div>
+
+                                    {/* Play Overlay */}
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                        <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center">
+                                            <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+                                        </div>
+                                    </div>
+
+                                    {/* Badges */}
+                                    {video.is_rinon_original && (
+                                        <div className="absolute top-2 left-2 px-2 py-1 bg-amber-500 text-white text-[10px] font-medium rounded-full">
+                                            🌟 RinON
+                                        </div>
+                                    )}
+
+                                    {/* Admin Delete */}
+                                    {userProfile?.is_admin && showAdmin && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteVideo(video.id);
+                                            }}
+                                            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                        >
+                                            <Trash2 className="w-3 h-3" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-4">
+                                    <h4 className={`font-semibold mb-1 line-clamp-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                        {language === 'al' ? video.title_al : video.title_en}
+                                    </h4>
+
+                                    <div className="flex items-center justify-between mt-3">
+                                        <div className={`flex items-center gap-3 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            <span className="flex items-center gap-1">
+                                                <Eye className="w-3 h-3" />
+                                                {formatViews(video.view_count)}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleSaveVideo(video.id);
+                                                }}
+                                                className={`p-1.5 rounded-full transition-colors ${savedVideos.includes(video.id)
+                                                        ? 'text-amber-500 bg-amber-500/20'
+                                                        : darkMode ? 'text-gray-500 hover:text-amber-400' : 'text-gray-400 hover:text-amber-500'
+                                                    }`}
+                                            >
+                                                <Bookmark className="w-4 h-4" fill={savedVideos.includes(video.id) ? 'currentColor' : 'none'} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const title = language === 'al' ? video.title_al : video.title_en;
+                                                    const shareText = `🎬 ${title}\n\nShiko në RinON!`;
+                                                    if (navigator.share) {
+                                                        navigator.share({ title: 'RinON', text: shareText, url: 'https://rinon.al/shiko' });
+                                                    } else {
+                                                        window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+                                                    }
+                                                }}
+                                                className={`p-1.5 rounded-full transition-colors ${darkMode ? 'text-gray-500 hover:text-amber-400' : 'text-gray-400 hover:text-amber-500'}`}
+                                            >
+                                                <Share2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Saved Videos Section */}
+                {savedVideos.length > 0 && (
+                    <div className="mt-12">
+                        <h3 className={`text-lg font-semibold mb-4 flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            <Bookmark className="w-5 h-5 text-amber-500" fill="currentColor" />
+                            {t('Të Ruajtura', 'Saved')} ({savedVideos.length})
+                        </h3>
+                        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                            {videos.filter(v => savedVideos.includes(v.id)).map(video => (
+                                <div
+                                    key={video.id}
+                                    className={`flex-shrink-0 w-64 rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-105 ${darkMode ? 'bg-[#3D3A36]' : 'bg-white border border-gray-200'
+                                        }`}
+                                    onClick={() => openVideo(video)}
+                                >
+                                    <div className="relative aspect-video">
+                                        <img
+                                            src={video.thumbnail || `https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`}
+                                            alt={language === 'al' ? video.title_al : video.title_en}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs rounded">
+                                            {video.duration || '0:00'}
+                                        </div>
+                                    </div>
+                                    <div className="p-3">
+                                        <h4 className={`font-medium text-sm line-clamp-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {language === 'al' ? video.title_al : video.title_en}
+                                        </h4>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const AboutPage = () => (
         <div className="max-w-6xl mx-auto px-4 py-12">
             <h1 className={`text-5xl font-bold mb-8 text-center ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>{t('Rreth Nesh', 'About Us')}</h1>
@@ -6233,6 +6683,7 @@ const RinON = () => {
                                 { key: 'home', label: t('Home', 'Home') },
                                 { key: 'lajme', label: t('Lajme', 'News') },
                                 { key: 'events', label: t('Evente', 'Events') },
+                                { key: 'shiko', label: t('Shiko', 'Watch') },
                                 { key: 'komuniteti', label: t('Komuniteti', 'Community') },
                             ].map(item => (
                                 <button
@@ -6351,6 +6802,7 @@ const RinON = () => {
                                 { key: 'home', label: t('Home', 'Home') },
                                 { key: 'lajme', label: t('Lajme', 'News') },
                                 { key: 'events', label: t('Evente', 'Events') },
+                                { key: 'shiko', label: t('🎬 Shiko', '🎬 Watch') },
                                 { key: 'schools', label: t('Shkollat', 'Schools') },
                                 { key: 'partners', label: t('Bashkëpunime', 'Partners') },
                                 { key: 'komuniteti', label: t('Komuniteti', 'Community') },
@@ -9007,6 +9459,8 @@ const RinON = () => {
                     </>
                 ) : currentPage === 'events' ? (
                     <EventsPage />
+                ) : currentPage === 'shiko' ? (
+                    <ShikoPage />
                 ) : currentPage === 'partners' ? (
                     <PartnershipsPage />
                 ) : currentPage === 'about' ? (
@@ -9097,6 +9551,238 @@ const RinON = () => {
                     </div>
                 </div>
             )}
+
+            {/* Video Modal */}
+            {showVideoModal && selectedVideo && (
+                <div
+                    className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) closeVideo();
+                    }}
+                >
+                    <div className={`w-full max-w-5xl rounded-2xl overflow-hidden ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
+                        {/* Video Player */}
+                        <div className="relative aspect-video bg-black">
+                            <iframe
+                                src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?autoplay=1&rel=0`}
+                                className="w-full h-full"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+
+                            {/* Close Button */}
+                            <button
+                                onClick={closeVideo}
+                                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Video Info */}
+                        <div className="p-6">
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {selectedVideo.is_rinon_original && (
+                                    <span className="px-3 py-1 bg-amber-500 text-white text-xs font-medium rounded-full">
+                                        🌟 RinON Original
+                                    </span>
+                                )}
+                                <span className={`px-3 py-1 text-xs font-medium rounded-full ${darkMode ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+                                    {selectedVideo.category === 'podcast' && '🎙️ Podcast'}
+                                    {selectedVideo.category === 'events' && '📹 Evente'}
+                                    {selectedVideo.category === 'interviews' && '🎤 Intervista'}
+                                    {selectedVideo.category === 'external' && '🌍 Të Jashtme'}
+                                </span>
+                            </div>
+
+                            <h2 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {language === 'al' ? selectedVideo.title_al : selectedVideo.title_en}
+                            </h2>
+
+                            <p className={`mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {language === 'al' ? selectedVideo.description_al : selectedVideo.description_en}
+                            </p>
+
+                            <div className="flex items-center justify-between flex-wrap gap-4">
+                                <div className={`flex items-center gap-4 text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                    <span className="flex items-center gap-1">
+                                        <Eye className="w-4 h-4" />
+                                        {selectedVideo.view_count || 0} {t('shikime', 'views')}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <Clock className="w-4 h-4" />
+                                        {selectedVideo.duration || '0:00'}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => toggleSaveVideo(selectedVideo.id)}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${savedVideos.includes(selectedVideo.id)
+                                                ? 'bg-amber-500 text-white'
+                                                : darkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        <Bookmark className="w-5 h-5" fill={savedVideos.includes(selectedVideo.id) ? 'currentColor' : 'none'} />
+                                        {savedVideos.includes(selectedVideo.id) ? t('Ruajtur', 'Saved') : t('Ruaj', 'Save')}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const title = language === 'al' ? selectedVideo.title_al : selectedVideo.title_en;
+                                            const shareText = `🎬 ${title}\n\nShiko në RinON!`;
+                                            if (navigator.share) {
+                                                navigator.share({ title: 'RinON', text: shareText, url: 'https://rinon.al/shiko' });
+                                            } else {
+                                                window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+                                            }
+                                        }}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${darkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                    >
+                                        <Share2 className="w-5 h-5" />
+                                        {t('Shpërndaj', 'Share')}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Add Video Form Modal */}
+            {showAddVideoForm && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                    onClick={(e) => e.target === e.currentTarget && setShowAddVideoForm(false)}
+                >
+                    <div className={`w-full max-w-lg rounded-xl p-6 max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {t('Shto Video', 'Add Video')}
+                            </h2>
+                            <button onClick={() => setShowAddVideoForm(false)} className={`p-1 rounded ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}>
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    YouTube ID *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={videoFormData.youtubeId}
+                                    onChange={(e) => setVideoFormData({ ...videoFormData, youtubeId: e.target.value })}
+                                    placeholder="dQw4w9WgXcQ"
+                                    className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                />
+                                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                    {t('Nga URL: youtube.com/watch?v=', 'From URL: youtube.com/watch?v=')}
+                                    <span className="text-amber-500">dQw4w9WgXcQ</span>
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {t('Titulli (Shqip)', 'Title (Albanian)')} *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={videoFormData.titleAl}
+                                        onChange={(e) => setVideoFormData({ ...videoFormData, titleAl: e.target.value })}
+                                        className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {t('Titulli (Anglisht)', 'Title (English)')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={videoFormData.titleEn}
+                                        onChange={(e) => setVideoFormData({ ...videoFormData, titleEn: e.target.value })}
+                                        className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {t('Përshkrimi (Shqip)', 'Description (Albanian)')}
+                                </label>
+                                <textarea
+                                    value={videoFormData.descriptionAl}
+                                    onChange={(e) => setVideoFormData({ ...videoFormData, descriptionAl: e.target.value })}
+                                    rows={3}
+                                    className={`w-full px-3 py-2 rounded-lg resize-none ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {t('Kategoria', 'Category')}
+                                    </label>
+                                    <select
+                                        value={videoFormData.category}
+                                        onChange={(e) => setVideoFormData({ ...videoFormData, category: e.target.value })}
+                                        className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                    >
+                                        <option value="podcast">🎙️ Podcast</option>
+                                        <option value="events">📹 Evente</option>
+                                        <option value="interviews">🎤 Intervista</option>
+                                        <option value="external">🌍 Të Jashtme</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {t('Kohëzgjatja', 'Duration')}
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={videoFormData.duration}
+                                        onChange={(e) => setVideoFormData({ ...videoFormData, duration: e.target.value })}
+                                        placeholder="12:34"
+                                        className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-6">
+                                <label className={`flex items-center gap-2 cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={videoFormData.isRinONOriginal}
+                                        onChange={(e) => setVideoFormData({ ...videoFormData, isRinONOriginal: e.target.checked })}
+                                        className="rounded"
+                                    />
+                                    🌟 RinON Original
+                                </label>
+                                <label className={`flex items-center gap-2 cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={videoFormData.isFeatured}
+                                        onChange={(e) => setVideoFormData({ ...videoFormData, isFeatured: e.target.checked })}
+                                        className="rounded"
+                                    />
+                                    ⭐ Featured
+                                </label>
+                            </div>
+
+                            <button
+                                onClick={submitVideo}
+                                disabled={!videoFormData.youtubeId || !videoFormData.titleAl}
+                                className="w-full py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {t('Shto Video', 'Add Video')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Event Modal */}
             {showEventModal && selectedEvent && (
                 <div
