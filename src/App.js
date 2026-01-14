@@ -3267,60 +3267,6 @@ const RinON = () => {
         }
     }, [notificationsEnabled]);
 
-    // ============================================
-    // SWIPE GESTURE HANDLING FOR PAGE NAVIGATION
-    // ============================================
-    const [touchStart, setTouchStart] = useState(null);
-    const [touchEnd, setTouchEnd] = useState(null);
-
-    // Pages in order for swipe navigation
-    const pageOrder = ['home', 'events', 'lajme', 'komuniteti'];
-
-    // Minimum swipe distance to trigger navigation
-    const minSwipeDistance = 100;
-
-    const onTouchStart = (e) => {
-        // Don't capture swipes on modals, buttons, or interactive elements
-        if (showArticleModal || showEventModal || showAuthModal) return;
-
-        // Don't capture if touching a button, link, or interactive element
-        const target = e.target;
-        const interactiveElements = ['BUTTON', 'A', 'INPUT', 'TEXTAREA', 'SELECT'];
-        if (interactiveElements.includes(target.tagName)) return;
-        if (target.closest('button') || target.closest('a') || target.closest('nav')) return;
-
-        setTouchEnd(null);
-        setTouchStart(e.targetTouches[0].clientX);
-    };
-
-    const onTouchMove = (e) => {
-        if (showArticleModal || showEventModal || showAuthModal) return;
-        if (!touchStart) return; // Only track if we started a swipe
-        setTouchEnd(e.targetTouches[0].clientX);
-    };
-
-    const onTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
-        if (showArticleModal || showEventModal || showAuthModal) return;
-
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > minSwipeDistance;
-        const isRightSwipe = distance < -minSwipeDistance;
-
-        const currentIndex = pageOrder.indexOf(currentPage);
-
-        if (isLeftSwipe && currentIndex < pageOrder.length - 1) {
-            // Swipe left - go to next page
-            changePage(pageOrder[currentIndex + 1]);
-        } else if (isRightSwipe && currentIndex > 0) {
-            // Swipe right - go to previous page
-            changePage(pageOrder[currentIndex - 1]);
-        }
-
-        setTouchStart(null);
-        setTouchEnd(null);
-    };
-
     // First-time visitor tooltip
     useEffect(() => {
         const hasVisited = localStorage.getItem('rinon_visited');
@@ -4682,39 +4628,43 @@ const RinON = () => {
                 imageUrl = await uploadImage(eventFormData.imageFile);
             }
 
-            const event = {
+            const eventData = {
                 title_al: validateInput.sanitizeHtml(eventFormData.titleAl),
                 title_en: validateInput.sanitizeHtml(eventFormData.titleEn || eventFormData.titleAl),
                 date_al: validateInput.sanitizeHtml(eventFormData.dateAl),
                 date_en: validateInput.sanitizeHtml(eventFormData.dateEn || eventFormData.dateAl),
-                type: validateInput.sanitizeHtml(eventFormData.type),
-                desc_al: validateInput.sanitizeHtml(eventFormData.descAl),
-                desc_en: validateInput.sanitizeHtml(eventFormData.descEn || eventFormData.descAl),
-                location: validateInput.sanitizeHtml(eventFormData.location),
-                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`,
-                date: eventFormData.date,
-                time: eventFormData.time,
-                end_time: eventFormData.endTime,
-                address: validateInput.sanitizeHtml(eventFormData.address),
-                category: eventFormData.category,
-                spots_left: eventFormData.spotsLeft,
-                total_spots: eventFormData.totalSpots,
-                is_free: eventFormData.isFree,
-                price: eventFormData.price,
-                attendees: 0,
+                type: validateInput.sanitizeHtml(eventFormData.type || ''),
+                desc_al: validateInput.sanitizeHtml(eventFormData.descAl || ''),
+                desc_en: validateInput.sanitizeHtml(eventFormData.descEn || eventFormData.descAl || ''),
+                location: validateInput.sanitizeHtml(eventFormData.location || ''),
+                image: imageUrl || `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800`,
+                date: eventFormData.date || null,
+                time: eventFormData.time || null,
+                end_time: eventFormData.endTime || null,
+                address: validateInput.sanitizeHtml(eventFormData.address || ''),
+                category: eventFormData.category || 'general',
+                spots_left: parseInt(eventFormData.spotsLeft) || 100,
+                total_spots: parseInt(eventFormData.totalSpots) || 100,
+                is_free: eventFormData.isFree !== false,
+                price: eventFormData.price || null,
                 partner: validateInput.sanitizeHtml(eventFormData.partner || ''),
-                registration_link: eventFormData.registrationLink,
-                is_featured: eventFormData.isFeatured,
-                is_trending: false,
-                tags: eventFormData.tags
+                registration_link: eventFormData.registrationLink || null,
+                is_featured: eventFormData.isFeatured || false,
+                tags: eventFormData.tags || []
             };
 
             let error, data;
-            if (editMode && editingItem) {
-                ({ error } = await supabase.from('events').update(event).eq('id', editingItem.id));
-                data = [{ id: editingItem.id }]; // Use existing ID
+            if (editMode && editingItem && editingItem.id) {
+                // Update existing event - don't overwrite attendees
+                ({ error } = await supabase.from('events').update(eventData).eq('id', editingItem.id));
+                if (!error) {
+                    data = [{ id: editingItem.id }];
+                }
             } else {
-                ({ data, error } = await supabase.from('events').insert([event]).select('id'));
+                // Insert new event with initial attendees count
+                eventData.attendees = 0;
+                eventData.is_trending = false;
+                ({ data, error } = await supabase.from('events').insert([eventData]).select('id'));
             }
 
             if (error) throw error;
@@ -4739,6 +4689,7 @@ const RinON = () => {
             alert(t(editMode ? 'Eventi u përditësua me sukses!' : 'Eventi u shtua me sukses!',
                 editMode ? 'Event updated successfully!' : 'Event added successfully!'));
         } catch (err) {
+            console.error('Event submit error:', err);
             alert(handleError(err, 'handleSubmitEvent'));
         }
     };
@@ -6680,9 +6631,6 @@ const RinON = () => {
     return (
         <div
             className={`min-h-screen w-full transition-colors duration-300 ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
             style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 80px)' : '80px' }}
         >
 
