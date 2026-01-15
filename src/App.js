@@ -633,46 +633,58 @@ END:VCALENDAR`;
 
     return (
         <div className="space-y-6">
-            {/* Calendar Instruction Banner */}
-            <div className={`rounded-2xl p-6 border ${darkMode ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30' : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200'}`}>
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
-                        <CalendarIcon className="w-6 h-6 text-white" />
+            {/* Enhanced Calendar Instruction Banner */}
+            <div className={`rounded-3xl p-8 border relative overflow-hidden ${darkMode ? 'bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-[#FF6B6B]/10 border-amber-500/30' : 'bg-gradient-to-br from-amber-50 via-orange-50 to-[#FFE5D9] border-amber-200'}`}>
+                {/* Decorative elements */}
+                <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full ${darkMode ? 'bg-amber-500/10' : 'bg-amber-400/20'}`} />
+                <div className={`absolute -bottom-5 -left-5 w-24 h-24 rounded-full ${darkMode ? 'bg-orange-500/10' : 'bg-orange-400/15'}`} />
+
+                <div className="relative flex items-center gap-6">
+                    <div className="w-16 h-16 bg-gradient-to-br from-amber-400 via-orange-500 to-[#FF6B6B] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-xl shadow-amber-500/30 transform rotate-3 hover:rotate-0 transition-transform">
+                        <CalendarIcon className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                        <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                        <h3 className={`text-xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
                             {t('Si të regjistrohesh në një event?', 'How to register for an event?')}
                         </h3>
-                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                             {t('Kliko një ditë në kalendar për të parë dhe regjistruar në eventet e asaj dite.', 'Click a day on the calendar to view and register for events on that day.')}
                         </p>
                     </div>
                 </div>
             </div>
 
-            {/* Compact Stats Row */}
+            {/* Enhanced Stats Row */}
             <div className="flex flex-wrap gap-4 items-center justify-between">
                 <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <Calendar className="w-5 h-5 text-amber-500" />
-                        <span className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{totalEvents}</span>
-                        <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('evente', 'events')}</span>
+                    <div className={`flex items-center gap-3 px-4 py-2 rounded-xl ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                        <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <span className={`text-2xl font-black ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{totalEvents}</span>
+                            <span className={`text-sm ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('evente', 'events')}</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Star className="w-5 h-5 text-green-500" />
-                        <span className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{freeEvents}</span>
-                        <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('falas', 'free')}</span>
+                    <div className={`flex items-center gap-3 px-4 py-2 rounded-xl ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-white border border-gray-200 shadow-sm'}`}>
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
+                            <Star className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <span className={`text-2xl font-black ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{freeEvents}</span>
+                            <span className={`text-sm ml-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('falas', 'free')}</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Compact Filters */}
-                <div className="flex gap-2">
+                {/* Enhanced Filters */}
+                <div className="flex gap-3">
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 ${darkMode
-                            ? 'bg-[#3D3A36] border-amber-500/30 text-white'
-                            : 'bg-white border-amber-200 text-[#2D2A26]'
+                        className={`px-4 py-3 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all ${darkMode
+                            ? 'bg-[#3D3A36] border-amber-500/30 text-white hover:bg-[#4D4A46]'
+                            : 'bg-white border-amber-200 text-[#2D2A26] hover:border-amber-400 shadow-sm'
                             }`}
                     >
                         {categories.map(cat => (
@@ -684,11 +696,11 @@ END:VCALENDAR`;
 
                     <button
                         onClick={() => setShowOnlyFree(!showOnlyFree)}
-                        className={`px-3 py-2 rounded-lg border text-sm transition-all flex items-center gap-1 ${showOnlyFree
-                            ? 'bg-green-500 text-white border-green-500'
+                        className={`px-4 py-3 rounded-xl border text-sm font-medium transition-all flex items-center gap-2 ${showOnlyFree
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-green-500 shadow-lg shadow-green-500/30'
                             : darkMode
                                 ? 'bg-[#3D3A36] border-amber-500/30 text-gray-300 hover:bg-[#4D4A46]'
-                                : 'bg-white border-amber-200 text-gray-700 hover:bg-amber-50'
+                                : 'bg-white border-amber-200 text-gray-700 hover:border-amber-400 shadow-sm'
                             }`}
                     >
                         <Star className="w-4 h-4" />
@@ -697,107 +709,130 @@ END:VCALENDAR`;
                 </div>
             </div>
 
-            {/* Calendar Header */}
-            <div className={`backdrop-blur-lg rounded-2xl border p-6 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'
+            {/* Enhanced Calendar Header */}
+            <div className={`backdrop-blur-lg rounded-3xl border overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200 shadow-xl'
                 }`}>
-                <div className="flex items-center justify-between mb-6">
-                    <button
-                        onClick={prevMonth}
-                        className={`p-2 rounded-lg transition-all ${darkMode ? 'hover:bg-amber-500/20' : 'hover:bg-amber-50'
-                            }`}
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
+                {/* Month Navigation Header */}
+                <div className={`p-6 ${darkMode ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/10' : 'bg-gradient-to-r from-amber-50 to-orange-50'}`}>
+                    <div className="flex items-center justify-between">
+                        <button
+                            onClick={prevMonth}
+                            className={`p-3 rounded-xl transition-all ${darkMode
+                                ? 'hover:bg-amber-500/20 bg-white/5'
+                                : 'hover:bg-amber-100 bg-white shadow-sm'
+                                }`}
+                        >
+                            <ChevronLeft className={`w-6 h-6 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+                        </button>
 
-                    <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                        {monthNames[language][month]} {year}
-                    </h2>
-
-                    <button
-                        onClick={nextMonth}
-                        className={`p-2 rounded-lg transition-all ${darkMode ? 'hover:bg-amber-500/20' : 'hover:bg-amber-50'
-                            }`}
-                    >
-                        <ChevronRight className="w-6 h-6" />
-                    </button>
-                </div>
-
-                {/* Day Names */}
-                <div className="grid grid-cols-7 gap-2 mb-4">
-                    {dayNames[language].map(day => (
-                        <div key={day} className={`text-center font-semibold py-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'
-                            }`}>
-                            {day}
+                        <div className="text-center">
+                            <h2 className={`text-3xl font-black ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
+                                {monthNames[language][month]}
+                            </h2>
+                            <span className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{year}</span>
                         </div>
-                    ))}
+
+                        <button
+                            onClick={nextMonth}
+                            className={`p-3 rounded-xl transition-all ${darkMode
+                                ? 'hover:bg-amber-500/20 bg-white/5'
+                                : 'hover:bg-amber-100 bg-white shadow-sm'
+                                }`}
+                        >
+                            <ChevronRight className={`w-6 h-6 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+                        </button>
+                    </div>
                 </div>
 
-                {/* Calendar Grid */}
-                <div className="grid grid-cols-7 gap-2">
-                    {/* Empty cells for days before month starts */}
-                    {[...Array(startingDayOfWeek)].map((_, i) => (
-                        <div key={`empty-${i}`} className="aspect-square" />
-                    ))}
+                {/* Calendar Body */}
+                <div className="p-6">
+                    {/* Day Names */}
+                    <div className="grid grid-cols-7 gap-2 mb-4">
+                        {dayNames[language].map((day, idx) => (
+                            <div key={day} className={`text-center font-bold py-3 rounded-xl ${idx === 0 || idx === 6
+                                    ? darkMode ? 'text-amber-400 bg-amber-500/10' : 'text-amber-600 bg-amber-50'
+                                    : darkMode ? 'text-gray-400' : 'text-gray-600'
+                                }`}>
+                                {day}
+                            </div>
+                        ))}
+                    </div>
 
-                    {/* Days of the month */}
-                    {[...Array(daysInMonth)].map((_, i) => {
-                        const day = i + 1;
-                        const dayEvents = getEventsForDay(day);
-                        const isToday = new Date().getDate() === day &&
-                            new Date().getMonth() === month &&
-                            new Date().getFullYear() === year;
+                    {/* Calendar Grid */}
+                    <div className="grid grid-cols-7 gap-2">
+                        {/* Empty cells for days before month starts */}
+                        {[...Array(startingDayOfWeek)].map((_, i) => (
+                            <div key={`empty-${i}`} className="aspect-square" />
+                        ))}
 
-                        return (
-                            <button
-                                key={day}
-                                onClick={() => openDayModal(day)}
-                                className={`aspect-square rounded-xl p-2 transition-all relative ${isToday
-                                    ? 'ring-2 ring-amber-500'
-                                    : ''
-                                    } ${dayEvents.length > 0
-                                        ? darkMode
-                                            ? 'bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30'
-                                            : 'bg-amber-50 hover:bg-[#FFE5D9] border border-amber-200'
-                                        : darkMode
-                                            ? 'hover:bg-[#3D3A36]'
-                                            : 'hover:bg-gray-100'
-                                    }`}
-                            >
-                                <div className={`text-sm font-semibold ${dayEvents.length > 0
-                                    ? 'text-amber-500'
-                                    : darkMode
-                                        ? 'text-gray-400'
-                                        : 'text-gray-600'
-                                    }`}>
-                                    {day}
-                                </div>
+                        {/* Days of the month */}
+                        {[...Array(daysInMonth)].map((_, i) => {
+                            const day = i + 1;
+                            const dayEvents = getEventsForDay(day);
+                            const isToday = new Date().getDate() === day &&
+                                new Date().getMonth() === month &&
+                                new Date().getFullYear() === year;
+                            const isWeekend = (startingDayOfWeek + i) % 7 === 0 || (startingDayOfWeek + i) % 7 === 6;
 
-                                {/* Event indicators */}
-                                {dayEvents.length > 0 && (
-                                    <div className="flex flex-wrap gap-1 mt-1 justify-center">
-                                        {dayEvents.slice(0, 3).map((event, idx) => {
-                                            const cat = categories.find(c => c.value === event.category);
-                                            const Icon = cat?.icon || Calendar;
-                                            return (
-                                                <div
-                                                    key={idx}
-                                                    className={`w-6 h-6 rounded-full flex items-center justify-center bg-${cat?.color || 'amber'}-500`}
-                                                    title={event.titleAl}
-                                                >
-                                                    <Icon className="w-3 h-3 text-white" />
-                                                </div>
-                                            );
-                                        })}
-                                        {dayEvents.length > 3 && (
-                                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] flex items-center justify-center text-white text-xs font-bold">
-                                                +{dayEvents.length - 3}
-                                            </div>
-                                        )}
+                            return (
+                                <button
+                                    key={day}
+                                    onClick={() => openDayModal(day)}
+                                    className={`aspect-square rounded-2xl p-2 transition-all relative group ${isToday
+                                        ? 'ring-2 ring-amber-500 ring-offset-2 ' + (darkMode ? 'ring-offset-[#2D2A26]' : 'ring-offset-white')
+                                        : ''
+                                        } ${dayEvents.length > 0
+                                            ? darkMode
+                                                ? 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/30 shadow-lg shadow-amber-500/10'
+                                                : 'bg-gradient-to-br from-amber-50 to-[#FFE5D9] hover:from-amber-100 hover:to-[#FFDAC1] border border-amber-200 shadow-md'
+                                            : darkMode
+                                                ? 'hover:bg-[#3D3A36] ' + (isWeekend ? 'bg-white/3' : '')
+                                                : 'hover:bg-gray-50 ' + (isWeekend ? 'bg-gray-50/50' : '')
+                                        }`}
+                                >
+                                    <div className={`text-sm font-bold ${dayEvents.length > 0
+                                        ? darkMode ? 'text-amber-400' : 'text-amber-600'
+                                        : isToday
+                                            ? darkMode ? 'text-amber-400' : 'text-amber-600'
+                                            : darkMode
+                                                ? 'text-gray-400'
+                                                : 'text-gray-600'
+                                        }`}>
+                                        {day}
                                     </div>
-                                )}
-                            </button>
-                        );
-                    })}
+
+                                    {/* Event indicators */}
+                                    {dayEvents.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-1 justify-center">
+                                            {dayEvents.slice(0, 3).map((event, idx) => {
+                                                const cat = categories.find(c => c.value === event.category);
+                                                const Icon = cat?.icon || Calendar;
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        className={`w-6 h-6 rounded-lg flex items-center justify-center bg-gradient-to-br from-${cat?.color || 'amber'}-400 to-${cat?.color || 'amber'}-600 shadow-sm transform group-hover:scale-110 transition-transform`}
+                                                        title={event.titleAl}
+                                                    >
+                                                        <Icon className="w-3 h-3 text-white" />
+                                                    </div>
+                                                );
+                                            })}
+                                            {dayEvents.length > 3 && (
+                                                <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                                    +{dayEvents.length - 3}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Today indicator dot */}
+                                    {isToday && (
+                                        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 
@@ -2038,7 +2073,7 @@ const RinON = () => {
     // Search & Filter States
     const [searchQuery, setSearchQuery] = useState('');
     const [showSearchBar, setShowSearchBar] = useState(false);
-    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('Te Gjitha');
+    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('Home');
 
     // UX Enhancement States
     const [showFirstTimeTooltip, setShowFirstTimeTooltip] = useState(false);
@@ -2099,7 +2134,7 @@ const RinON = () => {
 
     const [formData, setFormData] = useState({
         titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false, postType: 'lajme'
+        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', author: '', featured: false, postType: 'lajme', showOnHomepage: false, isHeadArticle: false
     });
 
     const [eventFormData, setEventFormData] = useState({
@@ -2107,7 +2142,7 @@ const RinON = () => {
         type: '', descAl: '', descEn: '', location: '', image: '', imageFile: null,
         date: '', time: '', endTime: '', address: '', category: 'general',
         spotsLeft: 100, totalSpots: 100, isFree: true, price: '',
-        registrationLink: '', isFeatured: false, tags: []
+        registrationLink: '', isFeatured: false, tags: [], showOnHomepage: false
     });
 
     const [topicFormData, setTopicFormData] = useState({
@@ -3684,7 +3719,9 @@ const RinON = () => {
                     id: a.id, titleAl: a.title_al, titleEn: a.title_en,
                     contentAl: a.content_al, contentEn: a.content_en,
                     category: a.category, image: a.image, source: a.source,
-                    featured: a.featured, postType: a.post_type || 'lajme', date: new Date(a.created_at).toISOString().split('T')[0]
+                    featured: a.featured, postType: a.post_type || 'lajme',
+                    showOnHomepage: a.show_on_homepage || false,
+                    date: new Date(a.created_at).toISOString().split('T')[0]
                 }));
                 setArticles(formattedArticles);
             }
@@ -3946,7 +3983,8 @@ const RinON = () => {
                     category: e.category, spots_left: e.spots_left, total_spots: e.total_spots,
                     is_free: e.is_free, price: e.price, attendees: e.attendees,
                     partner: e.partner, registration_link: e.registration_link,
-                    is_featured: e.is_featured, is_trending: e.is_trending, tags: e.tags
+                    is_featured: e.is_featured, is_trending: e.is_trending, tags: e.tags,
+                    showOnHomepage: e.show_on_homepage || false
                 }));
                 setOtherEvents(formattedEvents);
             }
@@ -4468,7 +4506,8 @@ const RinON = () => {
             imageFile: null,
             source: article.source,
             featured: article.featured,
-            postType: article.postType || 'lajme'
+            postType: article.postType || 'lajme',
+            showOnHomepage: article.showOnHomepage || false
         });
         setShowAddForm(true);
     };
@@ -4498,7 +4537,8 @@ const RinON = () => {
             price: event.price || '',
             registrationLink: event.registration_link || '',
             isFeatured: event.is_featured || false,
-            tags: event.tags || []
+            tags: event.tags || [],
+            showOnHomepage: event.showOnHomepage || false
         });
         setShowAddEventForm(true);
     };
@@ -4563,8 +4603,11 @@ const RinON = () => {
                 category: formData.category,
                 image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`,
                 source: validateInput.sanitizeHtml(formData.source),
+                author: validateInput.sanitizeHtml(formData.author),
                 featured: formData.featured,
-                post_type: formData.postType || 'lajme', // Add post_type field
+                is_head_article: formData.isHeadArticle || false,
+                post_type: formData.postType || 'lajme',
+                show_on_homepage: formData.showOnHomepage || false,
                 author_id: user?.id
             };
 
@@ -4597,7 +4640,7 @@ const RinON = () => {
             loadArticles();
             setFormData({
                 titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false, postType: 'lajme'
+                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', author: '', featured: false, postType: 'lajme', showOnHomepage: false, isHeadArticle: false
             });
             setShowAddForm(false);
             setEditMode(false);
@@ -4650,6 +4693,7 @@ const RinON = () => {
                 partner: validateInput.sanitizeHtml(eventFormData.partner || ''),
                 registration_link: eventFormData.registrationLink || null,
                 is_featured: eventFormData.isFeatured || false,
+                show_on_homepage: eventFormData.showOnHomepage || false,
                 tags: eventFormData.tags || []
             };
 
@@ -4681,7 +4725,7 @@ const RinON = () => {
                 type: '', descAl: '', descEn: '', location: '', image: '', imageFile: null,
                 date: '', time: '', endTime: '', address: '', category: 'general',
                 spotsLeft: 100, totalSpots: 100, isFree: true, price: '',
-                registrationLink: '', isFeatured: false, tags: []
+                registrationLink: '', isFeatured: false, tags: [], showOnHomepage: false
             });
             setShowAddEventForm(false);
             setEditMode(false);
@@ -5154,6 +5198,11 @@ const RinON = () => {
     const lajmeArticles = filteredArticles.filter(a => a.postType === 'lajme' || !a.postType); // Default to lajme if not set
     const komunitetiArticles = filteredArticles.filter(a => a.postType === 'artikull');
 
+    // Filtered articles for N'gazeta category view
+    const filteredLajmeArticles = selectedCategoryFilter === 'Home' || selectedCategoryFilter === 'Te Gjitha'
+        ? lajmeArticles
+        : lajmeArticles.filter(a => a.category === selectedCategoryFilter);
+
     const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
 
@@ -5419,43 +5468,42 @@ const RinON = () => {
 
     // Updated EventsPage Component with Hero Slider
     const EventsPage = () => (
-        <div className="max-w-7xl mx-auto px-4 py-12">
-            {/* Page Header */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-                <h1 className={`text-5xl font-bold mb-4 md:mb-0 ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
-                    {t('Evente', 'Events')}
-                </h1>
-
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => setEventViewMode('calendar')}
-                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${eventViewMode === 'calendar'
-                            ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white'
-                            : darkMode
-                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            }`}
-                    >
-                        <Calendar className="w-4 h-4" />
-                        {t('Kalendar', 'Calendar')}
-                    </button>
-                    <button
-                        onClick={() => setEventViewMode('list')}
-                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-all ${eventViewMode === 'list'
-                            ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white'
-                            : darkMode
-                                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                            }`}
-                    >
-                        <List className="w-4 h-4" />
-                        {t('Listë', 'List')}
-                    </button>
+        <div className="relative max-w-7xl mx-auto px-4 py-12 overflow-hidden">
+            {/* Decorative Yellow Circles Background */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                {/* Large circle top right */}
+                <div className={`absolute -top-20 -right-20 w-72 h-72 rounded-full border-4 ${darkMode ? 'border-amber-500/20' : 'border-amber-400/30'} flex items-center justify-center`}>
+                    <span className={`text-4xl font-black ${darkMode ? 'text-amber-500/10' : 'text-amber-400/20'} tracking-wider`}>RinON</span>
                 </div>
+                {/* Medium circle left */}
+                <div className={`absolute top-40 -left-16 w-48 h-48 rounded-full ${darkMode ? 'bg-amber-500/5' : 'bg-amber-400/10'}`} />
+                {/* Small filled circle */}
+                <div className={`absolute top-1/3 right-1/4 w-16 h-16 rounded-full ${darkMode ? 'bg-amber-500/10' : 'bg-amber-400/15'}`} />
+                {/* Circle with RinON text bottom left */}
+                <div className={`absolute bottom-40 -left-10 w-64 h-64 rounded-full border-2 ${darkMode ? 'border-amber-500/15' : 'border-amber-400/25'} flex items-center justify-center`}>
+                    <span className={`text-2xl font-bold ${darkMode ? 'text-amber-500/8' : 'text-amber-400/15'} tracking-widest rotate-12`}>RinON</span>
+                </div>
+                {/* Small circle bottom right */}
+                <div className={`absolute bottom-20 right-10 w-24 h-24 rounded-full border-3 ${darkMode ? 'border-amber-500/20' : 'border-amber-400/30'}`} />
+                {/* Tiny accent circles */}
+                <div className={`absolute top-60 right-20 w-8 h-8 rounded-full ${darkMode ? 'bg-amber-500/15' : 'bg-amber-400/25'}`} />
+                <div className={`absolute bottom-60 left-40 w-6 h-6 rounded-full ${darkMode ? 'bg-amber-500/20' : 'bg-amber-400/30'}`} />
+                {/* Large outline circle center-right */}
+                <div className={`absolute top-1/2 -right-32 w-96 h-96 rounded-full border ${darkMode ? 'border-amber-500/10' : 'border-amber-400/20'}`} />
             </div>
 
-            {/* View Mode Content */}
-            {eventViewMode === 'calendar' ? (
+            {/* Page Header */}
+            <div className="relative z-10 text-center mb-10">
+                <h1 className={`text-5xl md:text-6xl font-black mb-3 ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
+                    {t('Ndodh e re?', 'What\'s happening?')}
+                </h1>
+                <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {t('Zgjidh datën dhe zbulo mundësitë', 'Pick a date and discover opportunities')}
+                </p>
+            </div>
+
+            {/* Calendar View Only */}
+            <div className="relative z-10">
                 <EventCalendar
                     language={language}
                     darkMode={darkMode}
@@ -5472,114 +5520,7 @@ const RinON = () => {
                     userEventInterests={userEventInterests}
                     toggleEventInterest={toggleEventInterest}
                 />
-            ) : (
-                otherEvents.length === 0 ? (
-                    <div className="text-center py-20">
-                        <div className="w-20 h-20 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-amber-500/30">
-                            <Calendar className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-amber-600'}`} />
-                        </div>
-                        <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                            {t('Asnjë event ende', 'No events yet')}
-                        </h3>
-                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Eventet do të shfaqen këtu kur të publikohen', 'Events will appear here when published')}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {otherEvents.map((event) => (
-                            <div
-                                key={event.id}
-                                className={`backdrop-blur-lg rounded-2xl border hover:border-amber-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20 overflow-hidden cursor-pointer ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
-                                onClick={() => openEvent(event)}
-                            >
-                                <div className="relative h-48">
-                                    <img
-                                        src={event.image}
-                                        alt={event.titleAl}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                                    <div className="absolute top-3 right-3 flex gap-2">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openShareModal(event, 'event');
-                                            }}
-                                            className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
-                                            title={t('Shpërndaj', 'Share')}
-                                        >
-                                            <Share2 className="h-4 w-4" />
-                                        </button>
-                                        {showAdmin && (
-                                            <>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        editEvent(event);
-                                                    }}
-                                                    className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        deleteEvent(event.id);
-                                                    }}
-                                                    className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                    {/* Badges on cards */}
-                                    <div className="absolute top-3 left-3 flex flex-wrap gap-1">
-                                        {event.is_featured && (
-                                            <span className="px-2 py-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold rounded-full">
-                                                ⭐
-                                            </span>
-                                        )}
-                                        {event.is_trending && (
-                                            <span className="px-2 py-1 bg-gradient-to-r from-[#FF6B6B] to-[#FF5252] text-white text-xs font-bold rounded-full">
-                                                🔥
-                                            </span>
-                                        )}
-                                        {event.is_free && (
-                                            <span className="px-2 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold rounded-full">
-                                                {t('FALAS', 'FREE')}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="p-6">
-                                    <span className="inline-block px-3 py-1 bg-gradient-to-r from-amber-500/30 to-orange-500/30 text-amber-400 text-sm font-semibold rounded-full mb-3 border border-amber-500/30">
-                                        {event.type}
-                                    </span>
-                                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                        {language === 'al' ? event.titleAl : (event.titleEn || event.titleAl)}
-                                    </h3>
-                                    <div className={`flex items-center text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        <Calendar className="w-4 h-4 mr-2" />
-                                        <span>{language === 'al' ? event.dateAl : (event.dateEn || event.dateAl)}</span>
-                                    </div>
-                                    <div className={`flex items-center text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        <MapPin className="w-4 h-4 mr-2" />
-                                        <span>{event.location}</span>
-                                    </div>
-                                    <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {language === 'al' ? event.descAl : (event.descEn || event.descAl)}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )
-            )}
+            </div>
         </div>
     );
 
@@ -6664,7 +6605,7 @@ const RinON = () => {
                         <nav className="hidden md:flex items-center gap-1">
                             {[
                                 { key: 'home', label: t('Home', 'Home') },
-                                { key: 'lajme', label: t('Lajme', 'News') },
+                                { key: 'lajme', label: "N'gazeta" },
                                 { key: 'events', label: t('Evente', 'Events') },
                                 { key: 'shiko', label: t('Shiko', 'Watch') },
                                 { key: 'komuniteti', label: t('Komuniteti', 'Community') },
@@ -6783,7 +6724,7 @@ const RinON = () => {
                         <div className="px-4 py-3 space-y-1">
                             {[
                                 { key: 'home', label: t('Home', 'Home') },
-                                { key: 'lajme', label: t('Lajme', 'News') },
+                                { key: 'lajme', label: "N'gazeta" },
                                 { key: 'events', label: t('Evente', 'Events') },
                                 { key: 'shiko', label: t('🎬 Shiko', '🎬 Watch') },
                                 { key: 'schools', label: t('Shkollat', 'Schools') },
@@ -6864,34 +6805,86 @@ const RinON = () => {
                ========================================== */}
             {/* Horizontal Category Pills - Only on Home Page */}
             {currentPage === 'lajme' && (
-                <div className={`sticky top-[88px] md:top-[96px] z-40 border-b backdrop-blur-xl transition-colors duration-300 ${darkMode
-                    ? 'bg-[#2D2A26]/95 border-amber-500/10'
-                    : 'bg-white/95 border-amber-100'
-                    }`}>
-                    <div className="max-w-7xl mx-auto px-4 py-3">
-                        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1">
-                            {categories.map((cat) => {
-                                const isActive = selectedCategoryFilter === cat.al;
-                                const Icon = cat.icon || TrendingUp;
-                                return (
-                                    <button
-                                        key={cat.al}
-                                        onClick={() => setSelectedCategoryFilter(cat.al)}
-                                        className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all text-sm font-medium ${isActive
-                                            ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
-                                            : darkMode
-                                                ? 'bg-[#3D3A36] text-gray-300 hover:bg-amber-500/20 hover:text-amber-400 border border-amber-500/20'
-                                                : 'bg-amber-50 text-gray-600 hover:bg-[#FFE5D9] hover:text-amber-700 border border-amber-200'
-                                            }`}
-                                    >
-                                        <Icon className="w-4 h-4" />
-                                        <span>{language === 'al' ? cat.al : cat.en}</span>
-                                    </button>
-                                );
-                            })}
+                <>
+                    {/* Decorative Header Section with Yellow Gradient */}
+                    <div className={`relative overflow-hidden ${darkMode ? 'bg-gradient-to-br from-amber-500/15 via-[#2D2A26] to-[#2D2A26]' : 'bg-gradient-to-br from-amber-100 via-amber-50 to-white'}`}>
+                        {/* Decorative Circles */}
+                        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                            <div className={`absolute -top-10 -right-10 w-48 h-48 rounded-full border-4 ${darkMode ? 'border-amber-500/20' : 'border-amber-400/30'}`} />
+                            <div className={`absolute top-20 -left-8 w-32 h-32 rounded-full ${darkMode ? 'bg-amber-500/10' : 'bg-amber-400/15'}`} />
+                            <div className={`absolute bottom-0 right-1/4 w-24 h-24 rounded-full border-2 ${darkMode ? 'border-amber-500/15' : 'border-amber-400/25'}`}>
+                                <span className={`absolute inset-0 flex items-center justify-center text-xs font-bold ${darkMode ? 'text-amber-500/20' : 'text-amber-400/30'}`}>RinON</span>
+                            </div>
+                            <div className={`absolute top-1/2 right-10 w-16 h-16 rounded-full ${darkMode ? 'bg-amber-500/8' : 'bg-amber-400/12'}`} />
+                        </div>
+
+                        <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className={`text-4xl md:text-5xl font-black ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
+                                        N'gazeta
+                                    </h1>
+                                    <p className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {t('Lajmet më të fundit për të rinjtë', 'Latest news for youth')}
+                                    </p>
+                                </div>
+                                {/* Clock/Time Display */}
+                                <div className={`hidden md:flex items-center gap-3 px-4 py-3 rounded-2xl ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-white shadow-lg border border-amber-100'}`}>
+                                    <Clock className={`w-6 h-6 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+                                    <div>
+                                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('Përditësuar', 'Updated')}</p>
+                                        <p className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                            {new Date().toLocaleDateString(language === 'al' ? 'sq-AL' : 'en-US', { day: 'numeric', month: 'short' })}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+
+                    {/* Category Menu - Fixed sticky issue */}
+                    <div className={`sticky top-14 z-40 border-b backdrop-blur-xl transition-colors duration-300 ${darkMode
+                        ? 'bg-[#2D2A26]/98 border-amber-500/10'
+                        : 'bg-white/98 border-amber-100'
+                        }`}>
+                        <div className="max-w-7xl mx-auto px-4 py-3">
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1">
+                                {/* Home button for N'gazeta */}
+                                <button
+                                    onClick={() => setSelectedCategoryFilter('Home')}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all text-sm font-semibold ${selectedCategoryFilter === 'Home'
+                                        ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
+                                        : darkMode
+                                            ? 'bg-[#3D3A36] text-gray-300 hover:bg-amber-500/20 hover:text-amber-400 border border-amber-500/20'
+                                            : 'bg-amber-50 text-gray-600 hover:bg-[#FFE5D9] hover:text-amber-700 border border-amber-200'
+                                        }`}
+                                >
+                                    <Home className="w-4 h-4" />
+                                    <span>Home</span>
+                                </button>
+                                {categories.filter(cat => cat.al !== 'Te Gjitha').map((cat) => {
+                                    const isActive = selectedCategoryFilter === cat.al;
+                                    const Icon = cat.icon || TrendingUp;
+                                    return (
+                                        <button
+                                            key={cat.al}
+                                            onClick={() => setSelectedCategoryFilter(cat.al)}
+                                            className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all text-sm font-semibold ${isActive
+                                                ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
+                                                : darkMode
+                                                    ? 'bg-[#3D3A36] text-gray-300 hover:bg-amber-500/20 hover:text-amber-400 border border-amber-500/20'
+                                                    : 'bg-amber-50 text-gray-600 hover:bg-[#FFE5D9] hover:text-amber-700 border border-amber-200'
+                                                }`}
+                                        >
+                                            <Icon className="w-4 h-4" />
+                                            <span>{language === 'al' ? cat.al : cat.en}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </>
             )}
 
             {/* ==========================================
@@ -7014,12 +7007,49 @@ const RinON = () => {
                             />
                             <input
                                 type="text"
+                                placeholder={t('Autori (Nga)', 'Author (By)')}
+                                value={formData.author}
+                                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                                maxLength="100"
+                                className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                            />
+                            <input
+                                type="text"
                                 placeholder={t('Burimi', 'Source')}
                                 value={formData.source}
                                 onChange={(e) => setFormData({ ...formData, source: e.target.value })}
                                 maxLength="200"
                                 className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
                             />
+
+                            {/* Head Article - Weekly Featured */}
+                            <label className="flex items-center gap-3 text-white p-3 rounded-xl border-2 border-teal-500/50 bg-teal-500/10">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.isHeadArticle}
+                                    onChange={(e) => setFormData({ ...formData, isHeadArticle: e.target.checked })}
+                                    className="w-5 h-5 rounded border-teal-500 bg-[#3D3A36] text-teal-500 focus:ring-teal-500/20"
+                                />
+                                <div>
+                                    <span className="font-semibold text-teal-400">🗞️ {t('Artikulli Kryesor i Javës', 'Head Article of the Week')}</span>
+                                    <p className="text-xs text-white/60 mt-0.5">{t('Do të shfaqet si artikulli kryesor në N\'gazeta', 'Will appear as the main article in N\'gazeta')}</p>
+                                </div>
+                            </label>
+
+                            {/* Show on Homepage - Yellow highlight */}
+                            <label className="flex items-center gap-3 text-white p-3 rounded-xl border-2 border-[#EAB308]/50 bg-[#EAB308]/10">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.showOnHomepage}
+                                    onChange={(e) => setFormData({ ...formData, showOnHomepage: e.target.checked })}
+                                    className="w-5 h-5 rounded border-[#EAB308] bg-[#3D3A36] text-[#EAB308] focus:ring-[#EAB308]/20"
+                                />
+                                <div>
+                                    <span className="font-semibold text-[#EAB308]">📍 {t('Shfaq në Faqen Kryesore', 'Show on Homepage')}</span>
+                                    <p className="text-xs text-white/60 mt-0.5">{t('Do të shfaqet në seksionin "Të zgjedhura për ty"', 'Will appear in "Selected for you" section')}</p>
+                                </div>
+                            </label>
+
                             <label className="flex items-center gap-3 text-white">
                                 <input
                                     type="checkbox"
@@ -7264,6 +7294,20 @@ const RinON = () => {
                                 onChange={(e) => setEventFormData({ ...eventFormData, image: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
                             />
+
+                            {/* Show on Homepage - Yellow highlight */}
+                            <label className="flex items-center gap-3 text-white p-3 rounded-xl border-2 border-[#EAB308]/50 bg-[#EAB308]/10">
+                                <input
+                                    type="checkbox"
+                                    checked={eventFormData.showOnHomepage}
+                                    onChange={(e) => setEventFormData({ ...eventFormData, showOnHomepage: e.target.checked })}
+                                    className="w-5 h-5 rounded border-[#EAB308] bg-[#3D3A36] text-[#EAB308] focus:ring-[#EAB308]/20"
+                                />
+                                <div>
+                                    <span className="font-semibold text-[#EAB308]">📍 {t('Shfaq në Faqen Kryesore', 'Show on Homepage')}</span>
+                                    <p className="text-xs text-white/60 mt-0.5">{t('Do të shfaqet në seksionin "Të zgjedhura për ty"', 'Will appear in "Selected for you" section')}</p>
+                                </div>
+                            </label>
 
                             <label className="flex items-center gap-3 text-white">
                                 <input
@@ -8683,10 +8727,10 @@ const RinON = () => {
                                     </span>
                                 </div>
                                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                    {/* Featured Events/Articles - prioritize featured items */}
-                                    {[...otherEvents.filter(e => e.is_featured).slice(0, 2), ...otherEvents.filter(e => !e.is_featured).slice(0, Math.max(0, 2 - otherEvents.filter(e => e.is_featured).length)), ...articles.filter(a => a.featured).slice(0, 1), ...articles.filter(a => !a.featured).slice(0, Math.max(0, 1 - articles.filter(a => a.featured).length))].slice(0, 3).map((item, idx) => {
+                                    {/* Show only items marked for homepage */}
+                                    {[...otherEvents.filter(e => e.showOnHomepage), ...articles.filter(a => a.showOnHomepage)].slice(0, 3).map((item, idx) => {
                                         // Events have location property, articles have category/source
-                                        const isEvent = item.location !== undefined || item.descriptionAl !== undefined;
+                                        const isEvent = item.location !== undefined || item.descAl !== undefined;
                                         return (
                                             <div
                                                 key={idx}
@@ -8713,9 +8757,9 @@ const RinON = () => {
                                             </div>
                                         );
                                     })}
-                                    {otherEvents.length === 0 && articles.length === 0 && (
+                                    {otherEvents.filter(e => e.showOnHomepage).length === 0 && articles.filter(a => a.showOnHomepage).length === 0 && (
                                         <div className="flex-shrink-0 w-64 bg-[#292524] rounded-xl p-4 text-center">
-                                            <p className="text-white/60 text-sm">{t('Së shpejti...', 'Coming soon...')}</p>
+                                            <p className="text-white/60 text-sm">{t('Asnjë përmbajtje e zgjedhur', 'No selected content')}</p>
                                         </div>
                                     )}
                                 </div>
@@ -9223,106 +9267,307 @@ const RinON = () => {
                 ) : currentPage === 'lajme' ? (
                     <>
                         {/* ==========================================
-                            LAJME PAGE - All news articles with category filters
+                            N'GAZETA PAGE - News with Home section and categories
                            ========================================== */}
-                        <div className="max-w-7xl mx-auto px-4 py-12">
-                            <h1 className={`text-4xl md:text-5xl font-bold mb-8 ${darkMode ? 'text-white' : 'text-black'}`}>
-                                {t('Lajme', 'News')}
-                            </h1>
-
-                            {lajmeArticles.length === 0 ? (
-                                <div className="text-center py-20">
-                                    <Newspaper className={`w-20 h-20 mx-auto mb-6 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {t('Asnjë lajm ende', 'No news yet')}
-                                    </h3>
-                                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                        {t('Lajmet do të shfaqen këtu kur të publikohen', 'News will appear here when published')}
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {lajmeArticles.map((article) => (
-                                        <div
-                                            key={article.id}
-                                            data-article-card
-                                            onClick={() => openArticle(article)}
-                                            className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-amber-500/30"
-                                        >
-                                            <div className="relative h-80 overflow-hidden">
-                                                <img
-                                                    src={article.image}
-                                                    alt={article.titleAl}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
-
-                                                <span className="absolute top-4 left-4 px-4 py-2 rounded-full bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white text-xs font-bold backdrop-blur-sm shadow-lg">
-                                                    {article.category}
-                                                </span>
-
-                                                <div className="absolute top-4 right-4 flex gap-2">
-                                                    {/* Save/Bookmark Button */}
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleSaveArticle(article.id);
-                                                        }}
-                                                        className={`p-2 rounded-full transition z-10 shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
-                                                        title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
-                                                    >
-                                                        {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleNativeShare(article, 'article');
-                                                        }}
-                                                        className="bg-gradient-to-r from-[#fbbf24] via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full hover:from-amber-500 hover:to-[#FF5252] transition z-10 shadow-lg"
-                                                        title={t('Shpërndaj', 'Share')}
-                                                    >
-                                                        <Share2 className="h-4 w-4" />
-                                                    </button>
-                                                    {showAdmin && (
-                                                        <>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    editArticle(article);
-                                                                }}
-                                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                                            >
-                                                                <Edit className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    deleteArticle(article.id);
-                                                                }}
-                                                                className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        </>
-                                                    )}
+                        <div className="max-w-7xl mx-auto px-4 py-8">
+                            {selectedCategoryFilter === 'Home' ? (
+                                /* NEWS HOME PAGE */
+                                <div className="space-y-12">
+                                    {/* Head Article of the Week */}
+                                    {(() => {
+                                        const headArticle = lajmeArticles.find(a => a.is_head_article);
+                                        if (!headArticle) return null;
+                                        return (
+                                            <div className="relative">
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
+                                                        <Newspaper className="w-4 h-4 text-white" />
+                                                    </div>
+                                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                        {t('Artikulli Kryesor', 'Head Article')}
+                                                    </h2>
+                                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>
+                                                        {t('Javore', 'Weekly')}
+                                                    </span>
                                                 </div>
-
-                                                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                                    <h3 className="text-2xl font-bold mb-2 line-clamp-2 group-hover:text-amber-400 transition">
-                                                        {language === 'al' ? article.titleAl : article.titleEn}
-                                                    </h3>
-                                                    <div className="flex items-center gap-4 text-sm opacity-80">
-                                                        <span>{article.date}</span>
-                                                        <span className="text-amber-400 font-medium group-hover:underline">
-                                                            {t('Lexo më shumë →', 'Read more →')}
-                                                        </span>
+                                                <div
+                                                    onClick={() => openArticle(headArticle)}
+                                                    className={`group relative overflow-hidden rounded-3xl cursor-pointer transition-all hover:shadow-2xl hover:shadow-amber-500/30 ${darkMode ? 'bg-[#2D2A26]' : 'bg-white shadow-xl'}`}
+                                                >
+                                                    <div className="grid md:grid-cols-2 gap-0">
+                                                        <div className="relative h-72 md:h-96">
+                                                            <img
+                                                                src={headArticle.image}
+                                                                alt={headArticle.titleAl}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
+                                                            />
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent md:hidden" />
+                                                        </div>
+                                                        <div className="p-8 flex flex-col justify-center">
+                                                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-xs font-bold w-fit mb-4">
+                                                                🗞️ {headArticle.category}
+                                                            </span>
+                                                            <h3 className={`text-2xl md:text-3xl font-bold mb-4 group-hover:text-amber-500 transition ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                                {language === 'al' ? headArticle.titleAl : headArticle.titleEn}
+                                                            </h3>
+                                                            <p className={`text-base mb-6 line-clamp-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                {language === 'al' ? headArticle.contentAl?.substring(0, 200) : headArticle.contentEn?.substring(0, 200)}...
+                                                            </p>
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-4">
+                                                                    {headArticle.author && (
+                                                                        <span className={`text-sm ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                                                                            {t('Nga', 'By')} <span className="font-semibold">{headArticle.author}</span>
+                                                                        </span>
+                                                                    )}
+                                                                    <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{headArticle.date}</span>
+                                                                </div>
+                                                                <span className={`text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                                                                    {t('Lexo më shumë →', 'Read more →')}
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
+                                        );
+                                    })()}
+
+                                    {/* Latest News Section */}
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-6">
+                                            <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center">
+                                                <TrendingUp className="w-4 h-4 text-white" />
+                                            </div>
+                                            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                {t('Lajmet e Fundit', 'Latest News')}
+                                            </h2>
                                         </div>
-                                    ))}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {lajmeArticles.filter(a => !a.is_head_article).slice(0, 4).map((article) => (
+                                                <div
+                                                    key={article.id}
+                                                    onClick={() => openArticle(article)}
+                                                    className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:shadow-xl hover:shadow-amber-500/20 ${darkMode ? 'bg-[#2D2A26] border border-white/10' : 'bg-white shadow-md border border-gray-100'}`}
+                                                >
+                                                    <div className="relative h-56">
+                                                        <img
+                                                            src={article.image}
+                                                            alt={article.titleAl}
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                                                        <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-xs font-bold">
+                                                            {article.category}
+                                                        </span>
+                                                        {article.author && (
+                                                            <span className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs">
+                                                                {t('Nga', 'By')} {article.author}
+                                                            </span>
+                                                        )}
+                                                        <div className="absolute bottom-0 left-0 right-0 p-5">
+                                                            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-amber-400 transition">
+                                                                {language === 'al' ? article.titleAl : article.titleEn}
+                                                            </h3>
+                                                            <span className="text-sm text-gray-300">{article.date}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* More News - Full Width Cards */}
+                                    {lajmeArticles.filter(a => !a.is_head_article).length > 4 && (
+                                        <div>
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
+                                                        <FileText className="w-4 h-4 text-white" />
+                                                    </div>
+                                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                        {t('Më Shumë Lajme', 'More News')}
+                                                    </h2>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4">
+                                                {lajmeArticles.filter(a => !a.is_head_article).slice(4).map((article) => (
+                                                    <div
+                                                        key={article.id}
+                                                        onClick={() => openArticle(article)}
+                                                        className={`group flex gap-6 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-lg ${darkMode ? 'bg-[#2D2A26] hover:bg-[#3D3A36] border border-white/5' : 'bg-white hover:bg-gray-50 shadow-sm border border-gray-100'}`}
+                                                    >
+                                                        <div className="w-32 h-24 md:w-48 md:h-32 rounded-xl overflow-hidden flex-shrink-0">
+                                                            <img
+                                                                src={article.image}
+                                                                alt={article.titleAl}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 flex flex-col justify-center">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>
+                                                                    {article.category}
+                                                                </span>
+                                                                {article.author && (
+                                                                    <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                                        {t('Nga', 'By')} {article.author}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <h3 className={`text-lg font-bold mb-2 line-clamp-2 group-hover:text-amber-500 transition ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                                {language === 'al' ? article.titleAl : article.titleEn}
+                                                            </h3>
+                                                            <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                {language === 'al' ? article.contentAl?.substring(0, 120) : article.contentEn?.substring(0, 120)}...
+                                                            </p>
+                                                            <span className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{article.date}</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
+                            ) : (
+                                /* CATEGORY FILTERED VIEW */
+                                <>
+                                    {filteredLajmeArticles.length === 0 ? (
+                                        <div className="text-center py-20">
+                                            <Newspaper className={`w-20 h-20 mx-auto mb-6 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                            <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                {t('Asnjë lajm në këtë kategori', 'No news in this category')}
+                                            </h3>
+                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+                                                {t('Provo një kategori tjetër', 'Try another category')}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-6">
+                                            {/* First article - Large hero style */}
+                                            {filteredLajmeArticles.length > 0 && (
+                                                <div
+                                                    onClick={() => openArticle(filteredLajmeArticles[0])}
+                                                    className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all hover:shadow-2xl hover:shadow-amber-500/30"
+                                                >
+                                                    <div className="relative h-[50vh] min-h-[400px]">
+                                                        <img
+                                                            src={filteredLajmeArticles[0].image}
+                                                            alt={filteredLajmeArticles[0].titleAl}
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
+                                                        />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+
+                                                        {/* Category badge */}
+                                                        <span className="absolute top-6 left-6 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-sm font-bold shadow-lg">
+                                                            {filteredLajmeArticles[0].category}
+                                                        </span>
+
+                                                        {/* Author badge */}
+                                                        {filteredLajmeArticles[0].author && (
+                                                            <span className="absolute top-6 right-6 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md text-white text-sm">
+                                                                {t('Nga', 'By')} <span className="font-semibold">{filteredLajmeArticles[0].author}</span>
+                                                            </span>
+                                                        )}
+
+                                                        {/* Action buttons */}
+                                                        <div className="absolute top-6 right-6 flex gap-2" style={{ right: filteredLajmeArticles[0].author ? '180px' : '24px' }}>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); toggleSaveArticle(filteredLajmeArticles[0].id); }}
+                                                                className={`p-2.5 rounded-full transition shadow-lg ${savedArticles.includes(filteredLajmeArticles[0].id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
+                                                            >
+                                                                {savedArticles.includes(filteredLajmeArticles[0].id) ? <BookmarkCheck className="h-5 w-5" /> : <Bookmark className="h-5 w-5" />}
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleNativeShare(filteredLajmeArticles[0], 'article'); }}
+                                                                className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white p-2.5 rounded-full shadow-lg"
+                                                            >
+                                                                <Share2 className="h-5 w-5" />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        <div className="absolute bottom-0 left-0 right-0 p-8">
+                                                            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 line-clamp-2 group-hover:text-amber-400 transition">
+                                                                {language === 'al' ? filteredLajmeArticles[0].titleAl : filteredLajmeArticles[0].titleEn}
+                                                            </h3>
+                                                            <p className="text-gray-300 text-lg mb-4 line-clamp-2">
+                                                                {language === 'al' ? filteredLajmeArticles[0].contentAl?.substring(0, 150) : filteredLajmeArticles[0].contentEn?.substring(0, 150)}...
+                                                            </p>
+                                                            <div className="flex items-center gap-4">
+                                                                <span className="text-gray-400">{filteredLajmeArticles[0].date}</span>
+                                                                <span className="text-amber-400 font-medium">{t('Lexo më shumë →', 'Read more →')}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Rest of articles - Grid */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {filteredLajmeArticles.slice(1).map((article) => (
+                                                    <div
+                                                        key={article.id}
+                                                        onClick={() => openArticle(article)}
+                                                        className="group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:shadow-xl hover:shadow-amber-500/20"
+                                                    >
+                                                        <div className="relative h-72">
+                                                            <img
+                                                                src={article.image}
+                                                                alt={article.titleAl}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
+                                                            />
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+
+                                                            <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-xs font-bold">
+                                                                {article.category}
+                                                            </span>
+
+                                                            {article.author && (
+                                                                <span className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs">
+                                                                    {t('Nga', 'By')} {article.author}
+                                                                </span>
+                                                            )}
+
+                                                            <div className="absolute top-4 right-4 flex gap-2" style={{ right: article.author ? '140px' : '16px' }}>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); toggleSaveArticle(article.id); }}
+                                                                    className={`p-2 rounded-full transition shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
+                                                                >
+                                                                    {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleNativeShare(article, 'article'); }}
+                                                                    className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full shadow-lg"
+                                                                >
+                                                                    <Share2 className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+
+                                                            <div className="absolute bottom-0 left-0 right-0 p-5">
+                                                                <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-amber-400 transition">
+                                                                    {language === 'al' ? article.titleAl : article.titleEn}
+                                                                </h3>
+                                                                <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+                                                                    {language === 'al' ? article.contentAl?.substring(0, 100) : article.contentEn?.substring(0, 100)}...
+                                                                </p>
+                                                                <div className="flex items-center gap-4 text-sm">
+                                                                    <span className="text-gray-400">{article.date}</span>
+                                                                    <span className="text-amber-400 font-medium">{t('Lexo më shumë →', 'Read more →')}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </>
@@ -9626,11 +9871,37 @@ const RinON = () => {
                             <h2 className="text-4xl font-bold text-white mb-4">
                                 {language === 'al' ? selectedArticle.titleAl : selectedArticle.titleEn}
                             </h2>
-                            {selectedArticle.source && (
-                                <p className="text-sm text-gray-400 mb-4">
-                                    {t('Burimi:', 'Source:')} {selectedArticle.source}
-                                </p>
-                            )}
+                            {/* Author and Source info */}
+                            <div className="flex flex-wrap items-center gap-4 mb-6">
+                                {selectedArticle.author && (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                                            <span className="text-white text-sm font-bold">{selectedArticle.author.charAt(0).toUpperCase()}</span>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">{t('Nga', 'By')}</p>
+                                            <p className="text-sm text-amber-400 font-medium">{selectedArticle.author}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                {selectedArticle.source && (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
+                                            <ExternalLink className="w-4 h-4 text-gray-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">{t('Burimi', 'Source')}</p>
+                                            <p className="text-sm text-gray-300">{selectedArticle.source}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                {selectedArticle.date && (
+                                    <div className="flex items-center gap-2 ml-auto">
+                                        <Clock className="w-4 h-4 text-gray-500" />
+                                        <span className="text-sm text-gray-400">{selectedArticle.date}</span>
+                                    </div>
+                                )}
+                            </div>
                             <div className="prose prose-invert prose-lg max-w-none">
                                 <p className="text-gray-300 leading-relaxed whitespace-pre-line">
                                     {language === 'al' ? selectedArticle.contentAl : selectedArticle.contentEn}
@@ -10039,19 +10310,14 @@ const RinON = () => {
                         // Only close if clicking the backdrop itself, not the modal content
                         if (e.target === e.currentTarget) {
                             setShowEventModal(false);
+                            setSelectedEvent(null);
                             window.history.pushState({}, '', '/events');
                         }
                     }}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchMove={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => e.stopPropagation()}
                 >
                     <div
                         className={`rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-2xl ${darkMode ? 'bg-[#2D2A26] border-amber-500/20' : 'bg-white border-gray-200'}`}
                         onClick={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        onTouchMove={(e) => e.stopPropagation()}
-                        onTouchEnd={(e) => e.stopPropagation()}
                     >
                         {/* Header Image */}
                         <div className="relative h-72">
@@ -10065,8 +10331,10 @@ const RinON = () => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#2D2A26] via-transparent to-transparent" />
                             <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     setShowEventModal(false);
+                                    setSelectedEvent(null);
                                     window.history.pushState({}, '', '/events');
                                 }}
                                 className="absolute top-4 right-4 bg-[#2D2A26]/80 hover:bg-[#2D2A26] p-2 rounded-full backdrop-blur-lg transition-all"
@@ -10297,7 +10565,7 @@ const RinON = () => {
                     {[
                         { key: 'home', icon: Home, label: 'Home' },
                         { key: 'events', icon: Calendar, label: 'Evente' },
-                        { key: 'lajme', icon: Newspaper, label: 'Lajme' },
+                        { key: 'lajme', icon: Newspaper, label: "N'gazeta" },
                         { key: 'komuniteti', icon: MessageCircle, label: 'Komuniteti' },
                     ].map(item => {
                         const Icon = item.icon;
