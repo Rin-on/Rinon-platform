@@ -2100,6 +2100,9 @@ const RinON = () => {
 
     const [eventViewMode, setEventViewMode] = useState('calendar');
 
+    // N'gazeta content type filter: 'all' (Home), 'lajme' (News only), 'artikuj' (Articles only)
+    const [contentTypeFilter, setContentTypeFilter] = useState('all');
+
     // Calendar state - moved to parent to persist across re-renders
     const [calendarDate, setCalendarDate] = useState(new Date());
 
@@ -3719,8 +3722,10 @@ const RinON = () => {
                     id: a.id, titleAl: a.title_al, titleEn: a.title_en,
                     contentAl: a.content_al, contentEn: a.content_en,
                     category: a.category, image: a.image, source: a.source,
+                    author: a.author || '',
                     featured: a.featured, postType: a.post_type || 'lajme',
                     showOnHomepage: a.show_on_homepage || false,
+                    is_head_article: a.is_head_article || false,
                     date: new Date(a.created_at).toISOString().split('T')[0]
                 }));
                 setArticles(formattedArticles);
@@ -4505,7 +4510,9 @@ const RinON = () => {
             image: article.image,
             imageFile: null,
             source: article.source,
+            author: article.author || '',
             featured: article.featured,
+            isHeadArticle: article.is_head_article || false,
             postType: article.postType || 'lajme',
             showOnHomepage: article.showOnHomepage || false
         });
@@ -5174,9 +5181,9 @@ const RinON = () => {
     const filteredArticles = (() => {
         let filtered = articles;
 
-        // Category filter (use selectedCategoryFilter from pills OR activeCategory from old system)
+        // Category filter - DON'T filter on 'Home', 'Te Gjitha', or 'All'
         const categoryToUse = selectedCategoryFilter || activeCategory;
-        if (categoryToUse !== 'Te Gjitha' && categoryToUse !== 'All') {
+        if (categoryToUse && categoryToUse !== 'Te Gjitha' && categoryToUse !== 'All' && categoryToUse !== 'Home') {
             filtered = filtered.filter(a => a.category === categoryToUse);
         }
 
@@ -5194,14 +5201,38 @@ const RinON = () => {
         return filtered;
     })();
 
-    // Separate filters for Lajme page (postType: 'lajme') and Komuniteti page (postType: 'artikull')
-    const lajmeArticles = filteredArticles.filter(a => a.postType === 'lajme' || !a.postType); // Default to lajme if not set
-    const komunitetiArticles = filteredArticles.filter(a => a.postType === 'artikull');
+    // All news items (postType: 'lajme' or no postType set)
+    const lajmeArticles = filteredArticles.filter(a => a.postType === 'lajme' || !a.postType);
+    // All articles/opinions (postType: 'artikull')
+    const artikujArticles = filteredArticles.filter(a => a.postType === 'artikull');
+    // Combined for Home view - sorted by date (newest first)
+    const allNewsAndArticles = [...lajmeArticles, ...artikujArticles].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // Filtered articles for N'gazeta category view
-    const filteredLajmeArticles = selectedCategoryFilter === 'Home' || selectedCategoryFilter === 'Te Gjitha'
-        ? lajmeArticles
-        : lajmeArticles.filter(a => a.category === selectedCategoryFilter);
+    // For Komuniteti page and backwards compatibility - now uses artikujArticles
+    const komunitetiArticles = artikujArticles;
+
+    // N'gazeta filtered content based on contentTypeFilter and selectedCategoryFilter
+    const ngazetaFilteredContent = (() => {
+        let items = [];
+
+        if (contentTypeFilter === 'all') {
+            // Home: Show mix of news and articles
+            items = allNewsAndArticles;
+        } else if (contentTypeFilter === 'lajme') {
+            // Lajme: Show only news
+            items = lajmeArticles;
+        } else if (contentTypeFilter === 'artikuj') {
+            // Artikuj: Show only articles
+            items = artikujArticles;
+        }
+
+        // Apply category filter if not 'Home' or 'Te Gjitha'
+        if (selectedCategoryFilter && selectedCategoryFilter !== 'Home' && selectedCategoryFilter !== 'Te Gjitha') {
+            items = items.filter(a => a.category === selectedCategoryFilter);
+        }
+
+        return items;
+    })();
 
     const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
     const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
@@ -6818,8 +6849,8 @@ const RinON = () => {
                             <div className={`absolute top-1/2 right-10 w-16 h-16 rounded-full ${darkMode ? 'bg-amber-500/8' : 'bg-amber-400/12'}`} />
                         </div>
 
-                        <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
-                            <div className="flex items-center justify-between">
+                        <div className="max-w-7xl mx-auto px-4 py-6 relative z-10">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div>
                                     <h1 className={`text-4xl md:text-5xl font-black ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
                                         N'gazeta
@@ -6828,15 +6859,60 @@ const RinON = () => {
                                         {t('Lajmet më të fundit për të rinjtë', 'Latest news for youth')}
                                     </p>
                                 </div>
-                                {/* Clock/Time Display */}
-                                <div className={`hidden md:flex items-center gap-3 px-4 py-3 rounded-2xl ${darkMode ? 'bg-white/5 border border-white/10' : 'bg-white shadow-lg border border-amber-100'}`}>
-                                    <Clock className={`w-6 h-6 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-                                    <div>
-                                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('Përditësuar', 'Updated')}</p>
-                                        <p className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                            {new Date().toLocaleDateString(language === 'al' ? 'sq-AL' : 'en-US', { day: 'numeric', month: 'short' })}
-                                        </p>
-                                    </div>
+                                {/* Quick Navigation Buttons */}
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => { setContentTypeFilter('lajme'); setSelectedCategoryFilter('Home'); }}
+                                        className={`group flex-1 md:flex-none px-5 py-3 rounded-2xl transition-all ${contentTypeFilter === 'lajme'
+                                                ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
+                                                : darkMode
+                                                    ? 'bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/30'
+                                                    : 'bg-white hover:bg-amber-50 shadow-md border border-amber-100 hover:border-amber-300'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${contentTypeFilter === 'lajme'
+                                                    ? 'bg-white/20'
+                                                    : 'bg-gradient-to-br from-amber-400 to-orange-500'
+                                                }`}>
+                                                <Newspaper className={`w-5 h-5 ${contentTypeFilter === 'lajme' ? 'text-white' : 'text-white'}`} />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className={`font-bold ${contentTypeFilter === 'lajme' ? 'text-white' : darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                    {t('Lajme', 'News')}
+                                                </p>
+                                                <p className={`text-xs ${contentTypeFilter === 'lajme' ? 'text-white/70' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                    {t('Ngjarje aktuale', 'Current events')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => { setContentTypeFilter('artikuj'); setSelectedCategoryFilter('Home'); }}
+                                        className={`group flex-1 md:flex-none px-5 py-3 rounded-2xl transition-all ${contentTypeFilter === 'artikuj'
+                                                ? 'bg-gradient-to-r from-teal-400 to-emerald-500 text-white shadow-lg shadow-teal-500/30'
+                                                : darkMode
+                                                    ? 'bg-white/5 hover:bg-teal-500/20 border border-white/10 hover:border-teal-500/30'
+                                                    : 'bg-white hover:bg-teal-50 shadow-md border border-teal-100 hover:border-teal-300'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${contentTypeFilter === 'artikuj'
+                                                    ? 'bg-white/20'
+                                                    : 'bg-gradient-to-br from-teal-400 to-emerald-500'
+                                                }`}>
+                                                <FileText className={`w-5 h-5 ${contentTypeFilter === 'artikuj' ? 'text-white' : 'text-white'}`} />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className={`font-bold ${contentTypeFilter === 'artikuj' ? 'text-white' : darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                    {t('Artikuj', 'Articles')}
+                                                </p>
+                                                <p className={`text-xs ${contentTypeFilter === 'artikuj' ? 'text-white/70' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                    {t('Mendime & analiza', 'Opinions & analysis')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -6851,8 +6927,8 @@ const RinON = () => {
                             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1">
                                 {/* Home button for N'gazeta */}
                                 <button
-                                    onClick={() => setSelectedCategoryFilter('Home')}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all text-sm font-semibold ${selectedCategoryFilter === 'Home'
+                                    onClick={() => { setSelectedCategoryFilter('Home'); setContentTypeFilter('all'); }}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all text-sm font-semibold ${selectedCategoryFilter === 'Home' && contentTypeFilter === 'all'
                                         ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
                                         : darkMode
                                             ? 'bg-[#3D3A36] text-gray-300 hover:bg-amber-500/20 hover:text-amber-400 border border-amber-500/20'
@@ -6865,12 +6941,16 @@ const RinON = () => {
                                 {categories.filter(cat => cat.al !== 'Te Gjitha').map((cat) => {
                                     const isActive = selectedCategoryFilter === cat.al;
                                     const Icon = cat.icon || TrendingUp;
+                                    // Style based on content type filter
+                                    const activeGradient = contentTypeFilter === 'artikuj'
+                                        ? 'bg-gradient-to-r from-teal-400 to-emerald-500 text-white shadow-lg shadow-teal-500/30'
+                                        : 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30';
                                     return (
                                         <button
                                             key={cat.al}
                                             onClick={() => setSelectedCategoryFilter(cat.al)}
                                             className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all text-sm font-semibold ${isActive
-                                                ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
+                                                ? activeGradient
                                                 : darkMode
                                                     ? 'bg-[#3D3A36] text-gray-300 hover:bg-amber-500/20 hover:text-amber-400 border border-amber-500/20'
                                                     : 'bg-amber-50 text-gray-600 hover:bg-[#FFE5D9] hover:text-amber-700 border border-amber-200'
@@ -9270,271 +9350,114 @@ const RinON = () => {
                             N'GAZETA PAGE - News with Home section and categories
                            ========================================== */}
                         <div className="max-w-7xl mx-auto px-4 py-8">
-                            {selectedCategoryFilter === 'Home' ? (
-                                /* NEWS HOME PAGE */
-                                <div className="space-y-12">
-                                    {/* Head Article of the Week */}
-                                    {(() => {
-                                        const headArticle = lajmeArticles.find(a => a.is_head_article);
-                                        if (!headArticle) return null;
-                                        return (
-                                            <div className="relative">
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
-                                                        <Newspaper className="w-4 h-4 text-white" />
-                                                    </div>
-                                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                        {t('Artikulli Kryesor', 'Head Article')}
-                                                    </h2>
-                                                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>
-                                                        {t('Javore', 'Weekly')}
-                                                    </span>
-                                                </div>
-                                                <div
-                                                    onClick={() => openArticle(headArticle)}
-                                                    className={`group relative overflow-hidden rounded-3xl cursor-pointer transition-all hover:shadow-2xl hover:shadow-amber-500/30 ${darkMode ? 'bg-[#2D2A26]' : 'bg-white shadow-xl'}`}
-                                                >
-                                                    <div className="grid md:grid-cols-2 gap-0">
-                                                        <div className="relative h-72 md:h-96">
-                                                            <img
-                                                                src={headArticle.image}
-                                                                alt={headArticle.titleAl}
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                            />
-                                                            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent md:hidden" />
-                                                        </div>
-                                                        <div className="p-8 flex flex-col justify-center">
-                                                            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-xs font-bold w-fit mb-4">
-                                                                🗞️ {headArticle.category}
-                                                            </span>
-                                                            <h3 className={`text-2xl md:text-3xl font-bold mb-4 group-hover:text-amber-500 transition ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                                {language === 'al' ? headArticle.titleAl : headArticle.titleEn}
-                                                            </h3>
-                                                            <p className={`text-base mb-6 line-clamp-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                                {language === 'al' ? headArticle.contentAl?.substring(0, 200) : headArticle.contentEn?.substring(0, 200)}...
-                                                            </p>
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-4">
-                                                                    {headArticle.author && (
-                                                                        <span className={`text-sm ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                                                                            {t('Nga', 'By')} <span className="font-semibold">{headArticle.author}</span>
-                                                                        </span>
-                                                                    )}
-                                                                    <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{headArticle.date}</span>
-                                                                </div>
-                                                                <span className={`text-sm font-medium ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                                                                    {t('Lexo më shumë →', 'Read more →')}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
+                            {/* N'GAZETA UNIFIED CONTENT */}
 
-                                    {/* Latest News Section */}
+                            {/* Show current filter info */}
+                            {selectedCategoryFilter !== 'Home' && (
+                                <div className="mb-6 flex items-center gap-3">
+                                    <button
+                                        onClick={() => setSelectedCategoryFilter('Home')}
+                                        className={`p-2 rounded-full ${darkMode ? 'bg-white/10 hover:bg-white/20' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
                                     <div>
-                                        <div className="flex items-center gap-2 mb-6">
-                                            <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-lg flex items-center justify-center">
-                                                <TrendingUp className="w-4 h-4 text-white" />
+                                        <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                            {selectedCategoryFilter}
+                                        </h2>
+                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {contentTypeFilter === 'lajme' ? t('Duke shfaqur lajme', 'Showing news') :
+                                                contentTypeFilter === 'artikuj' ? t('Duke shfaqur artikuj', 'Showing articles') :
+                                                    t('Duke shfaqur të gjitha', 'Showing all')}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* CONTENT DISPLAY */}
+                            {contentTypeFilter === 'all' && selectedCategoryFilter === 'Home' ? (
+                                /* HOME VIEW: Latest 5 items (mix of news and articles) */
+                                <div className="space-y-8">
+                                    {/* Section Title */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center">
+                                                <TrendingUp className="w-5 h-5 text-white" />
                                             </div>
                                             <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {t('Lajmet e Fundit', 'Latest News')}
+                                                {t('Më të Fundit', 'Latest')}
                                             </h2>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            {lajmeArticles.filter(a => !a.is_head_article).slice(0, 4).map((article) => (
-                                                <div
-                                                    key={article.id}
-                                                    onClick={() => openArticle(article)}
-                                                    className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:shadow-xl hover:shadow-amber-500/20 ${darkMode ? 'bg-[#2D2A26] border border-white/10' : 'bg-white shadow-md border border-gray-100'}`}
-                                                >
-                                                    <div className="relative h-56">
-                                                        <img
-                                                            src={article.image}
-                                                            alt={article.titleAl}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                        />
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                                                        <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-xs font-bold">
-                                                            {article.category}
-                                                        </span>
-                                                        {article.author && (
-                                                            <span className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs">
-                                                                {t('Nga', 'By')} {article.author}
-                                                            </span>
-                                                        )}
-                                                        <div className="absolute bottom-0 left-0 right-0 p-5">
-                                                            <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 group-hover:text-amber-400 transition">
-                                                                {language === 'al' ? article.titleAl : article.titleEn}
-                                                            </h3>
-                                                            <span className="text-sm text-gray-300">{article.date}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {allNewsAndArticles.length} {t('postime', 'posts')}
+                                        </span>
                                     </div>
 
-                                    {/* More News - Full Width Cards */}
-                                    {lajmeArticles.filter(a => !a.is_head_article).length > 4 && (
-                                        <div>
-                                            <div className="flex items-center justify-between mb-6">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
-                                                        <FileText className="w-4 h-4 text-white" />
-                                                    </div>
-                                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                        {t('Më Shumë Lajme', 'More News')}
-                                                    </h2>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-4">
-                                                {lajmeArticles.filter(a => !a.is_head_article).slice(4).map((article) => (
-                                                    <div
-                                                        key={article.id}
-                                                        onClick={() => openArticle(article)}
-                                                        className={`group flex gap-6 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-lg ${darkMode ? 'bg-[#2D2A26] hover:bg-[#3D3A36] border border-white/5' : 'bg-white hover:bg-gray-50 shadow-sm border border-gray-100'}`}
-                                                    >
-                                                        <div className="w-32 h-24 md:w-48 md:h-32 rounded-xl overflow-hidden flex-shrink-0">
-                                                            <img
-                                                                src={article.image}
-                                                                alt={article.titleAl}
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                            />
-                                                        </div>
-                                                        <div className="flex-1 flex flex-col justify-center">
-                                                            <div className="flex items-center gap-3 mb-2">
-                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>
-                                                                    {article.category}
-                                                                </span>
-                                                                {article.author && (
-                                                                    <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                                        {t('Nga', 'By')} {article.author}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <h3 className={`text-lg font-bold mb-2 line-clamp-2 group-hover:text-amber-500 transition ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                                {language === 'al' ? article.titleAl : article.titleEn}
-                                                            </h3>
-                                                            <p className={`text-sm line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                                {language === 'al' ? article.contentAl?.substring(0, 120) : article.contentEn?.substring(0, 120)}...
-                                                            </p>
-                                                            <span className={`text-xs mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{article.date}</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                /* CATEGORY FILTERED VIEW */
-                                <>
-                                    {filteredLajmeArticles.length === 0 ? (
-                                        <div className="text-center py-20">
-                                            <Newspaper className={`w-20 h-20 mx-auto mb-6 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                            <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>
-                                                {t('Asnjë lajm në këtë kategori', 'No news in this category')}
-                                            </h3>
-                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                                {t('Provo një kategori tjetër', 'Try another category')}
-                                            </p>
+                                    {allNewsAndArticles.length === 0 ? (
+                                        <div className="text-center py-16">
+                                            <Newspaper className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>{t('Asnjë postim ende', 'No posts yet')}</p>
                                         </div>
                                     ) : (
-                                        <div className="space-y-6">
-                                            {/* First article - Large hero style */}
-                                            {filteredLajmeArticles.length > 0 && (
-                                                <div
-                                                    onClick={() => openArticle(filteredLajmeArticles[0])}
-                                                    className="group relative overflow-hidden rounded-3xl cursor-pointer transition-all hover:shadow-2xl hover:shadow-amber-500/30"
-                                                >
-                                                    <div className="relative h-[50vh] min-h-[400px]">
-                                                        <img
-                                                            src={filteredLajmeArticles[0].image}
-                                                            alt={filteredLajmeArticles[0].titleAl}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                        />
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-
-                                                        {/* Category badge */}
-                                                        <span className="absolute top-6 left-6 px-4 py-2 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-sm font-bold shadow-lg">
-                                                            {filteredLajmeArticles[0].category}
-                                                        </span>
-
-                                                        {/* Author badge */}
-                                                        {filteredLajmeArticles[0].author && (
-                                                            <span className="absolute top-6 right-6 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md text-white text-sm">
-                                                                {t('Nga', 'By')} <span className="font-semibold">{filteredLajmeArticles[0].author}</span>
-                                                            </span>
+                                        <div className="space-y-4">
+                                            {/* Head Article if exists */}
+                                            {(() => {
+                                                const headArticle = allNewsAndArticles.find(a => a.is_head_article);
+                                                if (!headArticle) return null;
+                                                return (
+                                                    <div
+                                                        onClick={() => openArticle(headArticle)}
+                                                        className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:shadow-2xl ${darkMode ? 'bg-[#2D2A26]' : 'bg-white shadow-xl'}`}
+                                                    >
+                                                        {showAdmin && (
+                                                            <div className="absolute top-4 right-4 z-10 flex gap-2">
+                                                                <button onClick={(e) => { e.stopPropagation(); editArticle(headArticle); }} className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg"><Edit className="h-4 w-4" /></button>
+                                                                <button onClick={(e) => { e.stopPropagation(); deleteArticle(headArticle.id); }} className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition shadow-lg"><Trash2 className="h-4 w-4" /></button>
+                                                            </div>
                                                         )}
-
-                                                        {/* Action buttons */}
-                                                        <div className="absolute top-6 right-6 flex gap-2" style={{ right: filteredLajmeArticles[0].author ? '180px' : '24px' }}>
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); toggleSaveArticle(filteredLajmeArticles[0].id); }}
-                                                                className={`p-2.5 rounded-full transition shadow-lg ${savedArticles.includes(filteredLajmeArticles[0].id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
-                                                            >
-                                                                {savedArticles.includes(filteredLajmeArticles[0].id) ? <BookmarkCheck className="h-5 w-5" /> : <Bookmark className="h-5 w-5" />}
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); handleNativeShare(filteredLajmeArticles[0], 'article'); }}
-                                                                className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white p-2.5 rounded-full shadow-lg"
-                                                            >
-                                                                <Share2 className="h-5 w-5" />
-                                                            </button>
+                                                        <div className="absolute top-4 left-4 z-10">
+                                                            <span className="px-3 py-1 bg-gradient-to-r from-[#FF6B6B] to-orange-500 text-white text-xs font-bold rounded-full">🔥 {t('Kryesore', 'Featured')}</span>
                                                         </div>
-
-                                                        {/* Content */}
-                                                        <div className="absolute bottom-0 left-0 right-0 p-8">
-                                                            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4 line-clamp-2 group-hover:text-amber-400 transition">
-                                                                {language === 'al' ? filteredLajmeArticles[0].titleAl : filteredLajmeArticles[0].titleEn}
-                                                            </h3>
-                                                            <p className="text-gray-300 text-lg mb-4 line-clamp-2">
-                                                                {language === 'al' ? filteredLajmeArticles[0].contentAl?.substring(0, 150) : filteredLajmeArticles[0].contentEn?.substring(0, 150)}...
-                                                            </p>
-                                                            <div className="flex items-center gap-4">
-                                                                <span className="text-gray-400">{filteredLajmeArticles[0].date}</span>
-                                                                <span className="text-amber-400 font-medium">{t('Lexo më shumë →', 'Read more →')}</span>
+                                                        <div className="grid md:grid-cols-2 gap-0">
+                                                            <div className="relative h-56 md:h-72">
+                                                                <img src={headArticle.image} alt={headArticle.titleAl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }} />
+                                                            </div>
+                                                            <div className="p-6 flex flex-col justify-center">
+                                                                <div className="flex items-center gap-2 mb-3">
+                                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${headArticle.postType === 'artikull' ? (darkMode ? 'bg-teal-500/20 text-teal-400' : 'bg-teal-100 text-teal-700') : (darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700')}`}>
+                                                                        {headArticle.postType === 'artikull' ? '📝 Artikull' : '🗞️ Lajm'}
+                                                                    </span>
+                                                                    <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{headArticle.category}</span>
+                                                                </div>
+                                                                <h3 className={`text-xl md:text-2xl font-bold mb-3 group-hover:text-amber-500 transition line-clamp-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{language === 'al' ? headArticle.titleAl : headArticle.titleEn}</h3>
+                                                                <p className={`text-sm mb-4 line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{language === 'al' ? headArticle.contentAl?.substring(0, 150) : headArticle.contentEn?.substring(0, 150)}...</p>
+                                                                <div className="flex items-center gap-3 text-sm">
+                                                                    {headArticle.author && <span className={darkMode ? 'text-amber-400' : 'text-amber-600'}>{t('Nga', 'By')} {headArticle.author}</span>}
+                                                                    <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>{headArticle.date}</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                );
+                                            })()}
 
-                                            {/* Rest of articles - Grid */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {filteredLajmeArticles.slice(1).map((article) => (
+                                            {/* Latest items grid */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                                {allNewsAndArticles.filter(a => !a.is_head_article).slice(0, 6).map((article) => (
                                                     <div
                                                         key={article.id}
                                                         onClick={() => openArticle(article)}
-                                                        className="group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:shadow-xl hover:shadow-amber-500/20"
+                                                        className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:shadow-xl hover:scale-[1.01] ${darkMode ? 'bg-[#2D2A26]' : 'bg-white shadow-lg'}`}
                                                     >
-                                                        <div className="relative h-72">
-                                                            <img
-                                                                src={article.image}
-                                                                alt={article.titleAl}
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                                onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                            />
-                                                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-
-                                                            <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-xs font-bold">
-                                                                {article.category}
+                                                        <div className="relative h-52">
+                                                            <img src={article.image} alt={article.titleAl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }} />
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                                                            {/* Type badge */}
+                                                            <span className={`absolute top-3 left-3 px-3 py-1.5 text-xs font-bold rounded-full ${article.postType === 'artikull' ? 'bg-gradient-to-r from-teal-400 to-emerald-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'} text-white shadow-lg`}>
+                                                                {article.postType === 'artikull' ? '📝' : '🗞️'} {article.category}
                                                             </span>
-
-                                                            {article.author && (
-                                                                <span className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs">
-                                                                    {t('Nga', 'By')} {article.author}
-                                                                </span>
-                                                            )}
-
-                                                            <div className="absolute top-4 right-4 flex gap-2" style={{ right: article.author ? '140px' : '16px' }}>
+                                                            {/* Action buttons - Save & Share */}
+                                                            <div className="absolute top-3 right-3 flex gap-2">
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); toggleSaveArticle(article.id); }}
                                                                     className={`p-2 rounded-full transition shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
@@ -9543,23 +9466,30 @@ const RinON = () => {
                                                                 </button>
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); handleNativeShare(article, 'article'); }}
-                                                                    className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white p-2 rounded-full shadow-lg"
+                                                                    className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition shadow-lg"
                                                                 >
                                                                     <Share2 className="h-4 w-4" />
                                                                 </button>
+                                                                {showAdmin && (
+                                                                    <>
+                                                                        <button onClick={(e) => { e.stopPropagation(); editArticle(article); }} className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg"><Edit className="h-4 w-4" /></button>
+                                                                        <button onClick={(e) => { e.stopPropagation(); deleteArticle(article.id); }} className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition shadow-lg"><Trash2 className="h-4 w-4" /></button>
+                                                                    </>
+                                                                )}
                                                             </div>
-
-                                                            <div className="absolute bottom-0 left-0 right-0 p-5">
-                                                                <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 group-hover:text-amber-400 transition">
-                                                                    {language === 'al' ? article.titleAl : article.titleEn}
-                                                                </h3>
-                                                                <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                                                                    {language === 'al' ? article.contentAl?.substring(0, 100) : article.contentEn?.substring(0, 100)}...
-                                                                </p>
-                                                                <div className="flex items-center gap-4 text-sm">
-                                                                    <span className="text-gray-400">{article.date}</span>
-                                                                    <span className="text-amber-400 font-medium">{t('Lexo më shumë →', 'Read more →')}</span>
-                                                                </div>
+                                                            {/* Title on image */}
+                                                            <div className="absolute bottom-0 left-0 right-0 p-4">
+                                                                <h3 className="text-lg font-bold text-white line-clamp-2 group-hover:text-amber-400 transition mb-1">{language === 'al' ? article.titleAl : article.titleEn}</h3>
+                                                            </div>
+                                                        </div>
+                                                        {/* Content below image */}
+                                                        <div className="p-4">
+                                                            <p className={`text-sm line-clamp-2 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                {language === 'al' ? article.contentAl?.substring(0, 120) : article.contentEn?.substring(0, 120)}...
+                                                            </p>
+                                                            <div className="flex items-center justify-between text-xs">
+                                                                <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>{article.date}</span>
+                                                                {article.author && <span className={`font-medium ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>{article.author}</span>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -9567,7 +9497,145 @@ const RinON = () => {
                                             </div>
                                         </div>
                                     )}
-                                </>
+                                </div>
+                            ) : (
+                                /* FILTERED VIEW: By content type and/or category */
+                                <div className="space-y-6">
+                                    {/* Filter indicator */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${contentTypeFilter === 'artikuj' ? 'bg-gradient-to-br from-teal-400 to-emerald-500' : 'bg-gradient-to-br from-amber-400 to-orange-500'}`}>
+                                                {contentTypeFilter === 'artikuj' ? <FileText className="w-5 h-5 text-white" /> : <Newspaper className="w-5 h-5 text-white" />}
+                                            </div>
+                                            <div>
+                                                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                    {contentTypeFilter === 'artikuj' ? t('Artikuj', 'Articles') : t('Lajme', 'News')}
+                                                </h2>
+                                                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                    {selectedCategoryFilter !== 'Home' ? selectedCategoryFilter : t('Të gjitha kategoritë', 'All categories')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className={`px-3 py-1.5 text-xs font-bold rounded-full text-white ${contentTypeFilter === 'artikuj' ? 'bg-gradient-to-r from-teal-400 to-emerald-500' : 'bg-gradient-to-r from-amber-400 to-orange-500'}`}>
+                                            {ngazetaFilteredContent.length} {contentTypeFilter === 'artikuj' ? t('artikuj', 'articles') : t('lajme', 'news')}
+                                        </span>
+                                    </div>
+
+                                    {ngazetaFilteredContent.length === 0 ? (
+                                        <div className="text-center py-16">
+                                            {contentTypeFilter === 'artikuj' ? (
+                                                <FileText className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-teal-500/50' : 'text-teal-400/50'}`} />
+                                            ) : (
+                                                <Newspaper className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-amber-500/50' : 'text-amber-400/50'}`} />
+                                            )}
+                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>
+                                                {contentTypeFilter === 'artikuj' ? t('Asnjë artikull në këtë kategori', 'No articles in this category') : t('Asnjë lajm në këtë kategori', 'No news in this category')}
+                                            </p>
+                                        </div>
+                                    ) : contentTypeFilter === 'artikuj' ? (
+                                        /* ARTIKUJ LIST VIEW */
+                                        <div className="space-y-4">
+                                            {ngazetaFilteredContent.map((article, index) => (
+                                                <div
+                                                    key={article.id}
+                                                    onClick={() => openArticle(article)}
+                                                    className={`group flex gap-4 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-lg ${index === 0
+                                                            ? darkMode ? 'bg-teal-500/10 border-2 border-teal-500/30' : 'bg-teal-50 border-2 border-teal-200'
+                                                            : darkMode ? 'bg-[#2D2A26]/50 hover:bg-[#3D3A36]' : 'bg-white hover:bg-gray-50 shadow-sm'
+                                                        }`}
+                                                >
+                                                    <div className={`relative flex-shrink-0 rounded-xl overflow-hidden ${index === 0 ? 'w-40 h-32 md:w-56 md:h-40' : 'w-28 h-24 md:w-40 md:h-28'}`}>
+                                                        <img src={article.image} alt={article.titleAl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800'; }} />
+                                                    </div>
+                                                    <div className="flex-1 flex flex-col justify-center min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${darkMode ? 'bg-teal-500/20 text-teal-400' : 'bg-teal-100 text-teal-700'}`}>{article.category}</span>
+                                                            {article.author && <span className={`text-xs ${darkMode ? 'text-teal-400/70' : 'text-teal-600/70'}`}>{t('Nga', 'By')} {article.author}</span>}
+                                                        </div>
+                                                        <h3 className={`font-bold mb-1 group-hover:text-teal-500 transition line-clamp-2 ${index === 0 ? 'text-base md:text-lg' : 'text-sm'} ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{language === 'al' ? article.titleAl : article.titleEn}</h3>
+                                                        <p className={`text-xs line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{language === 'al' ? article.contentAl?.substring(0, 100) : article.contentEn?.substring(0, 100)}...</p>
+                                                        <span className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{article.date}</span>
+                                                    </div>
+                                                    {/* Action buttons */}
+                                                    <div className="flex flex-col gap-2 flex-shrink-0">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); toggleSaveArticle(article.id); }}
+                                                            className={`p-2 rounded-full transition ${savedArticles.includes(article.id) ? 'bg-teal-500 text-white' : darkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                                        >
+                                                            {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleNativeShare(article, 'article'); }}
+                                                            className={`p-2 rounded-full transition ${darkMode ? 'bg-teal-500 text-white hover:bg-teal-600' : 'bg-teal-500 text-white hover:bg-teal-600'}`}
+                                                        >
+                                                            <Share2 className="h-4 w-4" />
+                                                        </button>
+                                                        {showAdmin && (
+                                                            <>
+                                                                <button onClick={(e) => { e.stopPropagation(); editArticle(article); }} className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition"><Edit className="h-4 w-4" /></button>
+                                                                <button onClick={(e) => { e.stopPropagation(); deleteArticle(article.id); }} className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition"><Trash2 className="h-4 w-4" /></button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        /* LAJME GRID VIEW */
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                            {ngazetaFilteredContent.map((article) => (
+                                                <div
+                                                    key={article.id}
+                                                    onClick={() => openArticle(article)}
+                                                    className={`group relative overflow-hidden rounded-2xl cursor-pointer transition-all hover:shadow-xl hover:scale-[1.01] ${darkMode ? 'bg-[#2D2A26]' : 'bg-white shadow-lg'}`}
+                                                >
+                                                    <div className="relative h-52">
+                                                        <img src={article.image} alt={article.titleAl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }} />
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                                                        {/* Category badge */}
+                                                        <span className="absolute top-3 left-3 px-3 py-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg">{article.category}</span>
+                                                        {article.is_head_article && <span className="absolute top-3 left-32 px-2 py-1 bg-[#FF6B6B] text-white text-xs font-bold rounded-full">🔥</span>}
+                                                        {/* Action buttons */}
+                                                        <div className="absolute top-3 right-3 flex gap-2">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); toggleSaveArticle(article.id); }}
+                                                                className={`p-2 rounded-full transition shadow-lg ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'}`}
+                                                            >
+                                                                {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); handleNativeShare(article, 'article'); }}
+                                                                className="bg-white/20 backdrop-blur-sm text-white p-2 rounded-full hover:bg-white/30 transition shadow-lg"
+                                                            >
+                                                                <Share2 className="h-4 w-4" />
+                                                            </button>
+                                                            {showAdmin && (
+                                                                <>
+                                                                    <button onClick={(e) => { e.stopPropagation(); editArticle(article); }} className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg"><Edit className="h-4 w-4" /></button>
+                                                                    <button onClick={(e) => { e.stopPropagation(); deleteArticle(article.id); }} className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition shadow-lg"><Trash2 className="h-4 w-4" /></button>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                        {/* Title on image */}
+                                                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                                                            <h3 className="text-lg font-bold text-white line-clamp-2 group-hover:text-amber-400 transition">{language === 'al' ? article.titleAl : article.titleEn}</h3>
+                                                        </div>
+                                                    </div>
+                                                    {/* Content below image */}
+                                                    <div className="p-4">
+                                                        <p className={`text-sm line-clamp-2 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                            {language === 'al' ? article.contentAl?.substring(0, 120) : article.contentEn?.substring(0, 120)}...
+                                                        </p>
+                                                        <div className="flex items-center justify-between text-xs">
+                                                            <span className={darkMode ? 'text-gray-500' : 'text-gray-400'}>{article.date}</span>
+                                                            {article.author && <span className={`font-medium ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>{article.author}</span>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </>
@@ -9671,89 +9739,32 @@ const RinON = () => {
                             )}
 
                             {/* Articles Section */}
+                            {/* Articles now in N'gazeta - Show redirect */}
                             <div className="mb-12">
-                                <h2 className={`text-2xl md:text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
-                                    {t('Artikuj', 'Articles')}
-                                </h2>
-                                {komunitetiArticles.length === 0 ? (
-                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
-                                        <FileText className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                            {t('Asnjë artikull ende. Bëhu i pari që shkruan! ✍️', 'No articles yet. Be the first to write! ✍️')}
-                                        </p>
+                                <div className={`p-6 rounded-2xl ${darkMode ? 'bg-gradient-to-br from-teal-500/10 to-emerald-500/5 border border-teal-500/20' : 'bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-100'}`}>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
+                                            <FileText className="w-7 h-7 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                            {t("Artikujt tani janë tek N'gazeta!", "Articles are now in N'gazeta!")}
+                                            </h3>
+                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Lexo artikuj dhe opinione nga komuniteti', 'Read articles and opinions from the community')}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => { changePage('lajme'); setContentTypeFilter('artikuj'); }}
+                                            className="px-5 py-2.5 bg-gradient-to-r from-teal-400 to-emerald-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-teal-500/30 transition-all"
+                                        >
+                                            {t('Shiko Artikujt', 'View Articles')} →
+                                        </button>
                                     </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                        {komunitetiArticles.slice(0, 6).map((article) => (
-                                            <div
-                                                key={article.id}
-                                                onClick={() => openArticle(article)}
-                                                className={`group relative p-6 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800' : 'bg-white hover:bg-gray-50 border border-gray-200'}`}
-                                            >
-                                                <div className="flex items-start justify-between mb-3">
-                                                    <span className="inline-block px-3 py-1 bg-gradient-to-r from-[#fbbf24] to-orange-500 text-white text-xs font-bold rounded-full">
-                                                        {article.category}
-                                                    </span>
-
-                                                    {/* Action Buttons */}
-                                                    <div className="flex gap-2">
-                                                        {/* Save/Bookmark Button */}
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                toggleSaveArticle(article.id);
-                                                            }}
-                                                            className={`p-2 rounded-full transition z-10 ${savedArticles.includes(article.id) ? 'bg-amber-500 text-white' : darkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                                                            title={savedArticles.includes(article.id) ? t('Hiq nga të ruajturit', 'Remove from saved') : t('Ruaj', 'Save')}
-                                                        >
-                                                            {savedArticles.includes(article.id) ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleNativeShare(article, 'article');
-                                                            }}
-                                                            className={`p-2 rounded-full transition z-10 ${darkMode ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-amber-500 text-white hover:bg-amber-600'}`}
-                                                            title={t('Shpërndaj', 'Share')}
-                                                        >
-                                                            <Share2 className="h-4 w-4" />
-                                                        </button>
-                                                        {showAdmin && (
-                                                            <>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        editArticle(article);
-                                                                    }}
-                                                                    className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10"
-                                                                >
-                                                                    <Edit className="h-4 w-4" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        deleteArticle(article.id);
-                                                                    }}
-                                                                    className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10"
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <h3 className={`text-xl font-bold mb-2 group-hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
-                                                    {language === 'al' ? article.titleAl : article.titleEn}
-                                                </h3>
-                                                <p className={`text-sm line-clamp-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                    {language === 'al' ? article.contentAl : article.contentEn}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                </div>
                             </div>
 
+                            {/* Discussions Section */}
                             {/* Discussions Section */}
                             <div>
                                 <h2 className={`text-2xl md:text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
