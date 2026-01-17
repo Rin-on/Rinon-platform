@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Settings, Send, Heart, ChevronDown, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Filter, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, List, School, GraduationCap, Trophy, Eye, EyeOff, AlertTriangle, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, BookmarkPlus, Sparkles, ArrowUp, ArrowDown, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, Sparkles, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
@@ -3473,46 +3473,7 @@ const RinON = () => {
         });
     };
 
-    // Search filter function
-    const getFilteredArticles = () => {
-        let filtered = articles;
-
-        // Category filter
-        if (selectedCategoryFilter !== 'Te Gjitha') {
-            filtered = filtered.filter(a => a.category === selectedCategoryFilter);
-        }
-
-        // Search query filter
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(a =>
-                a.titleAl?.toLowerCase().includes(query) ||
-                a.titleEn?.toLowerCase().includes(query) ||
-                a.contentAl?.toLowerCase().includes(query) ||
-                a.contentEn?.toLowerCase().includes(query)
-            );
-        }
-
-        return filtered;
-    };
-
-    // Search filter for events
-    const getFilteredEvents = () => {
-        let filtered = otherEvents;
-
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(e =>
-                e.titleAl?.toLowerCase().includes(query) ||
-                e.titleEn?.toLowerCase().includes(query) ||
-                e.descAl?.toLowerCase().includes(query) ||
-                e.descEn?.toLowerCase().includes(query) ||
-                e.location?.toLowerCase().includes(query)
-            );
-        }
-
-        return filtered;
-    };
+  
 
     // Native Share function - opens device share sheet
     const handleNativeShare = async (item, type) => {
@@ -5175,7 +5136,7 @@ const RinON = () => {
         });
         setShowStudentOfMonthForm(true);
     };
-    const featuredArticles = articles.filter(a => a.featured);
+    
 
     // Filtered articles with both category and search
     const filteredArticles = (() => {
@@ -5208,8 +5169,7 @@ const RinON = () => {
     // Combined for Home view - sorted by date (newest first)
     const allNewsAndArticles = [...lajmeArticles, ...artikujArticles].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // For Komuniteti page and backwards compatibility - now uses artikujArticles
-    const komunitetiArticles = artikujArticles;
+   
 
     // N'gazeta filtered content based on contentTypeFilter and selectedCategoryFilter
     const ngazetaFilteredContent = (() => {
@@ -5234,8 +5194,6 @@ const RinON = () => {
         return items;
     })();
 
-    const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % featuredArticles.length);
-    const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + featuredArticles.length) % featuredArticles.length);
 
     const openArticle = (article) => {
         setSelectedArticle(article);
