@@ -317,8 +317,9 @@ const NotificationModal = ({
     );
 };
 
-// Signup Prompt Popup (for non-logged-in users after scrolling)
-const SignupPromptPopup = ({ show, onClose, onSignup, darkMode, t }) => {
+// SignupPromptPopup - Currently unused, kept for future use
+// eslint-disable-next-line no-unused-vars
+const _SignupPromptPopup = ({ show, onClose, onSignup, darkMode, t }) => {
     if (!show) return null;
 
     return (
@@ -387,8 +388,9 @@ const SignupPromptPopup = ({ show, onClose, onSignup, darkMode, t }) => {
     );
 };
 
-// Anonymous Notification Prompt Popup
-const AnonymousNotificationPrompt = ({ show, onClose, onEnable, darkMode, t, isIOS }) => {
+// AnonymousNotificationPrompt - Currently unused, kept for future use
+// eslint-disable-next-line no-unused-vars
+const _AnonymousNotificationPrompt = ({ show, onClose, onEnable, darkMode, t, isIOS }) => {
     if (!show) return null;
 
     return (
@@ -750,8 +752,8 @@ END:VCALENDAR`;
                     <div className="grid grid-cols-7 gap-2 mb-4">
                         {dayNames[language].map((day, idx) => (
                             <div key={day} className={`text-center font-bold py-3 rounded-xl ${idx === 0 || idx === 6
-                                    ? darkMode ? 'text-amber-400 bg-amber-500/10' : 'text-amber-600 bg-amber-50'
-                                    : darkMode ? 'text-gray-400' : 'text-gray-600'
+                                ? darkMode ? 'text-amber-400 bg-amber-500/10' : 'text-amber-600 bg-amber-50'
+                                : darkMode ? 'text-gray-400' : 'text-gray-600'
                                 }`}>
                                 {day}
                             </div>
@@ -1273,13 +1275,15 @@ const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
             await navigator.clipboard.writeText(fullCaption);
             setCaptionCopied(true);
             setTimeout(() => setCaptionCopied(false), 2000);
-        } catch (err) {
-            // Fallback for older browsers
+        } catch {
+            // Fallback for older browsers - execCommand is deprecated but needed for fallback
             const textArea = document.createElement('textarea');
             textArea.value = fullCaption;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
             document.body.appendChild(textArea);
             textArea.select();
-            document.execCommand('copy');
+            try { document.execCommand('copy'); } catch { /* ignore */ }
             document.body.removeChild(textArea);
             setCaptionCopied(true);
             setTimeout(() => setCaptionCopied(false), 2000);
@@ -1291,12 +1295,15 @@ const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
             await navigator.clipboard.writeText(shareLink);
             setLinkCopied(true);
             setTimeout(() => setLinkCopied(false), 2000);
-        } catch (err) {
+        } catch {
+            // Fallback for older browsers - execCommand is deprecated but needed for fallback
             const textArea = document.createElement('textarea');
             textArea.value = shareLink;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
             document.body.appendChild(textArea);
             textArea.select();
-            document.execCommand('copy');
+            try { document.execCommand('copy'); } catch { /* ignore */ }
             document.body.removeChild(textArea);
             setLinkCopied(true);
             setTimeout(() => setLinkCopied(false), 2000);
@@ -1464,8 +1471,10 @@ const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
 // Terms and Privacy Policy Modal Component
 const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
     const [activeTab, setActiveTab] = useState('terms'); // 'terms' or 'privacy'
-    const [hasScrolledTerms, setHasScrolledTerms] = useState(false);
-    const [hasScrolledPrivacy, setHasScrolledPrivacy] = useState(false);
+    // eslint-disable-next-line no-unused-vars
+    const [_hasScrolledTerms, setHasScrolledTerms] = useState(false);
+    // eslint-disable-next-line no-unused-vars
+    const [_hasScrolledPrivacy, setHasScrolledPrivacy] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
@@ -1682,7 +1691,8 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
     const [displayName, setDisplayName] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(true);
+    // eslint-disable-next-line no-unused-vars
+    const [rememberMe, _setRememberMe] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async () => {
@@ -2050,7 +2060,8 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
 const RinON = () => {
     const [language, setLanguage] = useState('al');
     const [currentPage, setCurrentPage] = useState('home');
-    const [activeCategory, setActiveCategory] = useState('Te Gjitha');
+    // eslint-disable-next-line no-unused-vars
+    const [activeCategory, _setActiveCategory] = useState('Te Gjitha');
     const [showAdmin, setShowAdmin] = useState(false);
     const [showTopBanner, setShowTopBanner] = useState(true);
     const [showArticleModal, setShowArticleModal] = useState(false);
@@ -2064,7 +2075,8 @@ const RinON = () => {
     const [showAddMemberForm, setShowAddMemberForm] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [fabOpen, setFabOpen] = useState(false);
-    const [currentSlide, setCurrentSlide] = useState(0);
+    // eslint-disable-next-line no-unused-vars
+    const [_currentSlide, _setCurrentSlide] = useState(0);
     const [darkMode, setDarkMode] = useState(false);
     const [pageTransition, setPageTransition] = useState(false);
     const [hasPageLoaded, setHasPageLoaded] = useState(false);
@@ -2076,18 +2088,18 @@ const RinON = () => {
     const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('Home');
 
     // UX Enhancement States
-    const [showFirstTimeTooltip, setShowFirstTimeTooltip] = useState(false);
+    // eslint-disable-next-line no-unused-vars
+    const [_showFirstTimeTooltip, setShowFirstTimeTooltip] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [newItemsCount, setNewItemsCount] = useState(0);
     const [savedArticles, setSavedArticles] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     // Notification System States
     const [showNotificationModal, setShowNotificationModal] = useState(false);
     const [notificationPreferences, setNotificationPreferences] = useState({ notify_news: true, notify_events: true });
-    const [pushSubscription, setPushSubscription] = useState(null);
+    // eslint-disable-next-line no-unused-vars
+    const [_pushSubscription, setPushSubscription] = useState(null);
     const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-    const [articlesScrolled, setArticlesScrolled] = useState(0);
     const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
     // NEW HOMEPAGE STATES
@@ -2098,7 +2110,8 @@ const RinON = () => {
     const [showAddQuoteForm, setShowAddQuoteForm] = useState(false);
     const [quoteFormData, setQuoteFormData] = useState({ quote_text: '', author_name: '', author_role: '' });
 
-    const [eventViewMode, setEventViewMode] = useState('calendar');
+    // eslint-disable-next-line no-unused-vars
+    const [_eventViewMode, _setEventViewMode] = useState('calendar');
 
     // N'gazeta content type filter: 'all' (Home), 'lajme' (News only), 'artikuj' (Articles only)
     const [contentTypeFilter, setContentTypeFilter] = useState('all');
@@ -2172,7 +2185,8 @@ const RinON = () => {
     const [activePoll, setActivePoll] = useState(null);
     const [userPollVote, setUserPollVote] = useState(null);
     const [pollResults, setPollResults] = useState({});
-    const [showPollAdmin, setShowPollAdmin] = useState(false);
+    // eslint-disable-next-line no-unused-vars
+    const [_showPollAdmin, _setShowPollAdmin] = useState(false);
     const [pollFormData, setPollFormData] = useState({
         questionAl: '', questionEn: '', options: ['', '', '']
     });
@@ -2255,11 +2269,13 @@ const RinON = () => {
         return userProfile?.role === 'super_admin';
     };
 
-    const isSchoolAdmin = () => {
+    // eslint-disable-next-line no-unused-vars
+    const _isSchoolAdmin = () => {
         return userProfile?.role === 'school_admin';
     };
 
-    const getUserSchoolId = () => {
+    // eslint-disable-next-line no-unused-vars
+    const _getUserSchoolId = () => {
         return userProfile?.school_id || null;
     };
 
@@ -2999,6 +3015,7 @@ const RinON = () => {
             loadNotificationPreferences();
             checkNotificationStatus();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     // ============================================
@@ -3071,7 +3088,7 @@ const RinON = () => {
         if (!isNativeApp || !user) return;
 
         // Helper function to handle notification data
-        const handleNotificationData = async (data: any) => {
+        const handleNotificationData = async (data) => {
             const url = data.url || '';
 
             if (url) {
@@ -3160,6 +3177,7 @@ const RinON = () => {
             notificationReceivedListener.then(l => l.remove());
             notificationActionListener.then(l => l.remove());
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     // ============================================
@@ -3244,6 +3262,7 @@ const RinON = () => {
         return () => {
             backButtonListener.then(l => l.remove());
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showArticleModal, showEventModal, showNotificationModal, showAuthModal, mobileMenuOpen, currentPage]);
 
     // ============================================
@@ -3317,6 +3336,7 @@ const RinON = () => {
                 }, 5000);
             }, 2000);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Load saved articles from localStorage
@@ -3347,8 +3367,9 @@ const RinON = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Pull-to-refresh handler
-    const handlePullToRefresh = async () => {
+    // Pull-to-refresh handler - currently unused, kept for future mobile feature
+    // eslint-disable-next-line no-unused-vars
+    const _handlePullToRefresh = async () => {
         setIsRefreshing(true);
         await Promise.all([
             loadArticles(),
@@ -3473,7 +3494,7 @@ const RinON = () => {
         });
     };
 
-  
+
 
     // Native Share function - opens device share sheet
     const handleNativeShare = async (item, type) => {
@@ -3551,6 +3572,7 @@ const RinON = () => {
         loadEventInterests();
         loadVideos();
         loadQuotes();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Load user-specific data when user changes
@@ -3561,6 +3583,7 @@ const RinON = () => {
             loadEventInterests(); // Reload to get user's interests
             loadSavedVideos(); // Load user's saved videos
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     // Hero carousel auto-rotation
@@ -3579,6 +3602,7 @@ const RinON = () => {
         }, 4500);
 
         return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage, language]);
 
     // Quote rotation
@@ -3792,8 +3816,9 @@ const RinON = () => {
         }
     };
 
-    // Create new poll (admin only)
-    const createPoll = async () => {
+    // Create new poll (admin only) - currently unused, kept for future admin feature
+    // eslint-disable-next-line no-unused-vars
+    const _createPoll = async () => {
         if (!userProfile?.is_admin) return;
 
         try {
@@ -3821,14 +3846,14 @@ const RinON = () => {
             setActivePoll(data);
             setUserPollVote(null);
             setPollResults({});
-            setShowPollAdmin(false);
+            // _setShowPollAdmin(false); // Disabled
             setPollFormData({ questionAl: '', questionEn: '', options: ['', '', ''] });
 
             // Send notification to all users
             sendPollNotification(data);
 
         } catch (err) {
-            console.error(handleError(err, 'createPoll'));
+            console.error(handleError(err, '_createPoll'));
         }
     };
 
@@ -4569,7 +4594,7 @@ const RinON = () => {
                 content_al: validateInput.sanitizeHtml(formData.contentAl),
                 content_en: validateInput.sanitizeHtml(formData.contentEn || formData.contentAl),
                 category: formData.category,
-                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`,
+                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).slice(2, 11)}?w=800`,
                 source: validateInput.sanitizeHtml(formData.source),
                 author: validateInput.sanitizeHtml(formData.author),
                 featured: formData.featured,
@@ -4781,7 +4806,7 @@ const RinON = () => {
                 goals_al: validateInput.sanitizeHtml(partnerFormData.goalsAl),
                 goals_en: validateInput.sanitizeHtml(partnerFormData.goalsEn),
                 website: partnerFormData.website,
-                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).substr(2, 9)}?w=800`
+                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).slice(2, 11)}?w=800`
             };
 
             let error;
@@ -5136,7 +5161,7 @@ const RinON = () => {
         });
         setShowStudentOfMonthForm(true);
     };
-    
+
 
     // Filtered articles with both category and search
     const filteredArticles = (() => {
@@ -5169,7 +5194,7 @@ const RinON = () => {
     // Combined for Home view - sorted by date (newest first)
     const allNewsAndArticles = [...lajmeArticles, ...artikujArticles].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-   
+
 
     // N'gazeta filtered content based on contentTypeFilter and selectedCategoryFilter
     const ngazetaFilteredContent = (() => {
@@ -5209,249 +5234,6 @@ const RinON = () => {
     const openShareModal = (item, type) => {
         setShareItem({ item, type });
         setShowShareModal(true);
-    };
-    // Event Hero Slider Component
-    const EventHeroSlider = ({ events, language, darkMode, t, openEvent, openShareModal }) => {
-        const [currentSlide, setCurrentSlide] = useState(0);
-        const [isAutoPlaying, setIsAutoPlaying] = useState(false);
-
-        // Filter featured/trending/upcoming events (max 5)
-        const featuredEvents = events
-            .filter(e => e.is_featured || e.is_trending || (e.date && new Date(e.date) >= new Date()))
-            .sort((a, b) => {
-                // Priority: featured first, then trending, then by date
-                if (a.is_featured && !b.is_featured) return -1;
-                if (!a.is_featured && b.is_featured) return 1;
-                if (a.is_trending && !b.is_trending) return -1;
-                if (!a.is_trending && b.is_trending) return 1;
-                return new Date(a.date) - new Date(b.date);
-            })
-            .slice(0, 5);
-
-        // Auto-slide every 5 seconds
-        useEffect(() => {
-            if (!isAutoPlaying || featuredEvents.length <= 1) return;
-
-            const interval = setInterval(() => {
-                setCurrentSlide((prev) => (prev + 1) % featuredEvents.length);
-            }, 5000);
-
-            return () => clearInterval(interval);
-        }, [isAutoPlaying, featuredEvents.length]);
-
-        const nextSlide = () => {
-            setCurrentSlide((prev) => (prev + 1) % featuredEvents.length);
-            setIsAutoPlaying(false);
-            setTimeout(() => setIsAutoPlaying(true), 10000);
-        };
-
-        const prevSlide = () => {
-            setCurrentSlide((prev) => (prev - 1 + featuredEvents.length) % featuredEvents.length);
-            setIsAutoPlaying(false);
-            setTimeout(() => setIsAutoPlaying(true), 10000);
-        };
-
-        const goToSlide = (index) => {
-            setCurrentSlide(index);
-            setIsAutoPlaying(false);
-            setTimeout(() => setIsAutoPlaying(true), 10000);
-        };
-
-        if (featuredEvents.length === 0) return null;
-
-        return (
-            <div className="relative mb-8 rounded-3xl overflow-hidden shadow-2xl shadow-amber-500/20">
-                {/* Main Slider Container */}
-                <div className="relative h-[400px] md:h-[500px] overflow-hidden">
-                    {featuredEvents.map((event, index) => (
-                        <div
-                            key={event.id}
-                            className={`absolute inset-0 transition-all duration-700 ease-in-out ${index === currentSlide
-                                ? 'opacity-100 translate-x-0'
-                                : index < currentSlide
-                                    ? 'opacity-0 -translate-x-full'
-                                    : 'opacity-0 translate-x-full'
-                                }`}
-                        >
-                            {/* Background Image */}
-                            <div className="absolute inset-0">
-                                <img
-                                    src={event.image}
-                                    alt={event.titleAl}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200';
-                                    }}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/40" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                            </div>
-
-                            {/* Content */}
-                            <div className="relative z-10 h-full flex items-center">
-                                <div className="max-w-4xl mx-auto px-6 md:px-12 w-full">
-                                    {/* Badges */}
-                                    <div className="flex flex-wrap gap-2 mb-4">
-                                        {event.type && (
-                                            <span className="px-4 py-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-sm font-bold rounded-full shadow-lg">
-                                                {event.type}
-                                            </span>
-                                        )}
-                                        {event.is_featured && (
-                                            <span className="px-4 py-1.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-1">
-                                                ⭐ {t('I Veçantë', 'Featured')}
-                                            </span>
-                                        )}
-                                        {event.is_trending && (
-                                            <span className="px-4 py-1.5 bg-gradient-to-r from-[#FF6B6B] to-[#FF5252] text-white text-sm font-bold rounded-full shadow-lg flex items-center gap-1">
-                                                🔥 {t('Trending', 'Trending')}
-                                            </span>
-                                        )}
-                                        {event.is_free && (
-                                            <span className="px-4 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold rounded-full shadow-lg">
-                                                {t('FALAS', 'FREE')}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Title */}
-                                    <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight">
-                                        {language === 'al' ? event.titleAl : (event.titleEn || event.titleAl)}
-                                    </h2>
-
-                                    {/* Event Details */}
-                                    <div className="flex flex-wrap gap-4 md:gap-6 mb-4 text-white/90">
-                                        {(event.dateAl || event.date) && (
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                                                    <Calendar className="w-4 h-4" />
-                                                </div>
-                                                <span className="text-sm md:text-base font-medium">
-                                                    {language === 'al' ? event.dateAl : (event.dateEn || event.dateAl)}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {event.time && (
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                                                    <Clock className="w-4 h-4" />
-                                                </div>
-                                                <span className="text-sm md:text-base font-medium">
-                                                    {event.time}{event.endTime ? ` - ${event.endTime}` : ''}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {event.location && (
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                                                    <MapPin className="w-4 h-4" />
-                                                </div>
-                                                <span className="text-sm md:text-base font-medium">
-                                                    {event.location}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Description Preview */}
-                                    <p className="text-white/80 text-sm md:text-lg mb-6 line-clamp-2 max-w-2xl">
-                                        {language === 'al' ? event.descAl : (event.descEn || event.descAl)}
-                                    </p>
-
-                                    {/* Action Buttons */}
-                                    <div className="flex flex-wrap gap-3">
-                                        <button
-                                            onClick={() => openEvent(event)}
-                                            className="px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl font-bold hover:from-amber-500 hover:to-[#FF5252] transform hover:scale-105 transition-all shadow-lg shadow-amber-500/50 flex items-center gap-2"
-                                        >
-                                            <Eye className="w-5 h-5" />
-                                            {t('Shiko Detajet', 'View Details')}
-                                        </button>
-
-                                        {event.registration_link && (
-                                            <a
-                                                href={event.registration_link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="px-6 py-3 bg-white text-amber-600 rounded-xl font-bold hover:bg-[#FFE5D9] transform hover:scale-105 transition-all shadow-lg flex items-center gap-2"
-                                            >
-                                                <ExternalLink className="w-5 h-5" />
-                                                {t('Regjistrohu', 'Register')}
-                                            </a>
-                                        )}
-
-                                        <button
-                                            onClick={() => openShareModal(event, 'event')}
-                                            className="px-4 py-3 bg-white/20 text-white rounded-xl font-bold hover:bg-white/30 backdrop-blur-sm transition-all flex items-center gap-2 border border-white/30"
-                                        >
-                                            <Share2 className="w-5 h-5" />
-                                            <span className="hidden md:inline">{t('Shpërndaj', 'Share')}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Navigation Arrows */}
-                {featuredEvents.length > 1 && (
-                    <>
-                        <button
-                            onClick={prevSlide}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-lg border border-white/20 transition-all flex items-center justify-center group"
-                            aria-label="Previous slide"
-                        >
-                            <ChevronLeft className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
-                        </button>
-                        <button
-                            onClick={nextSlide}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-lg border border-white/20 transition-all flex items-center justify-center group"
-                            aria-label="Next slide"
-                        >
-                            <ChevronRight className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
-                        </button>
-                    </>
-                )}
-
-                {/* Dot Indicators */}
-                {featuredEvents.length > 1 && (
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-                        {featuredEvents.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => goToSlide(index)}
-                                className={`transition-all duration-300 rounded-full ${index === currentSlide
-                                    ? 'w-8 h-3 bg-gradient-to-r from-amber-500 to-orange-500'
-                                    : 'w-3 h-3 bg-white/40 hover:bg-white/60'
-                                    }`}
-                                aria-label={`Go to slide ${index + 1}`}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {/* Progress Bar */}
-                {featuredEvents.length > 1 && isAutoPlaying && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-                        <div
-                            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all"
-                            style={{
-                                animation: 'progressBar 5s linear infinite',
-                                width: '100%'
-                            }}
-                        />
-                    </div>
-                )}
-
-                <style>{`
-                @keyframes progressBar {
-                    from { transform: scaleX(0); transform-origin: left; }
-                    to { transform: scaleX(1); transform-origin: left; }
-                }
-            `}</style>
-            </div>
-        );
     };
 
 
@@ -6822,16 +6604,16 @@ const RinON = () => {
                                     <button
                                         onClick={() => { setContentTypeFilter('lajme'); setSelectedCategoryFilter('Home'); }}
                                         className={`group flex-1 md:flex-none px-5 py-3 rounded-2xl transition-all ${contentTypeFilter === 'lajme'
-                                                ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
-                                                : darkMode
-                                                    ? 'bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/30'
-                                                    : 'bg-white hover:bg-amber-50 shadow-md border border-amber-100 hover:border-amber-300'
+                                            ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white shadow-lg shadow-amber-500/30'
+                                            : darkMode
+                                                ? 'bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-500/30'
+                                                : 'bg-white hover:bg-amber-50 shadow-md border border-amber-100 hover:border-amber-300'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${contentTypeFilter === 'lajme'
-                                                    ? 'bg-white/20'
-                                                    : 'bg-gradient-to-br from-amber-400 to-orange-500'
+                                                ? 'bg-white/20'
+                                                : 'bg-gradient-to-br from-amber-400 to-orange-500'
                                                 }`}>
                                                 <Newspaper className={`w-5 h-5 ${contentTypeFilter === 'lajme' ? 'text-white' : 'text-white'}`} />
                                             </div>
@@ -6848,16 +6630,16 @@ const RinON = () => {
                                     <button
                                         onClick={() => { setContentTypeFilter('artikuj'); setSelectedCategoryFilter('Home'); }}
                                         className={`group flex-1 md:flex-none px-5 py-3 rounded-2xl transition-all ${contentTypeFilter === 'artikuj'
-                                                ? 'bg-gradient-to-r from-teal-400 to-emerald-500 text-white shadow-lg shadow-teal-500/30'
-                                                : darkMode
-                                                    ? 'bg-white/5 hover:bg-teal-500/20 border border-white/10 hover:border-teal-500/30'
-                                                    : 'bg-white hover:bg-teal-50 shadow-md border border-teal-100 hover:border-teal-300'
+                                            ? 'bg-gradient-to-r from-teal-400 to-emerald-500 text-white shadow-lg shadow-teal-500/30'
+                                            : darkMode
+                                                ? 'bg-white/5 hover:bg-teal-500/20 border border-white/10 hover:border-teal-500/30'
+                                                : 'bg-white hover:bg-teal-50 shadow-md border border-teal-100 hover:border-teal-300'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${contentTypeFilter === 'artikuj'
-                                                    ? 'bg-white/20'
-                                                    : 'bg-gradient-to-br from-teal-400 to-emerald-500'
+                                                ? 'bg-white/20'
+                                                : 'bg-gradient-to-br from-teal-400 to-emerald-500'
                                                 }`}>
                                                 <FileText className={`w-5 h-5 ${contentTypeFilter === 'artikuj' ? 'text-white' : 'text-white'}`} />
                                             </div>
@@ -9263,7 +9045,7 @@ const RinON = () => {
 
                                     {userProfile?.is_admin && showAdmin && !activePoll && (
                                         <button
-                                            onClick={() => setShowPollAdmin(true)}
+                                            onClick={() => _setShowPollAdmin(true)}
                                             className="mt-4 w-full py-3 rounded-xl bg-[#0D9488] text-white font-medium hover:bg-[#0F766E]"
                                         >
                                             + {t('Krijo Sondazh', 'Create Poll')}
@@ -9498,8 +9280,8 @@ const RinON = () => {
                                                     key={article.id}
                                                     onClick={() => openArticle(article)}
                                                     className={`group flex gap-4 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-lg ${index === 0
-                                                            ? darkMode ? 'bg-teal-500/10 border-2 border-teal-500/30' : 'bg-teal-50 border-2 border-teal-200'
-                                                            : darkMode ? 'bg-[#2D2A26]/50 hover:bg-[#3D3A36]' : 'bg-white hover:bg-gray-50 shadow-sm'
+                                                        ? darkMode ? 'bg-teal-500/10 border-2 border-teal-500/30' : 'bg-teal-50 border-2 border-teal-200'
+                                                        : darkMode ? 'bg-[#2D2A26]/50 hover:bg-[#3D3A36]' : 'bg-white hover:bg-gray-50 shadow-sm'
                                                         }`}
                                                 >
                                                     <div className={`relative flex-shrink-0 rounded-xl overflow-hidden ${index === 0 ? 'w-40 h-32 md:w-56 md:h-40' : 'w-28 h-24 md:w-40 md:h-28'}`}>
@@ -9706,7 +9488,7 @@ const RinON = () => {
                                         </div>
                                         <div className="flex-1">
                                             <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                            {t("Artikujt tani janë tek N'gazeta!", "Articles are now in N'gazeta!")}
+                                                {t("Artikujt tani janë tek N'gazeta!", "Articles are now in N'gazeta!")}
                                             </h3>
                                             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                                 {t('Lexo artikuj dhe opinione nga komuniteti', 'Read articles and opinions from the community')}
@@ -9895,7 +9677,8 @@ const RinON = () => {
                             <iframe
                                 src={`https://www.youtube.com/embed/${selectedVideo.youtube_id}?autoplay=1&rel=0`}
                                 className="w-full h-full"
-                                frameBorder="0"
+                                style={{ border: 'none' }}
+                                title={`RinON Video: ${selectedVideo.title_al || selectedVideo.title_en || 'Video'}`}
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
                             />
