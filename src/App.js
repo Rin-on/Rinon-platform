@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, Sparkles, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
