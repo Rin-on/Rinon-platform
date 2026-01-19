@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, RefreshCw, Bell, Sparkles, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, Sparkles, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
@@ -312,167 +312,6 @@ const NotificationModal = ({
                         </button>
                     </div>
                 )}
-            </div>
-        </div>
-    );
-};
-
-// SignupPromptPopup - Currently unused, kept for future use
-// eslint-disable-next-line no-unused-vars
-const _SignupPromptPopup = ({ show, onClose, onSignup, darkMode, t }) => {
-    if (!show) return null;
-
-    return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-            <div className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'
-                }`}>
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 p-2 hover:bg-amber-500/20 rounded-lg transition-all"
-                >
-                    <X className="w-5 h-5 text-gray-400" />
-                </button>
-
-                <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50">
-                        <Sparkles className="w-8 h-8 text-white" />
-                    </div>
-
-                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                        {t('Mos Humb Asgjë!', "Don't Miss Anything!")}
-                    </h3>
-
-                    <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t(
-                            'Krijo një llogari falas për të marrë njoftime për lajmet dhe eventet më të fundit.',
-                            'Create a free account to get notifications about the latest news and events.'
-                        )}
-                    </p>
-
-                    <div className={`text-left space-y-2 mb-6 p-4 rounded-xl ${darkMode ? 'bg-[#3D3A36]' : 'bg-gray-50'}`}>
-                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            <Check className="w-4 h-4 text-green-500" />
-                            {t('Njoftime për evente të reja', 'Notifications for new events')}
-                        </p>
-                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            <Check className="w-4 h-4 text-green-500" />
-                            {t('Lajme të personalizuara', 'Personalized news')}
-                        </p>
-                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            <Check className="w-4 h-4 text-green-500" />
-                            {t('Ruaj artikuj dhe evente', 'Save articles and events')}
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col gap-3">
-                        <button
-                            onClick={onSignup}
-                            className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold"
-                        >
-                            {t('Regjistrohu Falas', 'Sign Up Free')}
-                        </button>
-
-                        <button
-                            onClick={onClose}
-                            className={`w-full px-6 py-3 rounded-xl border transition-all ${darkMode
-                                ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
-                                : 'border-gray-300 text-gray-600 hover:bg-gray-100'
-                                }`}
-                        >
-                            {t('Jo Tani', 'Not Now')}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// AnonymousNotificationPrompt - Currently unused, kept for future use
-// eslint-disable-next-line no-unused-vars
-const _AnonymousNotificationPrompt = ({ show, onClose, onEnable, darkMode, t, isIOS }) => {
-    if (!show) return null;
-
-    return (
-        <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
-            onClick={(e) => {
-                if (e.target === e.currentTarget) onClose();
-            }}
-        >
-            <div
-                className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'}`}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 p-2 hover:bg-amber-500/20 rounded-lg transition-all"
-                >
-                    <X className="w-5 h-5 text-gray-400" />
-                </button>
-
-                <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50 animate-pulse">
-                        <Bell className="w-8 h-8 text-white" />
-                    </div>
-
-                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                        {t('Njoftohu për Lajme & Evente', 'Get Notified for News & Events')}
-                    </h3>
-
-                    <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t(
-                            'Aktivizo njoftimet për të mos humbur eventet dhe lajmet më të rëndësishme për të rinjtë.',
-                            'Enable notifications so you never miss important events and news for youth.'
-                        )}
-                    </p>
-
-                    <div className={`text-left space-y-2 mb-6 p-4 rounded-xl ${darkMode ? 'bg-[#3D3A36]' : 'bg-gray-50'}`}>
-                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            <Calendar className="w-4 h-4 text-amber-500" />
-                            {t('Evente të reja në qytetin tënd', 'New events in your city')}
-                        </p>
-                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            <Newspaper className="w-4 h-4 text-amber-500" />
-                            {t('Lajme të rëndësishme për të rinjtë', 'Important news for youth')}
-                        </p>
-                        <p className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            <Award className="w-4 h-4 text-amber-500" />
-                            {t('Mundësi karriere dhe bursa', 'Career opportunities & scholarships')}
-                        </p>
-                    </div>
-
-                    {isIOS && (
-                        <div className={`mb-4 p-3 rounded-xl text-left text-sm ${darkMode ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-amber-50 border border-amber-200'}`}>
-                            <p className={darkMode ? 'text-amber-300' : 'text-amber-700'}>
-                                <strong>📱 iPhone:</strong> {t(
-                                    'Shto RinON në ekranin bazë për njoftime: Share → Add to Home Screen',
-                                    'Add RinON to home screen for notifications: Share → Add to Home Screen'
-                                )}
-                            </p>
-                        </div>
-                    )}
-
-                    <div className="flex flex-col gap-3">
-                        <button
-                            onClick={onEnable}
-                            className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold flex items-center justify-center gap-2"
-                        >
-                            <Bell className="w-5 h-5" />
-                            {t('Aktivizo Njoftimet', 'Enable Notifications')}
-                        </button>
-
-                        <button
-                            onClick={onClose}
-                            className={`w-full px-6 py-3 rounded-xl border transition-all ${darkMode
-                                ? 'border-gray-600 text-gray-400 hover:bg-gray-800'
-                                : 'border-gray-300 text-gray-600 hover:bg-gray-100'
-                                }`}
-                        >
-                            {t('Më Vonë', 'Maybe Later')}
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     );
@@ -1471,22 +1310,8 @@ const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
 // Terms and Privacy Policy Modal Component
 const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
     const [activeTab, setActiveTab] = useState('terms'); // 'terms' or 'privacy'
-    // eslint-disable-next-line no-unused-vars
-    const [_hasScrolledTerms, setHasScrolledTerms] = useState(false);
-    // eslint-disable-next-line no-unused-vars
-    const [_hasScrolledPrivacy, setHasScrolledPrivacy] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
-
-    const handleScroll = (e, type) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.target;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
-
-        if (isNearBottom) {
-            if (type === 'terms') setHasScrolledTerms(true);
-            if (type === 'privacy') setHasScrolledPrivacy(true);
-        }
-    };
 
     if (!showTermsModal) return null;
 
@@ -1534,7 +1359,7 @@ const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
                     {activeTab === 'terms' && (
                         <div
                             className={`h-[300px] overflow-y-auto p-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                            onScroll={(e) => handleScroll(e, 'terms')}
+
                         >
                             <h3 className="text-lg font-semibold text-amber-500 mb-3">{t('Kushtet e Shërbimit', 'Terms of Service')}</h3>
 
@@ -1580,7 +1405,7 @@ const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
                     {activeTab === 'privacy' && (
                         <div
                             className={`h-[300px] overflow-y-auto p-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
-                            onScroll={(e) => handleScroll(e, 'privacy')}
+
                         >
                             <h3 className="text-lg font-semibold text-amber-500 mb-3">{t('Politika e Privatësisë', 'Privacy Policy')}</h3>
 
@@ -1691,8 +1516,7 @@ const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, han
     const [displayName, setDisplayName] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    // eslint-disable-next-line no-unused-vars
-    const [rememberMe, _setRememberMe] = useState(true);
+    const [rememberMe] = useState(true); // Always true, setter unused
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async () => {
@@ -2060,8 +1884,7 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
 const RinON = () => {
     const [language, setLanguage] = useState('al');
     const [currentPage, setCurrentPage] = useState('home');
-    // eslint-disable-next-line no-unused-vars
-    const [activeCategory, _setActiveCategory] = useState('Te Gjitha');
+    const [activeCategory] = useState('Te Gjitha'); // Setter unused - using selectedCategoryFilter instead
     const [showAdmin, setShowAdmin] = useState(false);
     const [showTopBanner, setShowTopBanner] = useState(true);
     const [showArticleModal, setShowArticleModal] = useState(false);
@@ -2075,8 +1898,6 @@ const RinON = () => {
     const [showAddMemberForm, setShowAddMemberForm] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [fabOpen, setFabOpen] = useState(false);
-    // eslint-disable-next-line no-unused-vars
-    const [_currentSlide, _setCurrentSlide] = useState(0);
     const [darkMode, setDarkMode] = useState(false);
     const [pageTransition, setPageTransition] = useState(false);
     const [hasPageLoaded, setHasPageLoaded] = useState(false);
@@ -2088,17 +1909,14 @@ const RinON = () => {
     const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('Home');
 
     // UX Enhancement States
-    // eslint-disable-next-line no-unused-vars
-    const [_showFirstTimeTooltip, setShowFirstTimeTooltip] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [, setShowFirstTimeTooltip] = useState(false); // Value unused, only setter needed
     const [savedArticles, setSavedArticles] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     // Notification System States
     const [showNotificationModal, setShowNotificationModal] = useState(false);
     const [notificationPreferences, setNotificationPreferences] = useState({ notify_news: true, notify_events: true });
-    // eslint-disable-next-line no-unused-vars
-    const [_pushSubscription, setPushSubscription] = useState(null);
+    const [, setPushSubscription] = useState(null); // Value unused, only setter needed
     const [notificationsEnabled, setNotificationsEnabled] = useState(false);
     const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
@@ -2110,8 +1928,11 @@ const RinON = () => {
     const [showAddQuoteForm, setShowAddQuoteForm] = useState(false);
     const [quoteFormData, setQuoteFormData] = useState({ quote_text: '', author_name: '', author_role: '' });
 
-    // eslint-disable-next-line no-unused-vars
-    const [_eventViewMode, _setEventViewMode] = useState('calendar');
+    // Poll Creation Form
+    const [showAddPollForm, setShowAddPollForm] = useState(false);
+    const [pollFormData, setPollFormData] = useState({
+        questionAl: '', questionEn: '', options: ['', '', '', ''], expiresInDays: 7
+    });
 
     // N'gazeta content type filter: 'all' (Home), 'lajme' (News only), 'artikuj' (Articles only)
     const [contentTypeFilter, setContentTypeFilter] = useState('all');
@@ -2133,6 +1954,8 @@ const RinON = () => {
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [topicPosts, setTopicPosts] = useState([]);
     const [newPost, setNewPost] = useState('');
+    const [showRulesExpanded, setShowRulesExpanded] = useState(false); // Community rules toggle
+    const [communityCategory, setCommunityCategory] = useState('all'); // Community category filter
 
     // User Activity Bank - Saved items & history
     const [showUserActivity, setShowUserActivity] = useState(false);
@@ -2162,7 +1985,7 @@ const RinON = () => {
     });
 
     const [topicFormData, setTopicFormData] = useState({
-        titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: ''
+        titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: '', category: 'general'
     });
 
     const [partnerFormData, setPartnerFormData] = useState({
@@ -2185,11 +2008,6 @@ const RinON = () => {
     const [activePoll, setActivePoll] = useState(null);
     const [userPollVote, setUserPollVote] = useState(null);
     const [pollResults, setPollResults] = useState({});
-    // eslint-disable-next-line no-unused-vars
-    const [_showPollAdmin, _setShowPollAdmin] = useState(false);
-    const [pollFormData, setPollFormData] = useState({
-        questionAl: '', questionEn: '', options: ['', '', '']
-    });
 
     // ==========================================
     // EVENT INTERESTS ("Who's Going?")
@@ -2267,16 +2085,6 @@ const RinON = () => {
 
     const isSuperAdmin = () => {
         return userProfile?.role === 'super_admin';
-    };
-
-    // eslint-disable-next-line no-unused-vars
-    const _isSchoolAdmin = () => {
-        return userProfile?.role === 'school_admin';
-    };
-
-    // eslint-disable-next-line no-unused-vars
-    const _getUserSchoolId = () => {
-        return userProfile?.school_id || null;
     };
 
     // ==========================================
@@ -3367,19 +3175,6 @@ const RinON = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Pull-to-refresh handler - currently unused, kept for future mobile feature
-    // eslint-disable-next-line no-unused-vars
-    const _handlePullToRefresh = async () => {
-        setIsRefreshing(true);
-        await Promise.all([
-            loadArticles(),
-            loadEvents(),
-            loadActivePoll(),
-            loadEventInterests(),
-        ]);
-        setTimeout(() => setIsRefreshing(false), 1000);
-    };
-
     // ==========================================
     // DRAFTS MANAGEMENT SYSTEM
     // ==========================================
@@ -3816,9 +3611,8 @@ const RinON = () => {
         }
     };
 
-    // Create new poll (admin only) - currently unused, kept for future admin feature
-    // eslint-disable-next-line no-unused-vars
-    const _createPoll = async () => {
+    // Create new poll (admin only)
+    const createPoll = async () => {
         if (!userProfile?.is_admin) return;
 
         try {
@@ -3829,14 +3623,23 @@ const RinON = () => {
                 .eq('is_active', true);
 
             // Create new poll
-            const options = pollFormData.options.filter(o => o.trim() !== '');
+            const validOptions = pollFormData.options.filter(o => o.trim() !== '');
+            if (validOptions.length < 2) {
+                alert('Duhen të paktën 2 opsione');
+                return;
+            }
+
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + (pollFormData.expiresInDays || 7));
+
             const { data, error } = await supabase
                 .from('polls')
                 .insert({
                     question_al: pollFormData.questionAl,
                     question_en: pollFormData.questionEn || pollFormData.questionAl,
-                    options: options,
-                    is_active: true
+                    options: validOptions,
+                    is_active: true,
+                    expires_at: expiresAt.toISOString()
                 })
                 .select()
                 .single();
@@ -3846,30 +3649,11 @@ const RinON = () => {
             setActivePoll(data);
             setUserPollVote(null);
             setPollResults({});
-            // _setShowPollAdmin(false); // Disabled
-            setPollFormData({ questionAl: '', questionEn: '', options: ['', '', ''] });
-
-            // Send notification to all users
-            sendPollNotification(data);
+            setShowAddPollForm(false);
+            setPollFormData({ questionAl: '', questionEn: '', options: ['', '', '', ''], expiresInDays: 7 });
 
         } catch (err) {
-            console.error(handleError(err, '_createPoll'));
-        }
-    };
-
-    // Send poll notification
-    const sendPollNotification = async (poll) => {
-        try {
-            const { data: subscriptions } = await supabase
-                .from('push_subscriptions')
-                .select('fcm_token')
-                .not('fcm_token', 'is', null);
-
-            // For now, we'll just log it - actual FCM sending requires server-side code
-            console.log('Would send poll notification to', subscriptions?.length || 0, 'users');
-            console.log('Poll:', poll.question_al);
-        } catch (err) {
-            console.error('Error sending poll notification:', err);
+            console.error(handleError(err, 'createPoll'));
         }
     };
 
@@ -4753,7 +4537,9 @@ const RinON = () => {
                 title_en: validateInput.sanitizeHtml(topicFormData.titleEn || topicFormData.titleAl),
                 description_al: validateInput.sanitizeHtml(topicFormData.descriptionAl),
                 description_en: validateInput.sanitizeHtml(topicFormData.descriptionEn || topicFormData.descriptionAl),
-                created_by: user?.id
+                category: topicFormData.category || 'general',
+                created_by: user?.id,
+                author_name: userProfile?.display_name || 'Anonim'
             };
 
             const { data, error } = await supabase.from('topics').insert([topic]).select();
@@ -4763,7 +4549,7 @@ const RinON = () => {
             if (data) {
                 loadTopics();
                 setTopicFormData({
-                    titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: ''
+                    titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: '', category: 'general'
                 });
                 setShowAddTopicForm(false);
                 alert(t('Tema u shtua me sukses!', 'Topic added successfully!'));
@@ -6707,18 +6493,6 @@ const RinON = () => {
                 </>
             )}
 
-            {/* ==========================================
-                PULL-TO-REFRESH INDICATOR
-               ========================================== */}
-            {isRefreshing && (
-                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50">
-                    <div className={`px-4 py-2 rounded-full shadow-lg flex items-center gap-2 ${darkMode ? 'bg-[#3D3A36] text-amber-400' : 'bg-white text-amber-600'
-                        }`}>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span className="text-sm font-medium">{t('Duke rifreskuar...', 'Refreshing...')}</span>
-                    </div>
-                </div>
-            )}
             {showAddForm && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
                     <div className="bg-[#2D2A26] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-amber-500/20 shadow-2xl p-8">
@@ -7195,6 +6969,24 @@ const RinON = () => {
                             </button>
                         </div>
                         <div className="space-y-4">
+                            {/* Category Selector */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">
+                                    {t('Kategoria', 'Category')} *
+                                </label>
+                                <select
+                                    value={topicFormData.category}
+                                    onChange={(e) => setTopicFormData({ ...topicFormData, category: e.target.value })}
+                                    className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                                >
+                                    <option value="general">🔥 General</option>
+                                    <option value="arsim">📚 {t('Arsim', 'Education')}</option>
+                                    <option value="mjedisi">🌱 {t('Mjedisi', 'Environment')}</option>
+                                    <option value="mundesi">✨ {t('Mundësi', 'Opportunities')}</option>
+                                    <option value="kultura">🎭 {t('Kultura', 'Culture')}</option>
+                                    <option value="punesim">💼 {t('Punësim', 'Employment')}</option>
+                                </select>
+                            </div>
                             <input
                                 type="text"
                                 placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
@@ -9042,15 +8834,6 @@ const RinON = () => {
                                             )}
                                         </div>
                                     </div>
-
-                                    {userProfile?.is_admin && showAdmin && !activePoll && (
-                                        <button
-                                            onClick={() => _setShowPollAdmin(true)}
-                                            className="mt-4 w-full py-3 rounded-xl bg-[#0D9488] text-white font-medium hover:bg-[#0F766E]"
-                                        >
-                                            + {t('Krijo Sondazh', 'Create Poll')}
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                         )}
@@ -9382,161 +9165,460 @@ const RinON = () => {
                 ) : currentPage === 'komuniteti' ? (
                     <>
                         {/* ==========================================
-                            KOMUNITETI PAGE - Articles + Discussions
+                            KOMUNITETI PAGE - Redesigned Community Hub
                            ========================================== */}
-                        <div className="max-w-7xl mx-auto px-4 py-12">
-                            <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-black'}`}>
-                                Komuniteti
-                            </h1>
-                            <p className={`text-lg mb-8 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {t('Artikuj dhe diskutime nga komuniteti rinor', 'Articles and discussions from the youth community')}
-                            </p>
 
-                            {/* Poll Section in Community */}
+                        {/* Hero Section with Teal Gradient */}
+                        <div className="relative overflow-hidden">
+                            {/* Background Pattern */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#0D9488] via-[#14B8A6] to-[#10B981]">
+                                {/* Decorative Circles */}
+                                <div className="absolute top-10 right-10 w-32 h-32 rounded-full bg-white/5 flex items-center justify-center">
+                                    <span className="text-white/20 text-4xl font-black">R</span>
+                                </div>
+                                <div className="absolute bottom-5 left-20 w-20 h-20 rounded-full bg-white/5" />
+                                <div className="absolute top-20 left-1/3 w-16 h-16 rounded-full bg-white/5" />
+                            </div>
+
+                            <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-16">
+                                <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
+                                    Komuniteti
+                                </h1>
+                                <p className="text-white/80 text-lg mb-8">
+                                    {t('Zëri yt ka rëndësi. Bashkohu në bisedë.', 'Your voice matters. Join the conversation.')}
+                                </p>
+
+                                {/* Stats Row */}
+                                <div className="grid grid-cols-3 gap-4 mb-8">
+                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                        <p className="text-3xl md:text-4xl font-black text-white">
+                                            {topics.reduce((acc, t) => acc + (t.posts_count || 0), 0) + 100}
+                                        </p>
+                                        <p className="text-white/70 text-sm">{t('Anëtarë', 'Members')}</p>
+                                    </div>
+                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                        <p className="text-3xl md:text-4xl font-black text-white">{topics.length}</p>
+                                        <p className="text-white/70 text-sm">{t('Diskutime aktive', 'Active discussions')}</p>
+                                    </div>
+                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                        <p className="text-3xl md:text-4xl font-black text-white">{activePoll ? 1 : 0}</p>
+                                        <p className="text-white/70 text-sm">{t('Sondazhe', 'Polls')}</p>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons - Admin only for starting discussions */}
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    {userProfile?.is_admin && (
+                                        <>
+                                            <button
+                                                onClick={() => setShowAddTopicForm(true)}
+                                                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-amber-400 hover:bg-amber-500 text-[#2D2A26] font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
+                                            >
+                                                <Plus className="w-5 h-5" />
+                                                {t('Fillo Diskutim', 'Start Discussion')}
+                                            </button>
+                                            <button
+                                                onClick={() => setShowAddPollForm(true)}
+                                                className="flex items-center justify-center gap-2 px-6 py-4 bg-white/20 hover:bg-white/30 text-white font-bold rounded-xl border-2 border-white/50 transition-all"
+                                            >
+                                                <TrendingUp className="w-5 h-5" />
+                                                {t('Krijo Sondazh', 'Create Poll')}
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="max-w-7xl mx-auto px-4 py-8">
+                            {/* ==========================================
+                                ACTIVE POLLS SECTION
+                               ========================================== */}
                             {activePoll && (
-                                <div className={`rounded-2xl p-6 mb-8 ${darkMode ? 'bg-[#2D2A26]' : 'bg-amber-50'}`}>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-2xl">📊</span>
-                                            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                                {t('Sondazhi i Javës', 'Poll of the Week')}
-                                            </h3>
-                                        </div>
-                                        <button
-                                            onClick={() => {
-                                                const shareText = `📊 ${activePoll.question_al}\n\nVoto tani në RinON!`;
-                                                const shareUrl = `https://rinon.al`;
-                                                if (navigator.share) {
-                                                    navigator.share({ title: 'RinON Sondazh', text: shareText, url: shareUrl });
-                                                } else {
-                                                    window.open(`https://wa.me/?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`, '_blank');
-                                                }
-                                            }}
-                                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
-                                        >
-                                            <Share2 className="w-4 h-4" />
-                                        </button>
+                                <div className="mb-10">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <span className="text-2xl">📊</span>
+                                        <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                            {t('Sondazhe Aktive', 'Active Polls')}
+                                        </h2>
                                     </div>
 
-                                    <p className={`text-lg mb-4 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                                        {language === 'al' ? activePoll.question_al : (activePoll.question_en || activePoll.question_al)}
-                                    </p>
-
-                                    {userPollVote === null ? (
-                                        <div className="space-y-2">
-                                            {activePoll.options?.map((option, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => user ? votePoll(index) : (setShowAuthModal(true), setAuthMode('login'))}
-                                                    className={`w-full text-left px-4 py-3 rounded-xl transition-all ${darkMode
-                                                        ? 'bg-[#3D3A36] hover:bg-amber-500/20 text-gray-200 hover:text-amber-400 border border-gray-700 hover:border-amber-500'
-                                                        : 'bg-white hover:bg-amber-100 text-gray-700 hover:text-amber-700 border border-gray-200 hover:border-amber-400'
-                                                        }`}
-                                                >
-                                                    {option}
-                                                </button>
-                                            ))}
-                                            {!user && (
-                                                <p className={`text-sm text-center mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                    {t('Hyr për të votuar', 'Log in to vote')}
-                                                </p>
+                                    <div className={`rounded-2xl p-6 ${darkMode ? 'bg-[#2D2A26] border border-gray-800' : 'bg-white border border-gray-200'} shadow-sm`}>
+                                        {/* Poll Header */}
+                                        <div className="flex items-start justify-between mb-4">
+                                            <p className={`text-lg font-semibold flex-1 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                {language === 'al' ? activePoll.question_al : (activePoll.question_en || activePoll.question_al)}
+                                            </p>
+                                            {activePoll.expires_at && (
+                                                <span className="ml-4 px-3 py-1 bg-[#0D9488]/10 text-[#0D9488] text-sm font-medium rounded-full whitespace-nowrap">
+                                                    {Math.max(0, Math.ceil((new Date(activePoll.expires_at) - new Date()) / (1000 * 60 * 60 * 24)))} {t('ditë', 'days')}
+                                                </span>
                                             )}
                                         </div>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            {activePoll.options?.map((option, index) => {
-                                                const totalVotes = Object.values(pollResults).reduce((a, b) => a + b, 0);
-                                                const votes = pollResults[index] || 0;
-                                                const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
-                                                const isUserVote = userPollVote === index;
 
-                                                return (
-                                                    <div key={index} className="relative">
-                                                        <div className={`relative z-10 px-4 py-3 rounded-xl flex justify-between items-center ${isUserVote
-                                                            ? 'bg-amber-500/20 border border-amber-500'
-                                                            : darkMode ? 'bg-[#3D3A36] border border-gray-700' : 'bg-white border border-gray-200'
-                                                            }`}>
-                                                            <span className={`${isUserVote ? 'font-medium' : ''} ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                                {option} {isUserVote && '✓'}
-                                                            </span>
-                                                            <span className={`font-semibold ${isUserVote ? 'text-amber-500' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                {percentage}%
-                                                            </span>
+                                        {/* Poll Options */}
+                                        {userPollVote === null ? (
+                                            <div className="space-y-3">
+                                                {activePoll.options?.map((option, index) => (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => user ? votePoll(index) : (setShowAuthModal(true), setAuthMode('login'))}
+                                                        className={`w-full text-left px-5 py-4 rounded-xl transition-all border-2 ${darkMode
+                                                            ? 'bg-[#3D3A36] hover:bg-[#4D4A46] border-gray-700 hover:border-[#0D9488] text-gray-200'
+                                                            : 'bg-gray-50 hover:bg-white border-gray-200 hover:border-[#0D9488] text-gray-700'
+                                                            }`}
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                                {!user && (
+                                                    <p className={`text-sm text-center mt-3 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                        {t('Hyr për të votuar', 'Log in to vote')}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {activePoll.options?.map((option, index) => {
+                                                    const totalVotes = Object.values(pollResults).reduce((a, b) => a + b, 0);
+                                                    const votes = pollResults[index] || 0;
+                                                    const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+                                                    const isUserVote = userPollVote === index;
+
+                                                    return (
+                                                        <div key={index} className="relative">
+                                                            <div className={`absolute inset-0 rounded-xl ${isUserVote ? 'bg-[#0D9488]/20' : darkMode ? 'bg-gray-700/30' : 'bg-gray-100'}`}>
+                                                                <div
+                                                                    className={`h-full rounded-xl transition-all duration-500 ${isUserVote ? 'bg-[#0D9488]/30' : 'bg-[#0D9488]/10'}`}
+                                                                    style={{ width: `${percentage}%` }}
+                                                                />
+                                                            </div>
+                                                            <div className={`relative z-10 px-5 py-4 rounded-xl flex justify-between items-center ${isUserVote ? 'border-2 border-[#0D9488]' : ''}`}>
+                                                                <span className={`${isUserVote ? 'font-semibold text-[#0D9488]' : ''} ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                                                                    {option}
+                                                                </span>
+                                                                <span className={`font-bold ${isUserVote ? 'text-[#0D9488]' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                                    {percentage}%
+                                                                </span>
+                                                            </div>
                                                         </div>
-                                                        <div
-                                                            className={`absolute inset-0 rounded-xl ${isUserVote ? 'bg-amber-500/10' : darkMode ? 'bg-gray-700/30' : 'bg-gray-200/50'}`}
-                                                            style={{ width: `${percentage}%` }}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-                                            <p className={`text-sm text-center mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                {Object.values(pollResults).reduce((a, b) => a + b, 0)} {t('vota', 'votes')}
-                                            </p>
-                                        </div>
-                                    )}
+                                                    );
+                                                })}
+                                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                                    <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                        {Object.values(pollResults).reduce((a, b) => a + b, 0)} {t('vota', 'votes')}
+                                                    </p>
+                                                    <span className="flex items-center gap-1 text-[#0D9488] text-sm font-medium">
+                                                        <Check className="w-4 h-4" />
+                                                        {t('Ke votuar', 'You voted')}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
-                            {/* Articles Section */}
-                            {/* Articles now in N'gazeta - Show redirect */}
-                            <div className="mb-12">
-                                <div className={`p-6 rounded-2xl ${darkMode ? 'bg-gradient-to-br from-teal-500/10 to-emerald-500/5 border border-teal-500/20' : 'bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-100'}`}>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
-                                            <FileText className="w-7 h-7 text-white" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {t("Artikujt tani janë tek N'gazeta!", "Articles are now in N'gazeta!")}
-                                            </h3>
-                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                {t('Lexo artikuj dhe opinione nga komuniteti', 'Read articles and opinions from the community')}
-                                            </p>
-                                        </div>
-                                        <button
-                                            onClick={() => { changePage('lajme'); setContentTypeFilter('artikuj'); }}
-                                            className="px-5 py-2.5 bg-gradient-to-r from-teal-400 to-emerald-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-teal-500/30 transition-all"
-                                        >
-                                            {t('Shiko Artikujt', 'View Articles')} →
-                                        </button>
-                                    </div>
+                            {/* ==========================================
+                                CATEGORIES SECTION
+                               ========================================== */}
+                            <div className="mb-10">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="text-xl">🏷️</span>
+                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                        {t('Kategorië', 'Categories')}
+                                    </h2>
+                                </div>
+
+                                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                                    {[
+                                        { id: 'all', icon: '🔥', label: { al: 'Të gjitha', en: 'All' } },
+                                        { id: 'arsim', icon: '📚', label: { al: 'Arsim', en: 'Education' } },
+                                        { id: 'mjedisi', icon: '🌱', label: { al: 'Mjedisi', en: 'Environment' } },
+                                        { id: 'mundesi', icon: '✨', label: { al: 'Mundësi', en: 'Opportunities' } },
+                                        { id: 'kultura', icon: '🎭', label: { al: 'Kultura', en: 'Culture' } },
+                                        { id: 'punesim', icon: '💼', label: { al: 'Punësim', en: 'Employment' } },
+                                    ].map((cat) => {
+                                        const count = cat.id === 'all' ? topics.length : topics.filter(t => t.category === cat.id).length;
+                                        const isActive = communityCategory === cat.id;
+                                        return (
+                                            <button
+                                                key={cat.id}
+                                                onClick={() => setCommunityCategory(cat.id)}
+                                                className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all border-2 ${isActive
+                                                        ? 'bg-amber-500 border-amber-500 text-white'
+                                                        : darkMode
+                                                            ? 'bg-[#2D2A26] border-gray-700 hover:border-amber-500 text-white'
+                                                            : 'bg-white border-gray-200 hover:border-amber-400 text-gray-700'
+                                                    }`}
+                                            >
+                                                <span>{cat.icon}</span>
+                                                <span className="font-medium">{language === 'al' ? cat.label.al : cat.label.en}</span>
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isActive ? 'bg-white/20 text-white' : darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
+                                                    {count}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
-                            {/* Discussions Section */}
-                            {/* Discussions Section */}
-                            <div>
-                                <h2 className={`text-2xl md:text-3xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-black'}`}>
-                                    {t('Diskutime', 'Discussions')}
-                                </h2>
-                                {topics.length === 0 ? (
-                                    <div className={`text-center py-12 rounded-2xl ${darkMode ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}>
-                                        <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                                            {t('Asnjë diskutim ende', 'No discussions yet')}
-                                        </p>
+                            {/* ==========================================
+                                DISCUSSIONS SECTION
+                               ========================================== */}
+                            <div className="mb-10">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <span className="text-xl">💬</span>
+                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                        {t('Diskutime', 'Discussions')}
+                                    </h2>
+                                </div>
+
+                                {/* Discussion Tabs */}
+                                <div className="flex gap-2 mb-6">
+                                    {[
+                                        { id: 'trending', icon: '🔥', label: { al: 'Trending', en: 'Trending' } },
+                                        { id: 'recent', icon: '🕐', label: { al: 'Të fundit', en: 'Recent' } },
+                                        { id: 'unanswered', icon: '❓', label: { al: 'Pa përgjigje', en: 'Unanswered' } },
+                                    ].map((tab, i) => (
+                                        <button
+                                            key={tab.id}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${i === 0
+                                                    ? 'bg-[#2D2A26] text-white'
+                                                    : darkMode
+                                                        ? 'bg-transparent text-gray-400 hover:bg-[#2D2A26] hover:text-white'
+                                                        : 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                                }`}
+                                        >
+                                            <span>{tab.icon}</span>
+                                            {language === 'al' ? tab.label.al : tab.label.en}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Discussion Cards or Inline Discussion View */}
+                                {selectedTopic ? (
+                                    /* Inline Discussion View */
+                                    <div className={`rounded-2xl ${darkMode ? 'bg-[#2D2A26] border border-gray-800' : 'bg-white border border-gray-200'}`}>
+                                        {/* Discussion Header */}
+                                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                                            <button
+                                                onClick={() => setSelectedTopic(null)}
+                                                className={`flex items-center gap-2 mb-4 text-sm font-medium ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                                            >
+                                                <ChevronLeft className="w-4 h-4" />
+                                                {t('Kthehu te diskutimet', 'Back to discussions')}
+                                            </button>
+                                            <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                {language === 'al' ? selectedTopic.title_al : (selectedTopic.title_en || selectedTopic.title_al)}
+                                            </h3>
+                                            <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {language === 'al' ? selectedTopic.description_al : (selectedTopic.description_en || selectedTopic.description_al)}
+                                            </p>
+                                            <div className="flex items-center gap-3">
+                                                <span className={`px-2 py-1 rounded text-xs font-medium ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
+                                                    {selectedTopic.category ? selectedTopic.category.charAt(0).toUpperCase() + selectedTopic.category.slice(1) : 'General'}
+                                                </span>
+                                                <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                    {selectedTopic.author_name || 'Anonim'} • {selectedTopic.created_at ? new Date(selectedTopic.created_at).toLocaleDateString('sq-AL') : ''}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Posts */}
+                                        <div className="p-6">
+                                            {topicPosts.length === 0 ? (
+                                                <p className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                    {t('Asnjë koment ende. Bëhu i pari!', 'No comments yet. Be the first!')}
+                                                </p>
+                                            ) : (
+                                                <div className="space-y-4 mb-6">
+                                                    {topicPosts.map((post) => (
+                                                        <div key={post.id} className={`p-4 rounded-xl ${darkMode ? 'bg-[#3D3A36]' : 'bg-gray-50'}`}>
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                                                                    {(post.author_name || 'A').charAt(0).toUpperCase()}
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center justify-between mb-1">
+                                                                        <span className={`font-medium ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                                            {post.author_name || 'Anonim'}
+                                                                        </span>
+                                                                        <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                                            {post.created_at ? new Date(post.created_at).toLocaleDateString('sq-AL') : ''}
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                                        {post.content}
+                                                                    </p>
+                                                                </div>
+                                                                {(userProfile?.is_admin || post.user_id === user?.id) && (
+                                                                    <button
+                                                                        onClick={() => deletePost(post.id)}
+                                                                        className="p-1 text-red-400 hover:text-red-500"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Add Comment */}
+                                            {user ? (
+                                                <div className="flex gap-3">
+                                                    <input
+                                                        type="text"
+                                                        value={newPost}
+                                                        onChange={(e) => setNewPost(e.target.value)}
+                                                        placeholder={t('Shkruaj një koment...', 'Write a comment...')}
+                                                        className={`flex-1 px-4 py-3 rounded-xl border transition-all ${darkMode ? 'bg-[#3D3A36] border-gray-700 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'}`}
+                                                        onKeyPress={(e) => e.key === 'Enter' && submitPost()}
+                                                    />
+                                                    <button
+                                                        onClick={submitPost}
+                                                        disabled={!newPost.trim()}
+                                                        className="px-5 py-3 bg-[#0D9488] hover:bg-[#0F766E] text-white font-medium rounded-xl disabled:opacity-50 transition-all"
+                                                    >
+                                                        <Send className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
+                                                    className="w-full py-3 text-[#0D9488] font-medium"
+                                                >
+                                                    {t('Hyr për të komentuar', 'Log in to comment')}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {topics.map((topic) => (
-                                            <div
-                                                key={topic.id}
-                                                onClick={() => { setSelectedTopic(topic); changePage('discussion'); }}
-                                                className={`p-6 rounded-xl cursor-pointer transition-all hover:scale-[1.01] ${darkMode ? 'bg-[#1a1a1a] hover:bg-[#2a2a2a] border border-gray-800' : 'bg-white hover:bg-gray-50 border border-gray-200'}`}
-                                            >
-                                                <h3 className={`text-xl font-bold mb-2 hover:text-[#fbbf24] transition ${darkMode ? 'text-white' : 'text-black'}`}>
-                                                    {language === 'al' ? topic.titleAl : topic.titleEn}
-                                                </h3>
-                                                <p className={`text-sm line-clamp-2 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                    {language === 'al' ? topic.descriptionAl : topic.descriptionEn}
-                                                </p>
-                                                <div className="flex items-center gap-2 text-xs text-[#fbbf24]">
-                                                    <MessageCircle className="w-4 h-4" />
-                                                    <span>{t('Bashkohu në diskutim', 'Join discussion')}</span>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    /* Discussion List */
+                                    topics.length === 0 ? (
+                                        <div className={`text-center py-16 rounded-2xl ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}>
+                                            <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                            <p className={`text-lg font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                {t('Asnjë diskutim ende', 'No discussions yet')}
+                                            </p>
+                                            <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                {t('Diskutimet do të shfaqen këtu', 'Discussions will appear here')}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {topics
+                                                .filter(topic => communityCategory === 'all' || topic.category === communityCategory)
+                                                .map((topic, index) => {
+                                                    const categoryLabels = {
+                                                        general: 'General', arsim: 'Arsim', mjedisi: 'Mjedisi',
+                                                        mundesi: 'Mundësi', kultura: 'Kultura', punesim: 'Punësim'
+                                                    };
+
+                                                    return (
+                                                        <div
+                                                            key={topic.id}
+                                                            onClick={() => {
+                                                                setSelectedTopic(topic);
+                                                                // Load posts for this topic
+                                                                supabase
+                                                                    .from('posts')
+                                                                    .select('*')
+                                                                    .eq('topic_id', topic.id)
+                                                                    .order('created_at', { ascending: true })
+                                                                    .then(({ data }) => setTopicPosts(data || []));
+                                                            }}
+                                                            className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all hover:scale-[1.005] ${darkMode
+                                                                    ? 'bg-[#2D2A26] hover:bg-[#3D3A36] border border-gray-800'
+                                                                    : 'bg-white hover:bg-gray-50 border border-gray-200'
+                                                                }`}
+                                                        >
+                                                            {/* Avatar */}
+                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 ${['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500', 'bg-teal-500'][index % 6]
+                                                                }`}>
+                                                                {(topic.author_name || 'A').charAt(0).toUpperCase()}
+                                                            </div>
+
+                                                            {/* Content */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <h3 className={`font-semibold mb-1 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                                                    {language === 'al' ? topic.title_al : (topic.title_en || topic.title_al)}
+                                                                </h3>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
+                                                                        {categoryLabels[topic.category] || 'General'}
+                                                                    </span>
+                                                                </div>
+                                                                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                                                                    {topic.author_name || 'Anonim'} • {topic.created_at ? new Date(topic.created_at).toLocaleDateString('sq-AL', { day: 'numeric', month: 'short' }) : ''}
+                                                                </p>
+                                                            </div>
+
+                                                            {/* Arrow */}
+                                                            <ChevronRight className={`w-5 h-5 flex-shrink-0 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                                        </div>
+                                                    );
+                                                })}
+                                        </div>
+                                    )
+                                )}
+                            </div>
+
+                            {/* ==========================================
+                                COMMUNITY RULES SECTION - Expandable
+                               ========================================== */}
+                            <div className={`rounded-2xl overflow-hidden ${darkMode ? 'bg-[#2D2A26] border border-gray-800' : 'bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-100'}`}>
+                                <div
+                                    className="flex items-start gap-4 p-6 cursor-pointer"
+                                    onClick={() => setShowRulesExpanded(!showRulesExpanded)}
+                                >
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                                        <Shield className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className={`text-lg font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                            {t('Rregullat e Komunitetit', 'Community Rules')}
+                                        </h3>
+                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            {t(
+                                                'Respekto të tjerët, ndaj ide konstruktive, dhe ndihmo në krijimin e një mjedisi pozitiv për të gjithë të rinjtë.',
+                                                'Respect others, share constructive ideas, and help create a positive environment for all youth.'
+                                            )}
+                                        </p>
+                                        <button className="text-[#0D9488] hover:text-[#0F766E] font-medium text-sm mt-2 flex items-center gap-1 transition-all">
+                                            {showRulesExpanded ? t('Mbyll', 'Close') : t('Lexo më shumë', 'Read more')}
+                                            <ChevronRight className={`w-4 h-4 transition-transform ${showRulesExpanded ? 'rotate-90' : ''}`} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Expanded Rules */}
+                                {showRulesExpanded && (
+                                    <div className={`px-6 pb-6 pt-2 border-t ${darkMode ? 'border-gray-700' : 'border-teal-100'}`}>
+                                        <ul className={`space-y-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            <li className="flex items-start gap-3">
+                                                <span className="text-[#0D9488] font-bold">1.</span>
+                                                <span>{t('Respekto të gjithë anëtarët e komunitetit pavarësisht mendimeve të tyre.', 'Respect all community members regardless of their opinions.')}</span>
+                                            </li>
+                                            <li className="flex items-start gap-3">
+                                                <span className="text-[#0D9488] font-bold">2.</span>
+                                                <span>{t('Mos posto përmbajtje ofenduese, diskriminuese, ose të papërshtatshme.', 'Do not post offensive, discriminatory, or inappropriate content.')}</span>
+                                            </li>
+                                            <li className="flex items-start gap-3">
+                                                <span className="text-[#0D9488] font-bold">3.</span>
+                                                <span>{t('Mbaj diskutimet konstruktive dhe me tema relevante për të rinjtë.', 'Keep discussions constructive and relevant to youth topics.')}</span>
+                                            </li>
+                                            <li className="flex items-start gap-3">
+                                                <span className="text-[#0D9488] font-bold">4.</span>
+                                                <span>{t('Mos bëj spam ose reklama pa leje.', 'Do not spam or advertise without permission.')}</span>
+                                            </li>
+                                            <li className="flex items-start gap-3">
+                                                <span className="text-[#0D9488] font-bold">5.</span>
+                                                <span>{t('Raporto përmbajtjen e papërshtatshme tek administratorët.', 'Report inappropriate content to administrators.')}</span>
+                                            </li>
+                                        </ul>
                                     </div>
                                 )}
                             </div>
@@ -9957,6 +10039,120 @@ const RinON = () => {
                                 className="w-full py-4 bg-[#F97316] text-white rounded-xl font-semibold hover:bg-[#EA580C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 {t('Shto Citatin', 'Add Quote')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Poll Creation Form Modal */}
+            {showAddPollForm && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+                    onClick={(e) => e.target === e.currentTarget && setShowAddPollForm(false)}
+                >
+                    <div className={`w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0D9488] to-[#10B981] flex items-center justify-center">
+                                    <TrendingUp className="w-5 h-5 text-white" />
+                                </div>
+                                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
+                                    {t('Krijo Sondazh', 'Create Poll')}
+                                </h2>
+                            </div>
+                            <button onClick={() => setShowAddPollForm(false)} className={darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}>
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-5">
+                            {/* Question Albanian */}
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {t('Pyetja (Shqip)', 'Question (Albanian)')} *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={pollFormData.questionAl}
+                                    onChange={(e) => setPollFormData({ ...pollFormData, questionAl: e.target.value })}
+                                    className={`w-full px-4 py-3 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] ${darkMode ? 'bg-[#3D3A36] text-white border-gray-700' : 'bg-gray-50 text-gray-900 border-gray-200'}`}
+                                    placeholder="Cili është problemi më i madh për të rinjtë në Tiranë?"
+                                />
+                            </div>
+
+                            {/* Question English */}
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {t('Pyetja (Anglisht)', 'Question (English)')}
+                                </label>
+                                <input
+                                    type="text"
+                                    value={pollFormData.questionEn}
+                                    onChange={(e) => setPollFormData({ ...pollFormData, questionEn: e.target.value })}
+                                    className={`w-full px-4 py-3 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] ${darkMode ? 'bg-[#3D3A36] text-white border-gray-700' : 'bg-gray-50 text-gray-900 border-gray-200'}`}
+                                    placeholder="What is the biggest problem for youth in Tirana?"
+                                />
+                            </div>
+
+                            {/* Poll Options */}
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {t('Opsionet', 'Options')} * ({t('min 2', 'min 2')})
+                                </label>
+                                <div className="space-y-2">
+                                    {pollFormData.options.map((option, index) => (
+                                        <div key={index} className="flex items-center gap-2">
+                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
+                                                {index + 1}
+                                            </span>
+                                            <input
+                                                type="text"
+                                                value={option}
+                                                onChange={(e) => {
+                                                    const newOptions = [...pollFormData.options];
+                                                    newOptions[index] = e.target.value;
+                                                    setPollFormData({ ...pollFormData, options: newOptions });
+                                                }}
+                                                className={`flex-1 px-4 py-2.5 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] ${darkMode ? 'bg-[#3D3A36] text-white border-gray-700' : 'bg-gray-50 text-gray-900 border-gray-200'}`}
+                                                placeholder={`${t('Opsioni', 'Option')} ${index + 1}`}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setPollFormData({ ...pollFormData, options: [...pollFormData.options, ''] })}
+                                    className="mt-2 text-sm text-[#0D9488] hover:text-[#0F766E] font-medium"
+                                >
+                                    + {t('Shto opsion', 'Add option')}
+                                </button>
+                            </div>
+
+                            {/* Expiry Days */}
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    {t('Skadon pas', 'Expires after')}
+                                </label>
+                                <select
+                                    value={pollFormData.expiresInDays}
+                                    onChange={(e) => setPollFormData({ ...pollFormData, expiresInDays: parseInt(e.target.value) })}
+                                    className={`w-full px-4 py-3 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] ${darkMode ? 'bg-[#3D3A36] text-white border-gray-700' : 'bg-gray-50 text-gray-900 border-gray-200'}`}
+                                >
+                                    <option value={1}>1 {t('ditë', 'day')}</option>
+                                    <option value={3}>3 {t('ditë', 'days')}</option>
+                                    <option value={7}>7 {t('ditë', 'days')}</option>
+                                    <option value={14}>14 {t('ditë', 'days')}</option>
+                                    <option value={30}>30 {t('ditë', 'days')}</option>
+                                </select>
+                            </div>
+
+                            {/* Submit Button */}
+                            <button
+                                onClick={createPoll}
+                                disabled={!pollFormData.questionAl || pollFormData.options.filter(o => o.trim()).length < 2}
+                                className="w-full py-4 bg-gradient-to-r from-[#0D9488] to-[#10B981] text-white rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                {t('Publiko Sondazhin', 'Publish Poll')}
                             </button>
                         </div>
                     </div>
