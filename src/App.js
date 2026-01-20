@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, Sparkles, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
@@ -5052,7 +5052,7 @@ const RinON = () => {
             {/* Page Header */}
             <div className="relative z-10 text-center mb-10">
                 <h1 className={`text-5xl md:text-6xl font-black mb-3 ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
-                    {t('Ndodh e re?', 'What\'s happening?')}
+                    {t('Ndonjë e re?', 'What\'s happening?')}
                 </h1>
                 <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {t('Zgjidh datën dhe zbulo mundësitë', 'Pick a date and discover opportunities')}
@@ -9192,7 +9192,7 @@ const RinON = () => {
                                 <div className="grid grid-cols-3 gap-4 mb-8">
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                                         <p className="text-3xl md:text-4xl font-black text-white">
-                                            {topics.reduce((acc, t) => acc + (t.posts_count || 0), 0) + 100}
+                                            {topics.reduce((acc, t) => acc + (t.posts_count || 0), 0) + 172}
                                         </p>
                                         <p className="text-white/70 text-sm">{t('Anëtarë', 'Members')}</p>
                                     </div>
@@ -9244,16 +9244,67 @@ const RinON = () => {
                                     </div>
 
                                     <div className={`rounded-2xl p-6 ${darkMode ? 'bg-[#2D2A26] border border-gray-800' : 'bg-white border border-gray-200'} shadow-sm`}>
-                                        {/* Poll Header */}
+                                        {/* Poll Header with Actions */}
                                         <div className="flex items-start justify-between mb-4">
                                             <p className={`text-lg font-semibold flex-1 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
                                                 {language === 'al' ? activePoll.question_al : (activePoll.question_en || activePoll.question_al)}
                                             </p>
-                                            {activePoll.expires_at && (
-                                                <span className="ml-4 px-3 py-1 bg-[#0D9488]/10 text-[#0D9488] text-sm font-medium rounded-full whitespace-nowrap">
-                                                    {Math.max(0, Math.ceil((new Date(activePoll.expires_at) - new Date()) / (1000 * 60 * 60 * 24)))} {t('ditë', 'days')}
-                                                </span>
-                                            )}
+                                            <div className="flex items-center gap-2 ml-4">
+                                                {activePoll.expires_at && (
+                                                    <span className="px-3 py-1 bg-[#0D9488]/10 text-[#0D9488] text-sm font-medium rounded-full whitespace-nowrap">
+                                                        {Math.max(0, Math.ceil((new Date(activePoll.expires_at) - new Date()) / (1000 * 60 * 60 * 24)))} {t('ditë', 'days')}
+                                                    </span>
+                                                )}
+                                                {/* Share Button */}
+                                                <button
+                                                    onClick={() => {
+                                                        const pollUrl = `https://rinon.al/komuniteti?poll=${activePoll.id}`;
+                                                        const shareText = `📊 ${activePoll.question_al}\n\nVoto tani në RinON!`;
+                                                        if (navigator.share) {
+                                                            navigator.share({ title: 'RinON Sondazh', text: shareText, url: pollUrl });
+                                                        } else {
+                                                            navigator.clipboard.writeText(pollUrl);
+                                                            alert(t('Linku u kopjua!', 'Link copied!'));
+                                                        }
+                                                    }}
+                                                    className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
+                                                    title={t('Shpërndaj', 'Share')}
+                                                >
+                                                    <Share2 className="w-4 h-4" />
+                                                </button>
+                                                {/* Admin: Edit & Delete */}
+                                                {userProfile?.is_admin && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => {
+                                                                setPollFormData({
+                                                                    questionAl: activePoll.question_al,
+                                                                    questionEn: activePoll.question_en || '',
+                                                                    options: [...activePoll.options, '', '', '', ''].slice(0, 4),
+                                                                    expiresInDays: 7
+                                                                });
+                                                                setShowAddPollForm(true);
+                                                            }}
+                                                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-amber-400' : 'text-gray-500 hover:bg-gray-100 hover:text-amber-600'}`}
+                                                            title={t('Ndrysho', 'Edit')}
+                                                        >
+                                                            <Edit className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (window.confirm(t('Je i sigurt që dëshiron të fshish këtë sondazh?', 'Are you sure you want to delete this poll?'))) {
+                                                                    await supabase.from('polls').delete().eq('id', activePoll.id);
+                                                                    setActivePoll(null);
+                                                                }
+                                                            }}
+                                                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-red-400' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'}`}
+                                                            title={t('Fshi', 'Delete')}
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Poll Options */}
@@ -9367,33 +9418,11 @@ const RinON = () => {
                                 DISCUSSIONS SECTION
                                ========================================== */}
                             <div className="mb-10">
-                                <div className="flex items-center gap-2 mb-4">
+                                <div className="flex items-center gap-2 mb-6">
                                     <span className="text-xl">💬</span>
                                     <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
                                         {t('Diskutime', 'Discussions')}
                                     </h2>
-                                </div>
-
-                                {/* Discussion Tabs */}
-                                <div className="flex gap-2 mb-6">
-                                    {[
-                                        { id: 'trending', icon: '🔥', label: { al: 'Trending', en: 'Trending' } },
-                                        { id: 'recent', icon: '🕐', label: { al: 'Të fundit', en: 'Recent' } },
-                                        { id: 'unanswered', icon: '❓', label: { al: 'Pa përgjigje', en: 'Unanswered' } },
-                                    ].map((tab, i) => (
-                                        <button
-                                            key={tab.id}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${i === 0
-                                                    ? 'bg-[#2D2A26] text-white'
-                                                    : darkMode
-                                                        ? 'bg-transparent text-gray-400 hover:bg-[#2D2A26] hover:text-white'
-                                                        : 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-                                                }`}
-                                        >
-                                            <span>{tab.icon}</span>
-                                            {language === 'al' ? tab.label.al : tab.label.en}
-                                        </button>
-                                    ))}
                                 </div>
 
                                 {/* Discussion Cards or Inline Discussion View */}
@@ -9402,13 +9431,51 @@ const RinON = () => {
                                     <div className={`rounded-2xl ${darkMode ? 'bg-[#2D2A26] border border-gray-800' : 'bg-white border border-gray-200'}`}>
                                         {/* Discussion Header */}
                                         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                                            <button
-                                                onClick={() => setSelectedTopic(null)}
-                                                className={`flex items-center gap-2 mb-4 text-sm font-medium ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                                            >
-                                                <ChevronLeft className="w-4 h-4" />
-                                                {t('Kthehu te diskutimet', 'Back to discussions')}
-                                            </button>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <button
+                                                    onClick={() => setSelectedTopic(null)}
+                                                    className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                                                >
+                                                    <ChevronLeft className="w-4 h-4" />
+                                                    {t('Kthehu te diskutimet', 'Back to discussions')}
+                                                </button>
+                                                {/* Share/Edit/Delete buttons for discussion */}
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const discussionUrl = `https://rinon.al/komuniteti?discussion=${selectedTopic.id}`;
+                                                            const shareText = `💬 ${selectedTopic.title_al}\n\nBashkohu në diskutim në RinON!`;
+                                                            if (navigator.share) {
+                                                                navigator.share({ title: 'RinON Diskutim', text: shareText, url: discussionUrl });
+                                                            } else {
+                                                                navigator.clipboard.writeText(discussionUrl);
+                                                                alert(t('Linku u kopjua!', 'Link copied!'));
+                                                            }
+                                                        }}
+                                                        className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
+                                                        title={t('Shpërndaj', 'Share')}
+                                                    >
+                                                        <Share2 className="w-4 h-4" />
+                                                    </button>
+                                                    {userProfile?.is_admin && (
+                                                        <button
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                if (window.confirm(t('Je i sigurt që dëshiron të fshish këtë diskutim?', 'Are you sure you want to delete this discussion?'))) {
+                                                                    await supabase.from('topics').delete().eq('id', selectedTopic.id);
+                                                                    setSelectedTopic(null);
+                                                                    loadTopics();
+                                                                }
+                                                            }}
+                                                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-red-400' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'}`}
+                                                            title={t('Fshi', 'Delete')}
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
                                             <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
                                                 {language === 'al' ? selectedTopic.title_al : (selectedTopic.title_en || selectedTopic.title_al)}
                                             </h3>
@@ -9520,29 +9587,40 @@ const RinON = () => {
                                                     return (
                                                         <div
                                                             key={topic.id}
-                                                            onClick={() => {
-                                                                setSelectedTopic(topic);
-                                                                // Load posts for this topic
-                                                                supabase
-                                                                    .from('posts')
-                                                                    .select('*')
-                                                                    .eq('topic_id', topic.id)
-                                                                    .order('created_at', { ascending: true })
-                                                                    .then(({ data }) => setTopicPosts(data || []));
-                                                            }}
-                                                            className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all hover:scale-[1.005] ${darkMode
+                                                            className={`flex items-center gap-4 p-4 rounded-xl transition-all ${darkMode
                                                                     ? 'bg-[#2D2A26] hover:bg-[#3D3A36] border border-gray-800'
                                                                     : 'bg-white hover:bg-gray-50 border border-gray-200'
                                                                 }`}
                                                         >
-                                                            {/* Avatar */}
-                                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 ${['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500', 'bg-teal-500'][index % 6]
-                                                                }`}>
+                                                            {/* Avatar - Clickable to open discussion */}
+                                                            <div
+                                                                onClick={() => {
+                                                                    setSelectedTopic(topic);
+                                                                    supabase
+                                                                        .from('posts')
+                                                                        .select('*')
+                                                                        .eq('topic_id', topic.id)
+                                                                        .order('created_at', { ascending: true })
+                                                                        .then(({ data }) => setTopicPosts(data || []));
+                                                                }}
+                                                                className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 cursor-pointer ${['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500', 'bg-teal-500'][index % 6]
+                                                                    }`}>
                                                                 {(topic.author_name || 'A').charAt(0).toUpperCase()}
                                                             </div>
 
-                                                            {/* Content */}
-                                                            <div className="flex-1 min-w-0">
+                                                            {/* Content - Clickable to open discussion */}
+                                                            <div
+                                                                className="flex-1 min-w-0 cursor-pointer"
+                                                                onClick={() => {
+                                                                    setSelectedTopic(topic);
+                                                                    supabase
+                                                                        .from('posts')
+                                                                        .select('*')
+                                                                        .eq('topic_id', topic.id)
+                                                                        .order('created_at', { ascending: true })
+                                                                        .then(({ data }) => setTopicPosts(data || []));
+                                                                }}
+                                                            >
                                                                 <h3 className={`font-semibold mb-1 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
                                                                     {language === 'al' ? topic.title_al : (topic.title_en || topic.title_al)}
                                                                 </h3>
@@ -9556,8 +9634,56 @@ const RinON = () => {
                                                                 </p>
                                                             </div>
 
-                                                            {/* Arrow */}
-                                                            <ChevronRight className={`w-5 h-5 flex-shrink-0 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+                                                            {/* Action Buttons */}
+                                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                                {/* Share */}
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        const discussionUrl = `https://rinon.al/komuniteti?discussion=${topic.id}`;
+                                                                        const shareText = `💬 ${topic.title_al}\n\nBashkohu në diskutim në RinON!`;
+                                                                        if (navigator.share) {
+                                                                            navigator.share({ title: 'RinON Diskutim', text: shareText, url: discussionUrl });
+                                                                        } else {
+                                                                            navigator.clipboard.writeText(discussionUrl);
+                                                                            alert(t('Linku u kopjua!', 'Link copied!'));
+                                                                        }
+                                                                    }}
+                                                                    className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-500 hover:bg-white/10 hover:text-white' : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700'}`}
+                                                                    title={t('Shpërndaj', 'Share')}
+                                                                >
+                                                                    <Share2 className="w-4 h-4" />
+                                                                </button>
+                                                                {/* Delete (Admin only) */}
+                                                                {userProfile?.is_admin && (
+                                                                    <button
+                                                                        onClick={async (e) => {
+                                                                            e.stopPropagation();
+                                                                            if (window.confirm(t('Je i sigurt që dëshiron të fshish këtë diskutim?', 'Are you sure you want to delete this discussion?'))) {
+                                                                                await supabase.from('topics').delete().eq('id', topic.id);
+                                                                                loadTopics();
+                                                                            }
+                                                                        }}
+                                                                        className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-500 hover:bg-white/10 hover:text-red-400' : 'text-gray-400 hover:bg-gray-100 hover:text-red-600'}`}
+                                                                        title={t('Fshi', 'Delete')}
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+                                                                {/* Arrow to open */}
+                                                                <ChevronRight
+                                                                    onClick={() => {
+                                                                        setSelectedTopic(topic);
+                                                                        supabase
+                                                                            .from('posts')
+                                                                            .select('*')
+                                                                            .eq('topic_id', topic.id)
+                                                                            .order('created_at', { ascending: true })
+                                                                            .then(({ data }) => setTopicPosts(data || []));
+                                                                    }}
+                                                                    className={`w-5 h-5 cursor-pointer ${darkMode ? 'text-gray-600 hover:text-gray-400' : 'text-gray-400 hover:text-gray-600'}`}
+                                                                />
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}
