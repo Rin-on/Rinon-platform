@@ -2570,8 +2570,10 @@ const RinON = () => {
         // Clean the IDs - remove any trailing quotes or whitespace
         const openArticleId = urlParams.get('openArticle')?.replace(/["']/g, '').trim();
         const openEventId = urlParams.get('openEvent')?.replace(/["']/g, '').trim();
+        const openPollId = urlParams.get('poll')?.replace(/["']/g, '').trim();
+        const openDiscussionId = urlParams.get('discussion')?.replace(/["']/g, '').trim();
 
-        console.log('URL params - Article ID:', openArticleId, 'Event ID:', openEventId);
+        console.log('URL params - Article ID:', openArticleId, 'Event ID:', openEventId, 'Poll ID:', openPollId, 'Discussion ID:', openDiscussionId);
 
         const handleArticleOpen = async () => {
             if (!openArticleId) return;
@@ -2691,6 +2693,54 @@ const RinON = () => {
         // Execute handlers
         if (openArticleId) handleArticleOpen();
         if (openEventId) handleEventOpen();
+
+        // Handle poll deep link - navigate to community and show poll
+        if (openPollId) {
+            console.log('Opening poll from URL:', openPollId);
+            changePage('komuniteti');
+            window.history.replaceState({}, '', '/komuniteti');
+        }
+
+        // Handle discussion deep link - navigate to community and open discussion
+        if (openDiscussionId) {
+            console.log('Opening discussion from URL:', openDiscussionId);
+            changePage('komuniteti');
+            // Fetch and open the discussion
+            (async () => {
+                try {
+                    const { data } = await supabase
+                        .from('topics')
+                        .select('*')
+                        .eq('id', openDiscussionId)
+                        .single();
+
+                    if (data) {
+                        const topic = {
+                            id: data.id,
+                            title_al: data.title_al,
+                            title_en: data.title_en,
+                            description_al: data.description_al,
+                            description_en: data.description_en,
+                            category: data.category,
+                            author_name: data.author_name,
+                            created_at: data.created_at,
+                            created_by: data.created_by
+                        };
+                        setSelectedTopic(topic);
+                        // Load posts for this topic
+                        const { data: postsData } = await supabase
+                            .from('posts')
+                            .select('*')
+                            .eq('topic_id', topic.id)
+                            .order('created_at', { ascending: true });
+                        setTopicPosts(postsData || []);
+                    }
+                } catch (err) {
+                    console.error('Error fetching discussion:', err);
+                }
+                window.history.replaceState({}, '', '/komuniteti');
+            })();
+        }
 
         // Also listen for messages from service worker (when app was open in background)
         const handleServiceWorkerMessage = async (event) => {
@@ -5052,7 +5102,7 @@ const RinON = () => {
             {/* Page Header */}
             <div className="relative z-10 text-center mb-10">
                 <h1 className={`text-5xl md:text-6xl font-black mb-3 ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
-                    {t('Ndonjë e re?', 'What\'s happening?')}
+                    {t('Ndodh e re?', 'What\'s happening?')}
                 </h1>
                 <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {t('Zgjidh datën dhe zbulo mundësitë', 'Pick a date and discover opportunities')}
@@ -9192,7 +9242,7 @@ const RinON = () => {
                                 <div className="grid grid-cols-3 gap-4 mb-8">
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
                                         <p className="text-3xl md:text-4xl font-black text-white">
-                                            {topics.reduce((acc, t) => acc + (t.posts_count || 0), 0) + 172}
+                                            {topics.reduce((acc, t) => acc + (t.posts_count || 0), 0) + 100}
                                         </p>
                                         <p className="text-white/70 text-sm">{t('Anëtarë', 'Members')}</p>
                                     </div>
