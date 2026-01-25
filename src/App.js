@@ -5102,7 +5102,7 @@ const RinON = () => {
             {/* Page Header */}
             <div className="relative z-10 text-center mb-10">
                 <h1 className={`text-5xl md:text-6xl font-black mb-3 ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
-                    {t('Ndodh e re?', 'What\'s happening?')}
+                    {t('Ndonjë e re?', 'Anything new?')}
                 </h1>
                 <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {t('Zgjidh datën dhe zbulo mundësitë', 'Pick a date and discover opportunities')}
@@ -8579,13 +8579,13 @@ const RinON = () => {
                                                 <TrendingUp className="w-6 h-6 text-white" />
                                             </div>
                                             <h3 className="text-xl font-bold mb-2 text-white">
-                                                {t('Mundësi', 'Opportunities')}
+                                                {t('N`Gazeta', 'Newspaper')}
                                             </h3>
                                             <p className="text-white/60 mb-4 text-sm">
-                                                {t('Grante, bursa, dhe programe për ty', 'Grants, scholarships, and programs for you')}
+                                                    {t('Lajme, artikuj, dhe mundësi për ty', 'Grants, scholarships, and programs for you')}
                                             </p>
                                             <span className="text-[#0D9488] font-semibold flex items-center gap-2 group-hover:gap-3 transition-all text-sm">
-                                                {t('Gjej mundësi', 'Find opportunities')} <ArrowRight className="w-4 h-4" />
+                                                    {t('Shiko Gazetën', 'Find opportunities')} <ArrowRight className="w-4 h-4" />
                                             </span>
                                         </div>
                                     </div>
