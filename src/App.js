@@ -1093,6 +1093,10 @@ const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
     const getHashtags = () => {
         const baseHashtags = '#RinON #RiniaShqiptare #AlbanianYouth #Shqipëri';
         const categoryHashtags = {
+            'Arsim': '#Arsim #Education #Learning #Youth',
+            'Thirrje': '#Thirrje #Calls #Opportunity #Apply',
+            'Grant': '#Grant #Funding #Grants #Opportunity',
+            'Mundësi': '#Mundësi #Opportunities #Youth #Career',
             'Sport dhe Kulturë': '#Sport #Kulturë #Culture',
             'Politikë dhe Ekonomi': '#Politikë #Ekonomi #Politics',
             'Vullnetarizëm': '#Vullnetarizëm #Volunteering #Youth',
@@ -1973,7 +1977,7 @@ const RinON = () => {
 
     const [formData, setFormData] = useState({
         titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-        category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', author: '', featured: false, postType: 'lajme', showOnHomepage: false, isHeadArticle: false
+        category: 'Arsim', image: '', imageFile: null, source: '', author: '', featured: false, postType: 'lajme', showOnHomepage: false, isHeadArticle: false
     });
 
     const [eventFormData, setEventFormData] = useState({
@@ -2148,6 +2152,10 @@ const RinON = () => {
     };
     const categories = [
         { al: 'Te Gjitha', en: 'All', icon: TrendingUp },
+        { al: 'Arsim', en: 'Education', icon: GraduationCap },
+        { al: 'Thirrje', en: 'Calls', icon: Bell },
+        { al: 'Grant', en: 'Grants', icon: Award },
+        { al: 'Mundësi', en: 'Opportunities', icon: Star },
         { al: 'Sport dhe Kulturë', en: 'Sports and Culture', icon: Play },
         { al: 'Politikë dhe Ekonomi', en: 'Politics and Economics', icon: Users },
         { al: 'Vullnetarizëm', en: 'Volunteering', icon: Leaf },
@@ -3274,7 +3282,7 @@ const RinON = () => {
         // Reset form
         setFormData({
             titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-            category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', featured: false
+            category: 'Arsim', image: '', imageFile: null, source: '', featured: false
         });
         setEditingDraftId(null);
         setShowAddForm(false);
@@ -3288,7 +3296,7 @@ const RinON = () => {
             titleEn: draft.titleEn || '',
             contentAl: draft.contentAl || '',
             contentEn: draft.contentEn || '',
-            category: draft.category || 'Sport dhe Kulturë',
+            category: draft.category || 'Arsim',
             image: draft.image || '',
             imageFile: null,
             source: draft.source || '',
@@ -3317,7 +3325,7 @@ const RinON = () => {
             titleEn: draft.titleEn || '',
             contentAl: draft.contentAl || '',
             contentEn: draft.contentEn || '',
-            category: draft.category || 'Sport dhe Kulturë',
+            category: draft.category || 'Arsim',
             image: draft.image || '',
             imageFile: null,
             source: draft.source || '',
@@ -4467,7 +4475,7 @@ const RinON = () => {
             loadArticles();
             setFormData({
                 titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-                category: 'Sport dhe Kulturë', image: '', imageFile: null, source: '', author: '', featured: false, postType: 'lajme', showOnHomepage: false, isHeadArticle: false
+                category: 'Arsim', image: '', imageFile: null, source: '', author: '', featured: false, postType: 'lajme', showOnHomepage: false, isHeadArticle: false
             });
             setShowAddForm(false);
             setEditMode(false);
@@ -8582,10 +8590,10 @@ const RinON = () => {
                                                 {t('N`Gazeta', 'Newspaper')}
                                             </h3>
                                             <p className="text-white/60 mb-4 text-sm">
-                                                    {t('Lajme, artikuj, dhe mundësi për ty', 'Grants, scholarships, and programs for you')}
+                                                {t('Lajme, artikuj, dhe mundësi për ty', 'Grants, scholarships, and programs for you')}
                                             </p>
                                             <span className="text-[#0D9488] font-semibold flex items-center gap-2 group-hover:gap-3 transition-all text-sm">
-                                                    {t('Shiko Gazetën', 'Find opportunities')} <ArrowRight className="w-4 h-4" />
+                                                {t('Shiko Gazetën', 'Find opportunities')} <ArrowRight className="w-4 h-4" />
                                             </span>
                                         </div>
                                     </div>
@@ -9447,10 +9455,10 @@ const RinON = () => {
                                                 key={cat.id}
                                                 onClick={() => setCommunityCategory(cat.id)}
                                                 className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all border-2 ${isActive
-                                                        ? 'bg-amber-500 border-amber-500 text-white'
-                                                        : darkMode
-                                                            ? 'bg-[#2D2A26] border-gray-700 hover:border-amber-500 text-white'
-                                                            : 'bg-white border-gray-200 hover:border-amber-400 text-gray-700'
+                                                    ? 'bg-amber-500 border-amber-500 text-white'
+                                                    : darkMode
+                                                        ? 'bg-[#2D2A26] border-gray-700 hover:border-amber-500 text-white'
+                                                        : 'bg-white border-gray-200 hover:border-amber-400 text-gray-700'
                                                     }`}
                                             >
                                                 <span>{cat.icon}</span>
@@ -9638,8 +9646,8 @@ const RinON = () => {
                                                         <div
                                                             key={topic.id}
                                                             className={`flex items-center gap-4 p-4 rounded-xl transition-all ${darkMode
-                                                                    ? 'bg-[#2D2A26] hover:bg-[#3D3A36] border border-gray-800'
-                                                                    : 'bg-white hover:bg-gray-50 border border-gray-200'
+                                                                ? 'bg-[#2D2A26] hover:bg-[#3D3A36] border border-gray-800'
+                                                                : 'bg-white hover:bg-gray-50 border border-gray-200'
                                                                 }`}
                                                         >
                                                             {/* Avatar - Clickable to open discussion */}
