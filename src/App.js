@@ -648,182 +648,9 @@ END:VCALENDAR`;
 
 EventCalendar.displayName = 'EventCalendar';
 
-// Discussion Page Component
-const DiscussionPageContent = ({
-    selectedTopic,
-    setSelectedTopic,
-    topics,
-    topicPosts,
-    newPost,
-    setNewPost,
-    submitPost,
-    deletePost,
-    deleteTopic,
-    user,
-    userProfile,
-    showAdmin,
-    language,
-    darkMode,
-    t,
-    setShowAuthModal,
-    setAuthMode
-}) => {
-    if (!selectedTopic) {
-        return (
-            <div className="max-w-6xl mx-auto px-4 py-12">
-                <h1 className={`text-5xl font-bold mb-8 ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>{t('Hapësira e Diskutimit', 'Discussion Space')}</h1>
+// Discussion Page Component — REMOVED (Phase 1)
+// DiscussionPageContent was here (lines 652-826)
 
-                {!user && (
-                    <div className={`backdrop-blur-lg rounded-2xl border p-8 mb-8 text-center ${darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'}`}>
-                        <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-amber-500' : 'text-amber-600'}`} />
-                        <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                            {t('Kyçu për të parë diskutimet', 'Sign in to view discussions')}
-                        </h3>
-                        <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {t('Duhet të kyçesh për të parë dhe marrë pjesë në diskutime', 'You need to sign in to view and participate in discussions')}
-                        </p>
-                        <button
-                            onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
-                            className="px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 flex items-center gap-2 mx-auto"
-                        >
-                            <LogIn className="w-5 h-5" />
-                            {t('Kyçu Tani', 'Sign In Now')}
-                        </button>
-                    </div>
-                )}
-
-                {topics.length === 0 ? (
-                    <div className="text-center py-20">
-                        <div className="w-20 h-20 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-amber-500/30">
-                            <MessageCircle className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-amber-600'}`} />
-                        </div>
-                        <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                            {t('Asnjë temë diskutimi ende', 'No discussion topics yet')}
-                        </h3>
-                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Temat do të shfaqen këtu kur të krijohen', 'Topics will appear here when created')}
-                        </p>
-                    </div>
-                ) : (
-                    <div className={`grid gap-4 md:grid-cols-2 ${!user ? 'filter blur-sm pointer-events-none' : ''}`}>
-                        {topics.map((topic) => (
-                            <div
-                                key={topic.id}
-                                className={`backdrop-blur-lg p-6 rounded-2xl border hover:border-amber-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20 relative ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'
-                                    }`}
-                            >
-                                {showAdmin && userProfile?.is_admin && (
-                                    <button
-                                        onClick={() => deleteTopic(topic.id)}
-                                        className="absolute top-3 right-3 bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-                                )}
-                                <button
-                                    onClick={() => setSelectedTopic(topic)}
-                                    className="text-left w-full"
-                                >
-                                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{language === 'al' ? topic.title_al : topic.title_en || topic.title_al}</h3>
-                                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? topic.description_al : topic.description_en || topic.description_al}</p>
-                                    <p className={`text-sm mt-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{new Date(topic.created_at).toLocaleDateString()}</p>
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
-    }
-
-    if (!user) {
-        return (
-            <div className="max-w-4xl mx-auto px-4 py-12">
-                <button onClick={() => setSelectedTopic(null)} className="text-amber-500 hover:text-amber-400 flex items-center gap-2 mb-6">
-                    <ChevronLeft className="w-4 h-4" />
-                    {t('Kthehu', 'Back')}
-                </button>
-                <div className={`backdrop-blur-lg rounded-2xl border p-8 text-center ${darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'}`}>
-                    <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-amber-500' : 'text-amber-600'}`} />
-                    <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                        {t('Kyçu për të parë diskutimet', 'Sign in to view discussions')}
-                    </h3>
-                    <p className={`mb-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t('Duhet të kyçesh për të parë dhe marrë pjesë në diskutime', 'You need to sign in to view and participate in discussions')}
-                    </p>
-                    <button
-                        onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
-                        className="px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 flex items-center gap-2 mx-auto"
-                    >
-                        <LogIn className="w-5 h-5" />
-                        {t('Kyçu Tani', 'Sign In Now')}
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="max-w-4xl mx-auto px-4 py-12">
-            <button onClick={() => setSelectedTopic(null)} className="text-amber-500 hover:text-amber-400 flex items-center gap-2 mb-6">
-                <ChevronLeft className="w-4 h-4" />
-                {t('Kthehu', 'Back')}
-            </button>
-
-            <div className={`backdrop-blur-lg p-6 rounded-2xl border mb-6 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
-                <h2 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{language === 'al' ? selectedTopic.title_al : selectedTopic.title_en || selectedTopic.title_al}</h2>
-                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? selectedTopic.description_al : selectedTopic.description_en || selectedTopic.description_al}</p>
-            </div>
-
-            <div className={`backdrop-blur-lg p-6 rounded-2xl border mb-6 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
-                <textarea
-                    value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
-                    placeholder={t('Shkruani mendimin tuaj...', 'Write your thoughts...')}
-                    className={`w-full px-4 py-3 border rounded-xl resize-none placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all ${darkMode ? 'bg-[#2D2A26] border-amber-500/30 text-white' : 'bg-gray-50 border-gray-300 text-[#2D2A26]'
-                        }`}
-                    rows="4"
-                    maxLength="2000"
-                />
-                <button onClick={submitPost} className="mt-3 px-6 py-2 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] flex items-center gap-2 shadow-lg shadow-amber-500/50 transition-all">
-                    <Send className="w-4 h-4" />
-                    {t('Posto', 'Post')}
-                </button>
-            </div>
-
-            <div className="space-y-4">
-                {topicPosts.length === 0 ? (
-                    <div className={`backdrop-blur-lg p-12 rounded-2xl border text-center ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
-                        <MessageCircle className={`w-12 h-12 mx-auto mb-4 ${darkMode ? 'text-amber-500' : 'text-amber-600'}`} />
-                        <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                            {t('Asnjë koment ende', 'No comments yet')}
-                        </h3>
-                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Bëhu i pari që komenton këtë temë!', 'Be the first to comment on this topic!')}
-                        </p>
-                    </div>
-                ) : (
-                    topicPosts.map(post => (
-                        <div key={post.id} className={`backdrop-blur-lg p-6 rounded-2xl border ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
-                            <div className="flex items-start justify-between mb-3">
-                                <p className="font-medium text-amber-500">{post.user_name}</p>
-                                <div className="flex items-center gap-2">
-                                    <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{new Date(post.created_at).toLocaleDateString()}</span>
-                                    {(post.user_id === user?.id || userProfile?.is_admin) && (
-                                        <button onClick={() => deletePost(post.id)} className="p-1 hover:bg-[#FF6B6B]/20 rounded text-[#FF6B6B]">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                            <p className={`whitespace-pre-wrap ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{post.content}</p>
-                        </div>
-                    ))
-                )}
-            </div>
-        </div>
-    );
-};
 const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
     const [captionCopied, setCaptionCopied] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
@@ -1449,7 +1276,6 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
     const badgeDefinitions = {
         early_adopter: { icon: '🌟', nameAl: 'Pionier', nameEn: 'Early Adopter', descAl: 'Nga të parët në RinON', descEn: 'Among the first on RinON' },
         event_explorer: { icon: '📅', nameAl: 'Eksplorues Eventesh', nameEn: 'Event Explorer', descAl: '5+ evente të ndjekura', descEn: '5+ events attended' },
-        community_voice: { icon: '💬', nameAl: 'Zëri i Komunitetit', nameEn: 'Community Voice', descAl: '10+ sondazhe të votuar', descEn: '10+ polls voted' },
         volunteer_spirit: { icon: '💚', nameAl: 'Shpirt Vullnetar', nameEn: 'Volunteer Spirit', descAl: '3+ aktivitete vullnetare', descEn: '3+ volunteer activities' },
         super_sharer: { icon: '📤', nameAl: 'Super Shpërndarës', nameEn: 'Super Sharer', descAl: '10+ evente të shpërndara', descEn: '10+ events shared' }
     };
@@ -1647,7 +1473,6 @@ const RinON = () => {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [showAddForm, setShowAddForm] = useState(false);
     const [showAddEventForm, setShowAddEventForm] = useState(false);
-    const [showAddTopicForm, setShowAddTopicForm] = useState(false);
     const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
     const [showAddMemberForm, setShowAddMemberForm] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1675,12 +1500,6 @@ const RinON = () => {
     const [showAddQuoteForm, setShowAddQuoteForm] = useState(false);
     const [quoteFormData, setQuoteFormData] = useState({ quote_text: '', author_name: '', author_role: '' });
 
-    // Poll Creation Form
-    const [showAddPollForm, setShowAddPollForm] = useState(false);
-    const [pollFormData, setPollFormData] = useState({
-        questionAl: '', questionEn: '', options: ['', '', '', ''], expiresInDays: 7
-    });
-
     // N'gazeta content type filter: 'all' (Home), 'lajme' (News only), 'artikuj' (Articles only)
     const [contentTypeFilter, setContentTypeFilter] = useState('all');
 
@@ -1697,12 +1516,6 @@ const RinON = () => {
     const [showPreferences, setShowPreferences] = useState(false);
     const [showTermsModal, setShowTermsModal] = useState(false);
     const [pendingUser, setPendingUser] = useState(null); // User waiting to accept terms
-    const [topics, setTopics] = useState([]);
-    const [selectedTopic, setSelectedTopic] = useState(null);
-    const [topicPosts, setTopicPosts] = useState([]);
-    const [newPost, setNewPost] = useState('');
-    const [showRulesExpanded, setShowRulesExpanded] = useState(false); // Community rules toggle
-    const [communityCategory, setCommunityCategory] = useState('all'); // Community category filter
 
     // User Activity Bank - Saved items & history
     const [showUserActivity, setShowUserActivity] = useState(false);
@@ -1731,10 +1544,6 @@ const RinON = () => {
         registrationLink: '', isFeatured: false, tags: [], showOnHomepage: false
     });
 
-    const [topicFormData, setTopicFormData] = useState({
-        titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: '', category: 'general'
-    });
-
     const [partnerFormData, setPartnerFormData] = useState({
         nameAl: '', nameEn: '', descriptionAl: '', descriptionEn: '',
         visionAl: '', visionEn: '', goalsAl: '', goalsEn: '', website: '', image: '', imageFile: null
@@ -1748,13 +1557,6 @@ const RinON = () => {
     const [otherEvents, setOtherEvents] = useState([]);
     const [partners, setPartners] = useState([]);
     const [staffMembers, setStaffMembers] = useState([]);
-
-    // ==========================================
-    // POLLS FEATURE - STATE VARIABLES
-    // ==========================================
-    const [activePoll, setActivePoll] = useState(null);
-    const [userPollVote, setUserPollVote] = useState(null);
-    const [pollResults, setPollResults] = useState({});
 
     // ==========================================
     // EVENT INTERESTS ("Who's Going?")
@@ -1931,10 +1733,6 @@ const RinON = () => {
         // Clean the IDs - remove any trailing quotes or whitespace
         const openArticleId = urlParams.get('openArticle')?.replace(/["']/g, '').trim();
         const openEventId = urlParams.get('openEvent')?.replace(/["']/g, '').trim();
-        const openPollId = urlParams.get('poll')?.replace(/["']/g, '').trim();
-        const openDiscussionId = urlParams.get('discussion')?.replace(/["']/g, '').trim();
-
-        console.log('URL params - Article ID:', openArticleId, 'Event ID:', openEventId, 'Poll ID:', openPollId, 'Discussion ID:', openDiscussionId);
 
         const handleArticleOpen = async () => {
             if (!openArticleId) return;
@@ -2054,54 +1852,6 @@ const RinON = () => {
         // Execute handlers
         if (openArticleId) handleArticleOpen();
         if (openEventId) handleEventOpen();
-
-        // Handle poll deep link - navigate to community and show poll
-        if (openPollId) {
-            console.log('Opening poll from URL:', openPollId);
-            changePage('komuniteti');
-            window.history.replaceState({}, '', '/komuniteti');
-        }
-
-        // Handle discussion deep link - navigate to community and open discussion
-        if (openDiscussionId) {
-            console.log('Opening discussion from URL:', openDiscussionId);
-            changePage('komuniteti');
-            // Fetch and open the discussion
-            (async () => {
-                try {
-                    const { data } = await supabase
-                        .from('topics')
-                        .select('*')
-                        .eq('id', openDiscussionId)
-                        .single();
-
-                    if (data) {
-                        const topic = {
-                            id: data.id,
-                            title_al: data.title_al,
-                            title_en: data.title_en,
-                            description_al: data.description_al,
-                            description_en: data.description_en,
-                            category: data.category,
-                            author_name: data.author_name,
-                            created_at: data.created_at,
-                            created_by: data.created_by
-                        };
-                        setSelectedTopic(topic);
-                        // Load posts for this topic
-                        const { data: postsData } = await supabase
-                            .from('posts')
-                            .select('*')
-                            .eq('topic_id', topic.id)
-                            .order('created_at', { ascending: true });
-                        setTopicPosts(postsData || []);
-                    }
-                } catch (err) {
-                    console.error('Error fetching discussion:', err);
-                }
-                window.history.replaceState({}, '', '/komuniteti');
-            })();
-        }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -2446,12 +2196,10 @@ const RinON = () => {
 
     useEffect(() => {
         loadArticles();
-        loadTopics();
         loadEvents();
         loadPartners();
         loadTeamMembers();
         loadSchools();
-        loadActivePoll();
         loadEventInterests();
         loadVideos();
         loadQuotes();
@@ -2462,7 +2210,6 @@ const RinON = () => {
     useEffect(() => {
         if (user) {
             loadUserBadges();
-            loadActivePoll(); // Reload to check if user has voted
             loadEventInterests(); // Reload to get user's interests
             loadSavedVideos(); // Load user's saved videos
         }
@@ -2523,9 +2270,6 @@ const RinON = () => {
             loadStudentOfMonth(selectedSchool.id);
         }
     }, [selectedSchool]);
-    useEffect(() => {
-        if (selectedTopic && user) loadPosts(selectedTopic.id);
-    }, [selectedTopic, user]);
     // URL Routing - Handle shared links like /article/123 or /event/456
     useEffect(() => {
         const handleRouting = () => {
@@ -2605,145 +2349,6 @@ const RinON = () => {
         }
     };
 
-    const loadTopics = async () => {
-        try {
-            const { data, error } = await supabase.from('topics').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
-            setTopics(data || []);
-        } catch (err) {
-            console.error(handleError(err, 'loadTopics'));
-        }
-    };
-
-    // Load active poll
-    const loadActivePoll = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('polls')
-                .select('*')
-                .eq('is_active', true)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .single();
-
-            if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows returned
-            setActivePoll(data || null);
-
-            // If there's an active poll and user is logged in, check if they've voted
-            if (data && user) {
-                const { data: voteData } = await supabase
-                    .from('poll_votes')
-                    .select('selected_option')
-                    .eq('poll_id', data.id)
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (voteData) {
-                    setUserPollVote(voteData.selected_option);
-                    // Load results if user has voted
-                    loadPollResults(data.id);
-                }
-            }
-        } catch (err) {
-            console.error(handleError(err, 'loadActivePoll'));
-        }
-    };
-
-    // Load poll results
-    const loadPollResults = async (pollId) => {
-        try {
-            const { data, error } = await supabase
-                .from('poll_votes')
-                .select('selected_option')
-                .eq('poll_id', pollId);
-
-            if (error) throw error;
-
-            // Count votes per option
-            const results = {};
-            data.forEach(vote => {
-                results[vote.selected_option] = (results[vote.selected_option] || 0) + 1;
-            });
-            setPollResults(results);
-        } catch (err) {
-            console.error(handleError(err, 'loadPollResults'));
-        }
-    };
-
-    // Vote on poll
-    const votePoll = async (optionIndex) => {
-        if (!user || !activePoll || userPollVote !== null) return;
-
-        try {
-            const { error } = await supabase
-                .from('poll_votes')
-                .insert({
-                    poll_id: activePoll.id,
-                    user_id: user.id,
-                    selected_option: optionIndex
-                });
-
-            if (error) throw error;
-
-            setUserPollVote(optionIndex);
-            loadPollResults(activePoll.id);
-
-            // Update poll total votes
-            await supabase
-                .from('polls')
-                .update({ total_votes: (activePoll.total_votes || 0) + 1 })
-                .eq('id', activePoll.id);
-
-        } catch (err) {
-            console.error(handleError(err, 'votePoll'));
-        }
-    };
-
-    // Create new poll (admin only)
-    const createPoll = async () => {
-        if (!userProfile?.is_admin) return;
-
-        try {
-            // Deactivate current active poll
-            await supabase
-                .from('polls')
-                .update({ is_active: false })
-                .eq('is_active', true);
-
-            // Create new poll
-            const validOptions = pollFormData.options.filter(o => o.trim() !== '');
-            if (validOptions.length < 2) {
-                alert('Duhen të paktën 2 opsione');
-                return;
-            }
-
-            const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + (pollFormData.expiresInDays || 7));
-
-            const { data, error } = await supabase
-                .from('polls')
-                .insert({
-                    question_al: pollFormData.questionAl,
-                    question_en: pollFormData.questionEn || pollFormData.questionAl,
-                    options: validOptions,
-                    is_active: true,
-                    expires_at: expiresAt.toISOString()
-                })
-                .select()
-                .single();
-
-            if (error) throw error;
-
-            setActivePoll(data);
-            setUserPollVote(null);
-            setPollResults({});
-            setShowAddPollForm(false);
-            setPollFormData({ questionAl: '', questionEn: '', options: ['', '', '', ''], expiresInDays: 7 });
-
-        } catch (err) {
-            console.error(handleError(err, 'createPoll'));
-        }
-    };
 
     // Load event interests (who's interested counts)
     const loadEventInterests = async () => {
@@ -3074,16 +2679,54 @@ const RinON = () => {
         }
     };
 
-    const loadPosts = async (topicId) => {
-        try {
-            const { data, error } = await supabase.from('posts').select('*').eq('topic_id', topicId).order('created_at', { ascending: false });
-            if (error) throw error;
-            setTopicPosts(data || []);
-        } catch (err) {
-            console.error(handleError(err, 'loadPosts'));
+
+    const deleteArticle = async (id) => {
+        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë artikull?', 'Are you sure you want to delete this article?'))) {
+            try {
+                const { error } = await supabase.from('articles').delete().eq('id', id);
+                if (error) throw error;
+                loadArticles();
+            } catch (err) {
+                alert(handleError(err, 'deleteArticle'));
+            }
         }
     };
 
+    const deleteEvent = async (id) => {
+        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë event?', 'Are you sure you want to delete this event?'))) {
+            try {
+                const { error } = await supabase.from('events').delete().eq('id', id);
+                if (error) throw error;
+                loadEvents();
+            } catch (err) {
+                alert(handleError(err, 'deleteEvent'));
+            }
+        }
+    };
+
+    const deletePartner = async (id) => {
+        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë partner?', 'Are you sure you want to delete this partner?'))) {
+            try {
+                const { error } = await supabase.from('partners').delete().eq('id', id);
+                if (error) throw error;
+                loadPartners();
+            } catch (err) {
+                alert(handleError(err, 'deletePartner'));
+            }
+        }
+    };
+
+    const deleteMember = async (id) => {
+        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë anëtar?', 'Are you sure you want to delete this member?'))) {
+            try {
+                const { error } = await supabase.from('team_members').delete().eq('id', id);
+                if (error) throw error;
+                loadTeamMembers();
+            } catch (err) {
+                alert(handleError(err, 'deleteMember'));
+            }
+        }
+    };
     const handleSignup = async (email, password, displayName, rememberMe = true) => {
         try {
             const { data, error } = await supabase.auth.signUp({
@@ -3225,9 +2868,6 @@ const RinON = () => {
         if (!doubleConfirm) return;
 
         try {
-            // Delete user's posts first
-            await supabase.from('posts').delete().eq('user_id', user.id);
-
             // Delete user profile
             await supabase.from('user_profiles').delete().eq('id', user.id);
 
@@ -3261,100 +2901,6 @@ const RinON = () => {
         }
     };
 
-    const submitPost = async () => {
-        if (!newPost.trim() || !selectedTopic || !user) return;
-
-        if (!validateInput.text(newPost, 2000)) {
-            alert(t('Postimi duhet të jetë 1-2000 karaktere', 'Post must be 1-2000 characters'));
-            return;
-        }
-
-        try {
-            const { error } = await supabase.from('posts').insert([{
-                topic_id: selectedTopic.id,
-                user_id: user.id,
-                user_name: userProfile?.display_name || user.email,
-                content: validateInput.sanitizeHtml(newPost)
-            }]);
-
-            if (error) throw error;
-
-            setNewPost('');
-            loadPosts(selectedTopic.id);
-        } catch (err) {
-            alert(handleError(err, 'submitPost'));
-        }
-    };
-
-    const deletePost = async (id) => {
-        try {
-            const { error } = await supabase.from('posts').delete().eq('id', id);
-            if (error) throw error;
-            if (selectedTopic) loadPosts(selectedTopic.id);
-        } catch (err) {
-            alert(handleError(err, 'deletePost'));
-        }
-    };
-
-    const deleteTopic = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë temë?', 'Are you sure you want to delete this topic?'))) {
-            try {
-                const { error } = await supabase.from('topics').delete().eq('id', id);
-                if (error) throw error;
-                loadTopics();
-            } catch (err) {
-                alert(handleError(err, 'deleteTopic'));
-            }
-        }
-    };
-
-    const deleteArticle = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë artikull?', 'Are you sure you want to delete this article?'))) {
-            try {
-                const { error } = await supabase.from('articles').delete().eq('id', id);
-                if (error) throw error;
-                loadArticles();
-            } catch (err) {
-                alert(handleError(err, 'deleteArticle'));
-            }
-        }
-    };
-
-    const deleteEvent = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë event?', 'Are you sure you want to delete this event?'))) {
-            try {
-                const { error } = await supabase.from('events').delete().eq('id', id);
-                if (error) throw error;
-                loadEvents();
-            } catch (err) {
-                alert(handleError(err, 'deleteEvent'));
-            }
-        }
-    };
-
-    const deletePartner = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë partner?', 'Are you sure you want to delete this partner?'))) {
-            try {
-                const { error } = await supabase.from('partners').delete().eq('id', id);
-                if (error) throw error;
-                loadPartners();
-            } catch (err) {
-                alert(handleError(err, 'deletePartner'));
-            }
-        }
-    };
-
-    const deleteMember = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë anëtar?', 'Are you sure you want to delete this member?'))) {
-            try {
-                const { error } = await supabase.from('team_members').delete().eq('id', id);
-                if (error) throw error;
-                loadTeamMembers();
-            } catch (err) {
-                alert(handleError(err, 'deleteMember'));
-            }
-        }
-    };
 
     const editArticle = (article) => {
         setEditingItem(article);
@@ -3603,49 +3149,6 @@ const RinON = () => {
         }
     };
 
-    const handleSubmitTopic = async () => {
-        if (!topicFormData.titleAl || !topicFormData.descriptionAl) {
-            alert(t('Ju lutem plotësoni fushat e detyrueshme në shqip', 'Please fill in required Albanian fields'));
-            return;
-        }
-
-        if (!validateInput.text(topicFormData.titleAl, 200)) {
-            alert(t('Titulli duhet të jetë 1-200 karaktere', 'Title must be 1-200 characters'));
-            return;
-        }
-
-        if (!validateInput.text(topicFormData.descriptionAl, 1000)) {
-            alert(t('Përshkrimi duhet të jetë 1-1000 karaktere', 'Description must be 1-1000 characters'));
-            return;
-        }
-
-        try {
-            const topic = {
-                title_al: validateInput.sanitizeHtml(topicFormData.titleAl),
-                title_en: validateInput.sanitizeHtml(topicFormData.titleEn || topicFormData.titleAl),
-                description_al: validateInput.sanitizeHtml(topicFormData.descriptionAl),
-                description_en: validateInput.sanitizeHtml(topicFormData.descriptionEn || topicFormData.descriptionAl),
-                category: topicFormData.category || 'general',
-                created_by: user?.id,
-                author_name: userProfile?.display_name || 'Anonim'
-            };
-
-            const { data, error } = await supabase.from('topics').insert([topic]).select();
-
-            if (error) throw error;
-
-            if (data) {
-                loadTopics();
-                setTopicFormData({
-                    titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: '', category: 'general'
-                });
-                setShowAddTopicForm(false);
-                alert(t('Tema u shtua me sukses!', 'Topic added successfully!'));
-            }
-        } catch (err) {
-            alert(handleError(err, 'handleSubmitTopic'));
-        }
-    };
 
     const handleSubmitPartner = async () => {
         if (!partnerFormData.nameAl || !partnerFormData.nameEn) {
@@ -5253,7 +4756,6 @@ const RinON = () => {
                                 { key: 'lajme', label: "N'gazeta" },
                                 { key: 'events', label: t('Evente', 'Events') },
                                 { key: 'shiko', label: t('Shiko', 'Watch') },
-                                { key: 'komuniteti', label: t('Komuniteti', 'Community') },
                             ].map(item => (
                                 <button
                                     key={item.key}
@@ -5363,7 +4865,6 @@ const RinON = () => {
                                 { key: 'shiko', label: t('🎬 Shiko', '🎬 Watch') },
                                 { key: 'schools', label: t('Shkollat', 'Schools') },
                                 { key: 'partners', label: t('Bashkëpunime', 'Partners') },
-                                { key: 'komuniteti', label: t('Komuniteti', 'Community') },
                                 { key: 'about', label: t('Rreth Nesh', 'About') },
                             ].map(item => (
                                 <button
@@ -5975,81 +5476,6 @@ const RinON = () => {
                 </div>
             )}
 
-            {/* Add Topic Modal */}
-            {showAddTopicForm && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-[#2D2A26] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-amber-500/20 shadow-2xl p-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                                {t('Shto Temë Diskutimi', 'Add Discussion Topic')}
-                            </h2>
-                            <button onClick={() => setShowAddTopicForm(false)} className="p-2 hover:bg-amber-500/20 rounded-lg transition-all">
-                                <X className="w-5 h-5 text-gray-400" />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            {/* Category Selector */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-2">
-                                    {t('Kategoria', 'Category')} *
-                                </label>
-                                <select
-                                    value={topicFormData.category}
-                                    onChange={(e) => setTopicFormData({ ...topicFormData, category: e.target.value })}
-                                    className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                                >
-                                    <option value="general">🔥 General</option>
-                                    <option value="arsim">📚 {t('Arsim', 'Education')}</option>
-                                    <option value="mjedisi">🌱 {t('Mjedisi', 'Environment')}</option>
-                                    <option value="mundesi">✨ {t('Mundësi', 'Opportunities')}</option>
-                                    <option value="kultura">🎭 {t('Kultura', 'Culture')}</option>
-                                    <option value="punesim">💼 {t('Punësim', 'Employment')}</option>
-                                </select>
-                            </div>
-                            <input
-                                type="text"
-                                placeholder={t('Titulli (Shqip) *', 'Title (Albanian) *')}
-                                value={topicFormData.titleAl}
-                                onChange={(e) => setTopicFormData({ ...topicFormData, titleAl: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                            />
-                            <input
-                                type="text"
-                                placeholder={t('Titulli (Anglisht)', 'Title (English)')}
-                                value={topicFormData.titleEn}
-                                onChange={(e) => setTopicFormData({ ...topicFormData, titleEn: e.target.value })}
-                                maxLength="200"
-                                className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                            />
-                            <textarea
-                                placeholder={t('Përshkrimi (Shqip) *', 'Description (Albanian) *')}
-                                value={topicFormData.descriptionAl}
-                                onChange={(e) => setTopicFormData({ ...topicFormData, descriptionAl: e.target.value })}
-                                rows="4"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all resize-none"
-                            />
-                            <textarea
-                                placeholder={t('Përshkrimi (Anglisht)', 'Description (English)')}
-                                value={topicFormData.descriptionEn}
-                                onChange={(e) => setTopicFormData({ ...topicFormData, descriptionEn: e.target.value })}
-                                rows="4"
-                                maxLength="1000"
-                                className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all resize-none"
-                            />
-                            <div className="flex gap-3 pt-4">
-                                <button onClick={() => setShowAddTopicForm(false)} className="flex-1 px-4 py-3 border border-[#3D3A36] rounded-xl text-gray-400 hover:border-[#4D4A46] transition-all">
-                                    {t('Anulo', 'Cancel')}
-                                </button>
-                                <button onClick={handleSubmitTopic} className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50">
-                                    {t('Shto', 'Add')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Add Partner Modal */}
             {showAddPartnerForm && (
@@ -6619,9 +6045,7 @@ const RinON = () => {
                                     {[
                                         { page: 'home', label: t('Lajme', 'News') },
                                         { page: 'events', label: t('Evente', 'Events') },
-                                        { page: 'schools', label: t('Shkollat', 'Schools') },
                                         { page: 'partners', label: t('Bashkëpunime', 'Partners') },
-                                        { page: 'discussion', label: t('Forum', 'Forum') },
                                         { page: 'about', label: t('Rreth Nesh', 'About') },
                                     ].map(({ page, label }) => (
                                         <button
@@ -7559,27 +6983,6 @@ const RinON = () => {
                                         </div>
                                     </div>
 
-                                    {/* Komunitet Card */}
-                                    <div
-                                        onClick={() => changePage('komuniteti')}
-                                        className="group relative p-8 rounded-2xl cursor-pointer overflow-hidden transition-all duration-300 hover:scale-[1.02] bg-white/5 backdrop-blur-sm border border-white/10 hover:border-[#EAB308]"
-                                    >
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#EAB308]/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
-                                        <div className="relative">
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#44403C] to-[#292524] flex items-center justify-center mb-5 group-hover:rotate-6 transition-transform shadow-lg border border-white/10">
-                                                <Users className="w-6 h-6 text-white" />
-                                            </div>
-                                            <h3 className="text-xl font-bold mb-2 text-white">
-                                                {t('Komunitet', 'Community')}
-                                            </h3>
-                                            <p className="text-white/60 mb-4 text-sm">
-                                                {t('Lidhu me të rinj që veprojnë', 'Connect with youth taking action')}
-                                            </p>
-                                            <span className="text-[#EAB308] font-semibold flex items-center gap-2 group-hover:gap-3 transition-all text-sm">
-                                                {t('Bashkohu', 'Join')} <ArrowRight className="w-4 h-4" />
-                                            </span>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -7737,125 +7140,6 @@ const RinON = () => {
                             </div>
                         </div>
 
-                        {/* ==========================================
-                            WEEKLY POLL - More playful design
-                           ========================================== */}
-                        {activePoll && (
-                            <div className={`py-16 ${darkMode ? 'bg-[#1a1918]' : 'bg-[#FFFBF7]'}`}>
-                                <div className="max-w-2xl mx-auto px-4">
-                                    <div className={`rounded-3xl p-8 relative overflow-hidden ${darkMode ? 'bg-[#2D2A26]' : 'bg-white shadow-sm'}`}>
-                                        {/* Decorative corner */}
-                                        <div className="absolute -top-6 -right-6 w-24 h-24 bg-[#0D9488]/20 rounded-full"></div>
-
-                                        <div className="relative">
-                                            <div className="flex items-center justify-between mb-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl bg-[#0D9488] flex items-center justify-center">
-                                                        <span className="text-lg">📊</span>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-[#1F2937]'}`}>
-                                                            {t('Sondazhi i Javës', 'Poll of the Week')}
-                                                        </h3>
-                                                        <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-[#1F2937]/50'}`}>
-                                                            {t('Zëri yt ka rëndësi', 'Your voice matters')}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => {
-                                                            const shareText = `📊 ${activePoll.question_al}\n\nVoto tani në RinON!`;
-                                                            if (navigator.share) {
-                                                                navigator.share({ title: 'RinON Sondazh', text: shareText, url: 'https://rinon.al' });
-                                                            } else {
-                                                                window.open(`https://wa.me/?text=${encodeURIComponent(shareText + '\nhttps://rinon.al')}`, '_blank');
-                                                            }
-                                                        }}
-                                                        className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10' : 'text-gray-400 hover:bg-gray-100'}`}
-                                                    >
-                                                        <Share2 className="w-4 h-4" />
-                                                    </button>
-                                                    {userProfile?.is_admin && showAdmin && (
-                                                        <button
-                                                            onClick={async () => {
-                                                                if (window.confirm(t('Je i sigurt?', 'Are you sure?'))) {
-                                                                    await supabase.from('polls').delete().eq('id', activePoll.id);
-                                                                    setActivePoll(null);
-                                                                    setUserPollVote(null);
-                                                                    setPollResults({});
-                                                                }
-                                                            }}
-                                                            className="p-2 rounded-lg text-red-400 hover:bg-red-500/20"
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <p className={`text-xl font-medium mb-6 ${darkMode ? 'text-gray-200' : 'text-[#1F2937]'}`}>
-                                                {language === 'al' ? activePoll.question_al : (activePoll.question_en || activePoll.question_al)}
-                                            </p>
-
-                                            {userPollVote === null ? (
-                                                <div className="space-y-3">
-                                                    {activePoll.options?.map((option, index) => (
-                                                        <button
-                                                            key={index}
-                                                            onClick={() => user ? votePoll(index) : (setShowAuthModal(true), setAuthMode('login'))}
-                                                            className={`w-full text-left px-5 py-4 rounded-xl transition-all font-medium ${darkMode
-                                                                ? 'bg-[#3D3A36] hover:bg-[#0D9488]/20 text-gray-200 border border-transparent hover:border-[#0D9488]'
-                                                                : 'bg-[#FFFBF7] hover:bg-[#0D9488]/10 text-[#1F2937] border border-gray-100 hover:border-[#0D9488]'
-                                                                }`}
-                                                        >
-                                                            {option}
-                                                        </button>
-                                                    ))}
-                                                    {!user && (
-                                                        <p className={`text-sm text-center mt-4 ${darkMode ? 'text-gray-500' : 'text-[#1F2937]/50'}`}>
-                                                            {t('Hyr për të votuar', 'Log in to vote')}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {activePoll.options?.map((option, index) => {
-                                                        const totalVotes = Object.values(pollResults).reduce((a, b) => a + b, 0);
-                                                        const votes = pollResults[index] || 0;
-                                                        const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
-                                                        const isUserVote = userPollVote === index;
-
-                                                        return (
-                                                            <div key={index} className="relative">
-                                                                <div className={`relative z-10 px-5 py-4 rounded-xl flex justify-between items-center ${isUserVote
-                                                                    ? 'bg-[#0D9488]/20 border border-[#0D9488]'
-                                                                    : darkMode ? 'bg-[#3D3A36]' : 'bg-[#FFFBF7] border border-gray-100'
-                                                                    }`}>
-                                                                    <span className={`font-medium ${isUserVote ? 'text-[#0D9488]' : darkMode ? 'text-gray-200' : 'text-[#1F2937]'}`}>
-                                                                        {option} {isUserVote && '✓'}
-                                                                    </span>
-                                                                    <span className={`font-bold ${isUserVote ? 'text-[#0D9488]' : darkMode ? 'text-gray-400' : 'text-[#1F2937]/50'}`}>
-                                                                        {percentage}%
-                                                                    </span>
-                                                                </div>
-                                                                <div
-                                                                    className={`absolute inset-0 rounded-xl ${isUserVote ? 'bg-[#0D9488]/10' : darkMode ? 'bg-white/5' : 'bg-gray-100'}`}
-                                                                    style={{ width: `${percentage}%` }}
-                                                                />
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    <p className={`text-sm text-center mt-4 ${darkMode ? 'text-gray-500' : 'text-[#1F2937]/50'}`}>
-                                                        {Object.values(pollResults).reduce((a, b) => a + b, 0)} {t('vota', 'votes')}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
 
                         {/* ==========================================
                             FINAL CTA - Soft yellow background
@@ -8181,594 +7465,6 @@ const RinON = () => {
                             )}
                         </div>
                     </>
-                ) : currentPage === 'komuniteti' ? (
-                    <>
-                        {/* ==========================================
-                            KOMUNITETI PAGE - Redesigned Community Hub
-                           ========================================== */}
-
-                        {/* Hero Section with Teal Gradient */}
-                        <div className="relative overflow-hidden">
-                            {/* Background Pattern */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#0D9488] via-[#14B8A6] to-[#10B981]">
-                                {/* Decorative Circles */}
-                                <div className="absolute top-10 right-10 w-32 h-32 rounded-full bg-white/5 flex items-center justify-center">
-                                    <span className="text-white/20 text-4xl font-black">R</span>
-                                </div>
-                                <div className="absolute bottom-5 left-20 w-20 h-20 rounded-full bg-white/5" />
-                                <div className="absolute top-20 left-1/3 w-16 h-16 rounded-full bg-white/5" />
-                            </div>
-
-                            <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-16">
-                                <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
-                                    Komuniteti
-                                </h1>
-                                <p className="text-white/80 text-lg mb-8">
-                                    {t('Zëri yt ka rëndësi. Bashkohu në bisedë.', 'Your voice matters. Join the conversation.')}
-                                </p>
-
-                                {/* Stats Row */}
-                                <div className="grid grid-cols-3 gap-4 mb-8">
-                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                                        <p className="text-3xl md:text-4xl font-black text-white">
-                                            {topics.reduce((acc, t) => acc + (t.posts_count || 0), 0) + 100}
-                                        </p>
-                                        <p className="text-white/70 text-sm">{t('Anëtarë', 'Members')}</p>
-                                    </div>
-                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                                        <p className="text-3xl md:text-4xl font-black text-white">{topics.length}</p>
-                                        <p className="text-white/70 text-sm">{t('Diskutime aktive', 'Active discussions')}</p>
-                                    </div>
-                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                                        <p className="text-3xl md:text-4xl font-black text-white">{activePoll ? 1 : 0}</p>
-                                        <p className="text-white/70 text-sm">{t('Sondazhe', 'Polls')}</p>
-                                    </div>
-                                </div>
-
-                                {/* Action Buttons - Admin only for starting discussions */}
-                                <div className="flex flex-col sm:flex-row gap-3">
-                                    {userProfile?.is_admin && (
-                                        <>
-                                            <button
-                                                onClick={() => setShowAddTopicForm(true)}
-                                                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-amber-400 hover:bg-amber-500 text-[#2D2A26] font-bold rounded-xl transition-all shadow-lg hover:shadow-xl"
-                                            >
-                                                <Plus className="w-5 h-5" />
-                                                {t('Fillo Diskutim', 'Start Discussion')}
-                                            </button>
-                                            <button
-                                                onClick={() => setShowAddPollForm(true)}
-                                                className="flex items-center justify-center gap-2 px-6 py-4 bg-white/20 hover:bg-white/30 text-white font-bold rounded-xl border-2 border-white/50 transition-all"
-                                            >
-                                                <TrendingUp className="w-5 h-5" />
-                                                {t('Krijo Sondazh', 'Create Poll')}
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="max-w-7xl mx-auto px-4 py-8">
-                            {/* ==========================================
-                                ACTIVE POLLS SECTION
-                               ========================================== */}
-                            {activePoll && (
-                                <div className="mb-10">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <span className="text-2xl">📊</span>
-                                        <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                            {t('Sondazhe Aktive', 'Active Polls')}
-                                        </h2>
-                                    </div>
-
-                                    <div className={`rounded-2xl p-6 ${darkMode ? 'bg-[#2D2A26] border border-gray-800' : 'bg-white border border-gray-200'} shadow-sm`}>
-                                        {/* Poll Header with Actions */}
-                                        <div className="flex items-start justify-between mb-4">
-                                            <p className={`text-lg font-semibold flex-1 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {language === 'al' ? activePoll.question_al : (activePoll.question_en || activePoll.question_al)}
-                                            </p>
-                                            <div className="flex items-center gap-2 ml-4">
-                                                {activePoll.expires_at && (
-                                                    <span className="px-3 py-1 bg-[#0D9488]/10 text-[#0D9488] text-sm font-medium rounded-full whitespace-nowrap">
-                                                        {Math.max(0, Math.ceil((new Date(activePoll.expires_at) - new Date()) / (1000 * 60 * 60 * 24)))} {t('ditë', 'days')}
-                                                    </span>
-                                                )}
-                                                {/* Share Button */}
-                                                <button
-                                                    onClick={() => {
-                                                        const pollUrl = `https://rinon.al/komuniteti?poll=${activePoll.id}`;
-                                                        const shareText = `📊 ${activePoll.question_al}\n\nVoto tani në RinON!`;
-                                                        if (navigator.share) {
-                                                            navigator.share({ title: 'RinON Sondazh', text: shareText, url: pollUrl });
-                                                        } else {
-                                                            navigator.clipboard.writeText(pollUrl);
-                                                            alert(t('Linku u kopjua!', 'Link copied!'));
-                                                        }
-                                                    }}
-                                                    className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
-                                                    title={t('Shpërndaj', 'Share')}
-                                                >
-                                                    <Share2 className="w-4 h-4" />
-                                                </button>
-                                                {/* Admin: Edit & Delete */}
-                                                {userProfile?.is_admin && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => {
-                                                                setPollFormData({
-                                                                    questionAl: activePoll.question_al,
-                                                                    questionEn: activePoll.question_en || '',
-                                                                    options: [...activePoll.options, '', '', '', ''].slice(0, 4),
-                                                                    expiresInDays: 7
-                                                                });
-                                                                setShowAddPollForm(true);
-                                                            }}
-                                                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-amber-400' : 'text-gray-500 hover:bg-gray-100 hover:text-amber-600'}`}
-                                                            title={t('Ndrysho', 'Edit')}
-                                                        >
-                                                            <Edit className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={async () => {
-                                                                if (window.confirm(t('Je i sigurt që dëshiron të fshish këtë sondazh?', 'Are you sure you want to delete this poll?'))) {
-                                                                    await supabase.from('polls').delete().eq('id', activePoll.id);
-                                                                    setActivePoll(null);
-                                                                }
-                                                            }}
-                                                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-red-400' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'}`}
-                                                            title={t('Fshi', 'Delete')}
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Poll Options */}
-                                        {userPollVote === null ? (
-                                            <div className="space-y-3">
-                                                {activePoll.options?.map((option, index) => (
-                                                    <button
-                                                        key={index}
-                                                        onClick={() => user ? votePoll(index) : (setShowAuthModal(true), setAuthMode('login'))}
-                                                        className={`w-full text-left px-5 py-4 rounded-xl transition-all border-2 ${darkMode
-                                                            ? 'bg-[#3D3A36] hover:bg-[#4D4A46] border-gray-700 hover:border-[#0D9488] text-gray-200'
-                                                            : 'bg-gray-50 hover:bg-white border-gray-200 hover:border-[#0D9488] text-gray-700'
-                                                            }`}
-                                                    >
-                                                        {option}
-                                                    </button>
-                                                ))}
-                                                {!user && (
-                                                    <p className={`text-sm text-center mt-3 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                        {t('Hyr për të votuar', 'Log in to vote')}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                {activePoll.options?.map((option, index) => {
-                                                    const totalVotes = Object.values(pollResults).reduce((a, b) => a + b, 0);
-                                                    const votes = pollResults[index] || 0;
-                                                    const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
-                                                    const isUserVote = userPollVote === index;
-
-                                                    return (
-                                                        <div key={index} className="relative">
-                                                            <div className={`absolute inset-0 rounded-xl ${isUserVote ? 'bg-[#0D9488]/20' : darkMode ? 'bg-gray-700/30' : 'bg-gray-100'}`}>
-                                                                <div
-                                                                    className={`h-full rounded-xl transition-all duration-500 ${isUserVote ? 'bg-[#0D9488]/30' : 'bg-[#0D9488]/10'}`}
-                                                                    style={{ width: `${percentage}%` }}
-                                                                />
-                                                            </div>
-                                                            <div className={`relative z-10 px-5 py-4 rounded-xl flex justify-between items-center ${isUserVote ? 'border-2 border-[#0D9488]' : ''}`}>
-                                                                <span className={`${isUserVote ? 'font-semibold text-[#0D9488]' : ''} ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
-                                                                    {option}
-                                                                </span>
-                                                                <span className={`font-bold ${isUserVote ? 'text-[#0D9488]' : darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                                    {percentage}%
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                                    <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                        {Object.values(pollResults).reduce((a, b) => a + b, 0)} {t('vota', 'votes')}
-                                                    </p>
-                                                    <span className="flex items-center gap-1 text-[#0D9488] text-sm font-medium">
-                                                        <Check className="w-4 h-4" />
-                                                        {t('Ke votuar', 'You voted')}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ==========================================
-                                CATEGORIES SECTION
-                               ========================================== */}
-                            <div className="mb-10">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="text-xl">🏷️</span>
-                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                        {t('Kategorië', 'Categories')}
-                                    </h2>
-                                </div>
-
-                                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                    {[
-                                        { id: 'all', icon: '🔥', label: { al: 'Të gjitha', en: 'All' } },
-                                        { id: 'arsim', icon: '📚', label: { al: 'Arsim', en: 'Education' } },
-                                        { id: 'mjedisi', icon: '🌱', label: { al: 'Mjedisi', en: 'Environment' } },
-                                        { id: 'mundesi', icon: '✨', label: { al: 'Mundësi', en: 'Opportunities' } },
-                                        { id: 'kultura', icon: '🎭', label: { al: 'Kultura', en: 'Culture' } },
-                                        { id: 'punesim', icon: '💼', label: { al: 'Punësim', en: 'Employment' } },
-                                    ].map((cat) => {
-                                        const count = cat.id === 'all' ? topics.length : topics.filter(t => t.category === cat.id).length;
-                                        const isActive = communityCategory === cat.id;
-                                        return (
-                                            <button
-                                                key={cat.id}
-                                                onClick={() => setCommunityCategory(cat.id)}
-                                                className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all border-2 ${isActive
-                                                    ? 'bg-amber-500 border-amber-500 text-white'
-                                                    : darkMode
-                                                        ? 'bg-[#2D2A26] border-gray-700 hover:border-amber-500 text-white'
-                                                        : 'bg-white border-gray-200 hover:border-amber-400 text-gray-700'
-                                                    }`}
-                                            >
-                                                <span>{cat.icon}</span>
-                                                <span className="font-medium">{language === 'al' ? cat.label.al : cat.label.en}</span>
-                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isActive ? 'bg-white/20 text-white' : darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
-                                                    {count}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* ==========================================
-                                DISCUSSIONS SECTION
-                               ========================================== */}
-                            <div className="mb-10">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <span className="text-xl">💬</span>
-                                    <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                        {t('Diskutime', 'Discussions')}
-                                    </h2>
-                                </div>
-
-                                {/* Discussion Cards or Inline Discussion View */}
-                                {selectedTopic ? (
-                                    /* Inline Discussion View */
-                                    <div className={`rounded-2xl ${darkMode ? 'bg-[#2D2A26] border border-gray-800' : 'bg-white border border-gray-200'}`}>
-                                        {/* Discussion Header */}
-                                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                                            <div className="flex items-center justify-between mb-4">
-                                                <button
-                                                    onClick={() => setSelectedTopic(null)}
-                                                    className={`flex items-center gap-2 text-sm font-medium ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                                                >
-                                                    <ChevronLeft className="w-4 h-4" />
-                                                    {t('Kthehu te diskutimet', 'Back to discussions')}
-                                                </button>
-                                                {/* Share/Edit/Delete buttons for discussion */}
-                                                <div className="flex items-center gap-1">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            const discussionUrl = `https://rinon.al/komuniteti?discussion=${selectedTopic.id}`;
-                                                            const shareText = `💬 ${selectedTopic.title_al}\n\nBashkohu në diskutim në RinON!`;
-                                                            if (navigator.share) {
-                                                                navigator.share({ title: 'RinON Diskutim', text: shareText, url: discussionUrl });
-                                                            } else {
-                                                                navigator.clipboard.writeText(discussionUrl);
-                                                                alert(t('Linku u kopjua!', 'Link copied!'));
-                                                            }
-                                                        }}
-                                                        className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'}`}
-                                                        title={t('Shpërndaj', 'Share')}
-                                                    >
-                                                        <Share2 className="w-4 h-4" />
-                                                    </button>
-                                                    {userProfile?.is_admin && (
-                                                        <button
-                                                            onClick={async (e) => {
-                                                                e.stopPropagation();
-                                                                if (window.confirm(t('Je i sigurt që dëshiron të fshish këtë diskutim?', 'Are you sure you want to delete this discussion?'))) {
-                                                                    await supabase.from('topics').delete().eq('id', selectedTopic.id);
-                                                                    setSelectedTopic(null);
-                                                                    loadTopics();
-                                                                }
-                                                            }}
-                                                            className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-400 hover:bg-white/10 hover:text-red-400' : 'text-gray-500 hover:bg-gray-100 hover:text-red-600'}`}
-                                                            title={t('Fshi', 'Delete')}
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {language === 'al' ? selectedTopic.title_al : (selectedTopic.title_en || selectedTopic.title_al)}
-                                            </h3>
-                                            <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                {language === 'al' ? selectedTopic.description_al : (selectedTopic.description_en || selectedTopic.description_al)}
-                                            </p>
-                                            <div className="flex items-center gap-3">
-                                                <span className={`px-2 py-1 rounded text-xs font-medium ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
-                                                    {selectedTopic.category ? selectedTopic.category.charAt(0).toUpperCase() + selectedTopic.category.slice(1) : 'General'}
-                                                </span>
-                                                <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                    {selectedTopic.author_name || 'Anonim'} • {selectedTopic.created_at ? new Date(selectedTopic.created_at).toLocaleDateString('sq-AL') : ''}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Posts */}
-                                        <div className="p-6">
-                                            {topicPosts.length === 0 ? (
-                                                <p className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                    {t('Asnjë koment ende. Bëhu i pari!', 'No comments yet. Be the first!')}
-                                                </p>
-                                            ) : (
-                                                <div className="space-y-4 mb-6">
-                                                    {topicPosts.map((post) => (
-                                                        <div key={post.id} className={`p-4 rounded-xl ${darkMode ? 'bg-[#3D3A36]' : 'bg-gray-50'}`}>
-                                                            <div className="flex items-start gap-3">
-                                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold flex-shrink-0">
-                                                                    {(post.author_name || 'A').charAt(0).toUpperCase()}
-                                                                </div>
-                                                                <div className="flex-1">
-                                                                    <div className="flex items-center justify-between mb-1">
-                                                                        <span className={`font-medium ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                                            {post.author_name || 'Anonim'}
-                                                                        </span>
-                                                                        <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                                            {post.created_at ? new Date(post.created_at).toLocaleDateString('sq-AL') : ''}
-                                                                        </span>
-                                                                    </div>
-                                                                    <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                                                        {post.content}
-                                                                    </p>
-                                                                </div>
-                                                                {(userProfile?.is_admin || post.user_id === user?.id) && (
-                                                                    <button
-                                                                        onClick={() => deletePost(post.id)}
-                                                                        className="p-1 text-red-400 hover:text-red-500"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Add Comment */}
-                                            {user ? (
-                                                <div className="flex gap-3">
-                                                    <input
-                                                        type="text"
-                                                        value={newPost}
-                                                        onChange={(e) => setNewPost(e.target.value)}
-                                                        placeholder={t('Shkruaj një koment...', 'Write a comment...')}
-                                                        className={`flex-1 px-4 py-3 rounded-xl border transition-all ${darkMode ? 'bg-[#3D3A36] border-gray-700 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'}`}
-                                                        onKeyPress={(e) => e.key === 'Enter' && submitPost()}
-                                                    />
-                                                    <button
-                                                        onClick={submitPost}
-                                                        disabled={!newPost.trim()}
-                                                        className="px-5 py-3 bg-[#0D9488] hover:bg-[#0F766E] text-white font-medium rounded-xl disabled:opacity-50 transition-all"
-                                                    >
-                                                        <Send className="w-5 h-5" />
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
-                                                    className="w-full py-3 text-[#0D9488] font-medium"
-                                                >
-                                                    {t('Hyr për të komentuar', 'Log in to comment')}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    /* Discussion List */
-                                    topics.length === 0 ? (
-                                        <div className={`text-center py-16 rounded-2xl ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}>
-                                            <MessageCircle className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-                                            <p className={`text-lg font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                {t('Asnjë diskutim ende', 'No discussions yet')}
-                                            </p>
-                                            <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                {t('Diskutimet do të shfaqen këtu', 'Discussions will appear here')}
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-3">
-                                            {topics
-                                                .filter(topic => communityCategory === 'all' || topic.category === communityCategory)
-                                                .map((topic, index) => {
-                                                    const categoryLabels = {
-                                                        general: 'General', arsim: 'Arsim', mjedisi: 'Mjedisi',
-                                                        mundesi: 'Mundësi', kultura: 'Kultura', punesim: 'Punësim'
-                                                    };
-
-                                                    return (
-                                                        <div
-                                                            key={topic.id}
-                                                            className={`flex items-center gap-4 p-4 rounded-xl transition-all ${darkMode
-                                                                ? 'bg-[#2D2A26] hover:bg-[#3D3A36] border border-gray-800'
-                                                                : 'bg-white hover:bg-gray-50 border border-gray-200'
-                                                                }`}
-                                                        >
-                                                            {/* Avatar - Clickable to open discussion */}
-                                                            <div
-                                                                onClick={() => {
-                                                                    setSelectedTopic(topic);
-                                                                    supabase
-                                                                        .from('posts')
-                                                                        .select('*')
-                                                                        .eq('topic_id', topic.id)
-                                                                        .order('created_at', { ascending: true })
-                                                                        .then(({ data }) => setTopicPosts(data || []));
-                                                                }}
-                                                                className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 cursor-pointer ${['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500', 'bg-teal-500'][index % 6]
-                                                                    }`}>
-                                                                {(topic.author_name || 'A').charAt(0).toUpperCase()}
-                                                            </div>
-
-                                                            {/* Content - Clickable to open discussion */}
-                                                            <div
-                                                                className="flex-1 min-w-0 cursor-pointer"
-                                                                onClick={() => {
-                                                                    setSelectedTopic(topic);
-                                                                    supabase
-                                                                        .from('posts')
-                                                                        .select('*')
-                                                                        .eq('topic_id', topic.id)
-                                                                        .order('created_at', { ascending: true })
-                                                                        .then(({ data }) => setTopicPosts(data || []));
-                                                                }}
-                                                            >
-                                                                <h3 className={`font-semibold mb-1 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                                    {language === 'al' ? topic.title_al : (topic.title_en || topic.title_al)}
-                                                                </h3>
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'}`}>
-                                                                        {categoryLabels[topic.category] || 'General'}
-                                                                    </span>
-                                                                </div>
-                                                                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                                    {topic.author_name || 'Anonim'} • {topic.created_at ? new Date(topic.created_at).toLocaleDateString('sq-AL', { day: 'numeric', month: 'short' }) : ''}
-                                                                </p>
-                                                            </div>
-
-                                                            {/* Action Buttons */}
-                                                            <div className="flex items-center gap-1 flex-shrink-0">
-                                                                {/* Share */}
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        const discussionUrl = `https://rinon.al/komuniteti?discussion=${topic.id}`;
-                                                                        const shareText = `💬 ${topic.title_al}\n\nBashkohu në diskutim në RinON!`;
-                                                                        if (navigator.share) {
-                                                                            navigator.share({ title: 'RinON Diskutim', text: shareText, url: discussionUrl });
-                                                                        } else {
-                                                                            navigator.clipboard.writeText(discussionUrl);
-                                                                            alert(t('Linku u kopjua!', 'Link copied!'));
-                                                                        }
-                                                                    }}
-                                                                    className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-500 hover:bg-white/10 hover:text-white' : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700'}`}
-                                                                    title={t('Shpërndaj', 'Share')}
-                                                                >
-                                                                    <Share2 className="w-4 h-4" />
-                                                                </button>
-                                                                {/* Delete (Admin only) */}
-                                                                {userProfile?.is_admin && (
-                                                                    <button
-                                                                        onClick={async (e) => {
-                                                                            e.stopPropagation();
-                                                                            if (window.confirm(t('Je i sigurt që dëshiron të fshish këtë diskutim?', 'Are you sure you want to delete this discussion?'))) {
-                                                                                await supabase.from('topics').delete().eq('id', topic.id);
-                                                                                loadTopics();
-                                                                            }
-                                                                        }}
-                                                                        className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-gray-500 hover:bg-white/10 hover:text-red-400' : 'text-gray-400 hover:bg-gray-100 hover:text-red-600'}`}
-                                                                        title={t('Fshi', 'Delete')}
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </button>
-                                                                )}
-                                                                {/* Arrow to open */}
-                                                                <ChevronRight
-                                                                    onClick={() => {
-                                                                        setSelectedTopic(topic);
-                                                                        supabase
-                                                                            .from('posts')
-                                                                            .select('*')
-                                                                            .eq('topic_id', topic.id)
-                                                                            .order('created_at', { ascending: true })
-                                                                            .then(({ data }) => setTopicPosts(data || []));
-                                                                    }}
-                                                                    className={`w-5 h-5 cursor-pointer ${darkMode ? 'text-gray-600 hover:text-gray-400' : 'text-gray-400 hover:text-gray-600'}`}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                        </div>
-                                    )
-                                )}
-                            </div>
-
-                            {/* ==========================================
-                                COMMUNITY RULES SECTION - Expandable
-                               ========================================== */}
-                            <div className={`rounded-2xl overflow-hidden ${darkMode ? 'bg-[#2D2A26] border border-gray-800' : 'bg-gradient-to-br from-teal-50 to-emerald-50 border border-teal-100'}`}>
-                                <div
-                                    className="flex items-start gap-4 p-6 cursor-pointer"
-                                    onClick={() => setShowRulesExpanded(!showRulesExpanded)}
-                                >
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                                        <Shield className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className={`text-lg font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                            {t('Rregullat e Komunitetit', 'Community Rules')}
-                                        </h3>
-                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                            {t(
-                                                'Respekto të tjerët, ndaj ide konstruktive, dhe ndihmo në krijimin e një mjedisi pozitiv për të gjithë të rinjtë.',
-                                                'Respect others, share constructive ideas, and help create a positive environment for all youth.'
-                                            )}
-                                        </p>
-                                        <button className="text-[#0D9488] hover:text-[#0F766E] font-medium text-sm mt-2 flex items-center gap-1 transition-all">
-                                            {showRulesExpanded ? t('Mbyll', 'Close') : t('Lexo më shumë', 'Read more')}
-                                            <ChevronRight className={`w-4 h-4 transition-transform ${showRulesExpanded ? 'rotate-90' : ''}`} />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Expanded Rules */}
-                                {showRulesExpanded && (
-                                    <div className={`px-6 pb-6 pt-2 border-t ${darkMode ? 'border-gray-700' : 'border-teal-100'}`}>
-                                        <ul className={`space-y-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                            <li className="flex items-start gap-3">
-                                                <span className="text-[#0D9488] font-bold">1.</span>
-                                                <span>{t('Respekto të gjithë anëtarët e komunitetit pavarësisht mendimeve të tyre.', 'Respect all community members regardless of their opinions.')}</span>
-                                            </li>
-                                            <li className="flex items-start gap-3">
-                                                <span className="text-[#0D9488] font-bold">2.</span>
-                                                <span>{t('Mos posto përmbajtje ofenduese, diskriminuese, ose të papërshtatshme.', 'Do not post offensive, discriminatory, or inappropriate content.')}</span>
-                                            </li>
-                                            <li className="flex items-start gap-3">
-                                                <span className="text-[#0D9488] font-bold">3.</span>
-                                                <span>{t('Mbaj diskutimet konstruktive dhe me tema relevante për të rinjtë.', 'Keep discussions constructive and relevant to youth topics.')}</span>
-                                            </li>
-                                            <li className="flex items-start gap-3">
-                                                <span className="text-[#0D9488] font-bold">4.</span>
-                                                <span>{t('Mos bëj spam ose reklama pa leje.', 'Do not spam or advertise without permission.')}</span>
-                                            </li>
-                                            <li className="flex items-start gap-3">
-                                                <span className="text-[#0D9488] font-bold">5.</span>
-                                                <span>{t('Raporto përmbajtjen e papërshtatshme tek administratorët.', 'Report inappropriate content to administrators.')}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </>
                 ) : currentPage === 'events' ? (
                     <EventsPage />
                 ) : currentPage === 'shiko' ? (
@@ -8781,26 +7477,6 @@ const RinON = () => {
                     <SchoolsOverviewPage />
                 ) : currentPage === 'school-portal' ? (
                     <SchoolPortalPage />
-                ) : currentPage === 'discussion' ? (
-                    <DiscussionPageContent
-                        selectedTopic={selectedTopic}
-                        setSelectedTopic={setSelectedTopic}
-                        topics={topics}
-                        topicPosts={topicPosts}
-                        newPost={newPost}
-                        setNewPost={setNewPost}
-                        submitPost={submitPost}
-                        deletePost={deletePost}
-                        deleteTopic={deleteTopic}
-                        user={user}
-                        userProfile={userProfile}
-                        showAdmin={showAdmin}
-                        language={language}
-                        darkMode={darkMode}
-                        t={t}
-                        setShowAuthModal={setShowAuthModal}
-                        setAuthMode={setAuthMode}
-                    />
                 ) : null}
             </main>
 
@@ -9190,120 +7866,6 @@ const RinON = () => {
                 </div>
             )}
 
-            {/* Poll Creation Form Modal */}
-            {showAddPollForm && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-                    onClick={(e) => e.target === e.currentTarget && setShowAddPollForm(false)}
-                >
-                    <div className={`w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0D9488] to-[#10B981] flex items-center justify-center">
-                                    <TrendingUp className="w-5 h-5 text-white" />
-                                </div>
-                                <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                    {t('Krijo Sondazh', 'Create Poll')}
-                                </h2>
-                            </div>
-                            <button onClick={() => setShowAddPollForm(false)} className={darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}>
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-5">
-                            {/* Question Albanian */}
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {t('Pyetja (Shqip)', 'Question (Albanian)')} *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={pollFormData.questionAl}
-                                    onChange={(e) => setPollFormData({ ...pollFormData, questionAl: e.target.value })}
-                                    className={`w-full px-4 py-3 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] ${darkMode ? 'bg-[#3D3A36] text-white border-gray-700' : 'bg-gray-50 text-gray-900 border-gray-200'}`}
-                                    placeholder="Cili është problemi më i madh për të rinjtë në Tiranë?"
-                                />
-                            </div>
-
-                            {/* Question English */}
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {t('Pyetja (Anglisht)', 'Question (English)')}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={pollFormData.questionEn}
-                                    onChange={(e) => setPollFormData({ ...pollFormData, questionEn: e.target.value })}
-                                    className={`w-full px-4 py-3 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] ${darkMode ? 'bg-[#3D3A36] text-white border-gray-700' : 'bg-gray-50 text-gray-900 border-gray-200'}`}
-                                    placeholder="What is the biggest problem for youth in Tirana?"
-                                />
-                            </div>
-
-                            {/* Poll Options */}
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {t('Opsionet', 'Options')} * ({t('min 2', 'min 2')})
-                                </label>
-                                <div className="space-y-2">
-                                    {pollFormData.options.map((option, index) => (
-                                        <div key={index} className="flex items-center gap-2">
-                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-600'}`}>
-                                                {index + 1}
-                                            </span>
-                                            <input
-                                                type="text"
-                                                value={option}
-                                                onChange={(e) => {
-                                                    const newOptions = [...pollFormData.options];
-                                                    newOptions[index] = e.target.value;
-                                                    setPollFormData({ ...pollFormData, options: newOptions });
-                                                }}
-                                                className={`flex-1 px-4 py-2.5 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] ${darkMode ? 'bg-[#3D3A36] text-white border-gray-700' : 'bg-gray-50 text-gray-900 border-gray-200'}`}
-                                                placeholder={`${t('Opsioni', 'Option')} ${index + 1}`}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                                <button
-                                    onClick={() => setPollFormData({ ...pollFormData, options: [...pollFormData.options, ''] })}
-                                    className="mt-2 text-sm text-[#0D9488] hover:text-[#0F766E] font-medium"
-                                >
-                                    + {t('Shto opsion', 'Add option')}
-                                </button>
-                            </div>
-
-                            {/* Expiry Days */}
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {t('Skadon pas', 'Expires after')}
-                                </label>
-                                <select
-                                    value={pollFormData.expiresInDays}
-                                    onChange={(e) => setPollFormData({ ...pollFormData, expiresInDays: parseInt(e.target.value) })}
-                                    className={`w-full px-4 py-3 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#0D9488]/20 focus:border-[#0D9488] ${darkMode ? 'bg-[#3D3A36] text-white border-gray-700' : 'bg-gray-50 text-gray-900 border-gray-200'}`}
-                                >
-                                    <option value={1}>1 {t('ditë', 'day')}</option>
-                                    <option value={3}>3 {t('ditë', 'days')}</option>
-                                    <option value={7}>7 {t('ditë', 'days')}</option>
-                                    <option value={14}>14 {t('ditë', 'days')}</option>
-                                    <option value={30}>30 {t('ditë', 'days')}</option>
-                                </select>
-                            </div>
-
-                            {/* Submit Button */}
-                            <button
-                                onClick={createPoll}
-                                disabled={!pollFormData.questionAl || pollFormData.options.filter(o => o.trim()).length < 2}
-                                className="w-full py-4 bg-gradient-to-r from-[#0D9488] to-[#10B981] text-white rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                            >
-                                {t('Publiko Sondazhin', 'Publish Poll')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Youthful Signup Popup */}
             {showHomeSignupPopup && !user && (
                 <div
@@ -9593,14 +8155,6 @@ const RinON = () => {
                         <Calendar className="h-6 w-6" />
                     </button>
                     <button
-                        onClick={() => setShowAddTopicForm(true)}
-                        className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-full shadow-2xl hover:from-amber-600 hover:to-orange-700 transform hover:scale-110 transition-all duration-300 animate-pulse-glow"
-                        title={t('Shto Temë Diskutimi', 'Add Discussion Topic')}
-                        style={{ animationDelay: '1s' }}
-                    >
-                        <MessageCircle className="h-6 w-6" />
-                    </button>
-                    <button
                         onClick={() => setShowAddPartnerForm(true)}
                         className="bg-gradient-to-r from-orange-500 to-[#FF6B6B] text-white p-4 rounded-full shadow-2xl hover:from-orange-500 hover:to-[#FF5252] transform hover:scale-110 transition-all duration-300 animate-pulse-glow"
                         title={t('Shto Partner', 'Add Partner')}
@@ -9659,7 +8213,6 @@ const RinON = () => {
                         { key: 'home', icon: Home, label: 'Home' },
                         { key: 'events', icon: Calendar, label: 'Evente' },
                         { key: 'lajme', icon: Newspaper, label: "N'gazeta" },
-                        { key: 'komuniteti', icon: MessageCircle, label: 'Komuniteti' },
                     ].map(item => {
                         const Icon = item.icon;
                         const isActive = currentPage === item.key;
