@@ -1,68 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, ArrowRight, ChevronUp, Smartphone, FileText, Shield } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogIn, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, School, GraduationCap, Trophy, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, ArrowRight, ChevronUp, FileText, Shield } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications } from '@capacitor/push-notifications';
 import { App as CapApp } from '@capacitor/app';
-
-// Firebase imports for web push
-import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 // Check if running as native app
 const isNativeApp = Capacitor.isNativePlatform();
-
-// Firebase config
-const firebaseConfig = {
-    apiKey: "AIzaSyBQWErh4Kg0YPUniX3EfGjYBMl99n6LWN8",
-    authDomain: "rinon-notifications.firebaseapp.com",
-    projectId: "rinon-notifications",
-    storageBucket: "rinon-notifications.firebasestorage.app",
-    messagingSenderId: "1048258783490",
-    appId: "1:1048258783490:web:88da7361ad7b7d931a7a1b"
-};
-
-// Initialize Firebase only for web
-let firebaseApp = null;
-if (!isNativeApp) {
-    try {
-        firebaseApp = initializeApp(firebaseConfig);
-    } catch (e) {
-        console.log('Firebase already initialized or error:', e);
-    }
-}
-
-// VAPID Key for web push
-const VAPID_KEY = 'BOfpnj9cj-R4dIiNLmwl9fZ4k49wdlFRHoWi-InN1jV3x-kgl-k4GnfItpdn6D_eOZTqypDFiVdxNgHljml06T0';
-
-// Service worker version - only for web
-const SW_VERSION = '2.1.0';
-
-// Service worker update mechanism - only for web
-if (!isNativeApp && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    const currentVersion = localStorage.getItem('sw_version');
-
-    if (currentVersion !== SW_VERSION) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-            registrations.forEach((registration) => {
-                console.log('Unregistering old service worker...');
-                registration.unregister();
-            });
-            localStorage.setItem('sw_version', SW_VERSION);
-            if (currentVersion !== null) {
-                console.log('Service worker updated! Reloading...');
-                window.location.reload();
-            }
-        });
-    } else {
-        navigator.serviceWorker.ready.then((registration) => {
-            registration.update();
-        });
-    }
-}
 
 // Initialize Supabase
 const supabase = createClient(
@@ -153,202 +99,6 @@ const uploadImage = async (file) => {
         console.error('Error uploading image:', error);
         throw error;
     }
-};
-
-// Notification Modal Component
-const NotificationModal = ({
-    show,
-    onClose,
-    darkMode,
-    t,
-    preferences,
-    setPreferences,
-    onSave,
-    onEnableNotifications,
-    onDisableNotifications,
-    notificationsEnabled,
-    isIOS
-}) => {
-    if (!show) return null;
-
-    return (
-        <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
-            onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                    onClose();
-                }
-            }}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
-        >
-            <div
-                className={`rounded-3xl max-w-md w-full p-6 shadow-2xl border animate-slideUp relative ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'}`}
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-                onTouchMove={(e) => e.stopPropagation()}
-                onTouchEnd={(e) => e.stopPropagation()}
-            >
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 p-2 hover:bg-amber-500/20 rounded-lg transition-all"
-                >
-                    <X className="w-5 h-5 text-gray-400" />
-                </button>
-
-                <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50">
-                        <Bell className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                        {t('Menaxho Njoftimet', 'Manage Notifications')}
-                    </h3>
-                    <p className={`text-sm mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t('Zgjidh për çfarë dëshiron të njoftohesh', 'Choose what you want to be notified about')}
-                    </p>
-                </div>
-
-                {!notificationsEnabled ? (
-                    <div className="space-y-4">
-                        <p className={`text-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                            {t(
-                                'Aktivizo njoftimet për të marrë lajme të fundit dhe evente direkt në pajisjen tënde.',
-                                'Enable notifications to receive latest news and events directly on your device.'
-                            )}
-                        </p>
-
-                        {isIOS && (
-                            <div className={`p-4 rounded-xl border ${darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-200'}`}>
-                                <p className={`text-sm ${darkMode ? 'text-amber-300' : 'text-amber-700'}`}>
-                                    <strong>📱 iPhone/iPad:</strong> {t(
-                                        'Për të marrë njoftime, shto RinON në ekranin bazë: Kliko butonin Share → "Add to Home Screen"',
-                                        'To receive notifications, add RinON to your home screen: Tap Share → "Add to Home Screen"'
-                                    )}
-                                </p>
-                            </div>
-                        )}
-
-                        <button
-                            onClick={onEnableNotifications}
-                            className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold"
-                        >
-                            {t('Aktivizo Njoftimet', 'Enable Notifications')}
-                        </button>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        <div className={`p-4 rounded-xl border ${darkMode ? 'bg-green-500/10 border-green-500/30' : 'bg-green-50 border-green-200'}`}>
-                            <p className={`text-sm flex items-center gap-2 ${darkMode ? 'text-green-400' : 'text-green-700'}`}>
-                                <Check className="w-4 h-4" />
-                                {t('Njoftimet janë aktive!', 'Notifications are enabled!')}
-                            </p>
-                        </div>
-
-                        <div className="space-y-3">
-                            <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${preferences.notify_news
-                                ? darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-300'
-                                : darkMode ? 'bg-[#3D3A36] border-[#4D4A46]' : 'bg-gray-50 border-gray-200'
-                                }`}>
-                                <div className="flex items-center gap-3">
-                                    <Newspaper className={`w-5 h-5 ${preferences.notify_news ? 'text-amber-500' : 'text-gray-400'}`} />
-                                    <div>
-                                        <p className={`font-medium ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                            {t('Lajme', 'News')}
-                                        </p>
-                                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            {t('Artikuj të rinj dhe lajme', 'New articles and news')}
-                                        </p>
-                                    </div>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    checked={preferences.notify_news}
-                                    onChange={(e) => setPreferences({ ...preferences, notify_news: e.target.checked })}
-                                    className="w-5 h-5 rounded accent-amber-500"
-                                />
-                            </label>
-
-                            <label className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${preferences.notify_events
-                                ? darkMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-50 border-amber-300'
-                                : darkMode ? 'bg-[#3D3A36] border-[#4D4A46]' : 'bg-gray-50 border-gray-200'
-                                }`}>
-                                <div className="flex items-center gap-3">
-                                    <Calendar className={`w-5 h-5 ${preferences.notify_events ? 'text-amber-500' : 'text-gray-400'}`} />
-                                    <div>
-                                        <p className={`font-medium ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                            {t('Evente', 'Events')}
-                                        </p>
-                                        <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            {t('Evente të reja dhe aktivitete', 'New events and activities')}
-                                        </p>
-                                    </div>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    checked={preferences.notify_events}
-                                    onChange={(e) => setPreferences({ ...preferences, notify_events: e.target.checked })}
-                                    className="w-5 h-5 rounded accent-amber-500"
-                                />
-                            </label>
-                        </div>
-
-                        <button
-                            onClick={onSave}
-                            className="w-full px-6 py-3 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all shadow-lg shadow-amber-500/50 font-semibold"
-                        >
-                            {t('Ruaj Preferencat', 'Save Preferences')}
-                        </button>
-
-                        {/* Disable Notifications Button */}
-                        <button
-                            onClick={onDisableNotifications}
-                            className={`w-full px-6 py-3 rounded-xl transition-all font-medium border ${darkMode
-                                ? 'border-red-500/30 text-red-400 hover:bg-red-500/10'
-                                : 'border-red-200 text-red-600 hover:bg-red-50'
-                                }`}
-                        >
-                            {t('Çaktivizo Njoftimet', 'Disable Notifications')}
-                        </button>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
-
-// iOS Instructions Banner (small, non-intrusive)
-const IOSInstructionsBanner = ({ show, onClose, darkMode, t }) => {
-    if (!show) return null;
-
-    return (
-        <div className={`fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40 animate-slideUp ${darkMode ? 'bg-[#2D2A26] border-amber-500/30' : 'bg-white border-amber-200'
-            } rounded-2xl border shadow-xl p-4`}>
-            <button
-                onClick={onClose}
-                className="absolute top-2 right-2 p-1 hover:bg-amber-500/20 rounded-lg transition-all"
-            >
-                <X className="w-4 h-4 text-gray-400" />
-            </button>
-
-            <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <Smartphone className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                    <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                        {t('Shto në Ekranin Bazë', 'Add to Home Screen')}
-                    </p>
-                    <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t(
-                            'Për njoftime në iPhone: Kliko Share → "Add to Home Screen"',
-                            'For iPhone notifications: Tap Share → "Add to Home Screen"'
-                        )}
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
 };
 
 // Event Calendar Component
@@ -1415,14 +1165,14 @@ const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
 
                             <h4 className="font-semibold mt-4 mb-2">{t('1. Të Dhënat që Mbledhim', '1. Data We Collect')}</h4>
                             <p className="mb-3 text-sm">{t(
-                                'Ne mbledhim: adresën e email-it, emrin, informacionin e pajisjes për njoftimet, dhe përmbajtjen që krijoni.',
-                                'We collect: email address, name, device information for notifications, and content you create.'
+                                'Ne mbledhim: adresën e email-it, emrin, dhe përmbajtjen që krijoni.',
+                                'We collect: email address, name, and content you create.'
                             )}</p>
 
                             <h4 className="font-semibold mt-4 mb-2">{t('2. Si i Përdorim të Dhënat', '2. How We Use Data')}</h4>
                             <p className="mb-3 text-sm">{t(
-                                'Të dhënat përdoren për: menaxhimin e llogarisë, dërgimin e njoftimeve, dhe përmirësimin e shërbimeve.',
-                                'Data is used for: account management, sending notifications, and improving services.'
+                                'Të dhënat përdoren për: menaxhimin e llogarisë dhe përmirësimin e shërbimeve.',
+                                'Data is used for: account management and improving services.'
                             )}</p>
 
                             <h4 className="font-semibold mt-4 mb-2">{t('3. Ruajtja e të Dhënave', '3. Data Storage')}</h4>
@@ -1433,8 +1183,8 @@ const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
 
                             <h4 className="font-semibold mt-4 mb-2">{t('4. Ndarja e të Dhënave', '4. Data Sharing')}</h4>
                             <p className="mb-3 text-sm">{t(
-                                'Ne NUK shesim të dhënat tuaja. Ndajmë vetëm me ofruesit e shërbimeve (Supabase, Firebase).',
-                                'We DO NOT sell your data. We only share with service providers (Supabase, Firebase).'
+                                'Ne NUK shesim të dhënat tuaja. Ndajmë vetëm me ofruesit e shërbimeve (Supabase).',
+                                'We DO NOT sell your data. We only share with service providers (Supabase).'
                             )}</p>
 
                             <h4 className="font-semibold mt-4 mb-2">{t('5. Të Drejtat Tuaja', '5. Your Rights')}</h4>
@@ -1917,13 +1667,6 @@ const RinON = () => {
     const [savedArticles, setSavedArticles] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    // Notification System States
-    const [showNotificationModal, setShowNotificationModal] = useState(false);
-    const [notificationPreferences, setNotificationPreferences] = useState({ notify_news: true, notify_events: true });
-    const [, setPushSubscription] = useState(null); // Value unused, only setter needed
-    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-    const [showIOSInstructions, setShowIOSInstructions] = useState(false);
-
     // NEW HOMEPAGE STATES
     const [heroCarouselIndex, setHeroCarouselIndex] = useState(0);
     const [showHomeSignupPopup, setShowHomeSignupPopup] = useState(false);
@@ -2180,396 +1923,6 @@ const RinON = () => {
         }, 350);
     };
 
-    // Check if device is iOS
-    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-    // Initialize Push Notifications (works for both native and web)
-    const initializePushNotifications = async () => {
-        try {
-            if (isNativeApp) {
-                // ============================================
-                // NATIVE APP - Use Capacitor Push Notifications
-                // ============================================
-                console.log('=== INITIALIZING NATIVE PUSH ===');
-
-                const permResult = await PushNotifications.requestPermissions();
-                console.log('Permission result:', permResult);
-
-                if (permResult.receive !== 'granted') {
-                    console.log('Push notification permission denied');
-                    alert('Leja për njoftime u refuzua / Notification permission denied');
-                    return null;
-                }
-
-                await PushNotifications.register();
-                console.log('Registered for native push notifications');
-                return 'native-pending'; // Token will come via listener
-
-            } else {
-                // ============================================
-                // WEB - Use Firebase Web Push
-                // ============================================
-                console.log('=== INITIALIZING WEB PUSH ===');
-
-                if (!('Notification' in window)) {
-                    console.log('This browser does not support notifications');
-                    alert('Ky shfletues nuk mbështet njoftimet / This browser does not support notifications');
-                    return null;
-                }
-
-                if (!('serviceWorker' in navigator)) {
-                    console.log('Service workers not supported');
-                    alert('Ky shfletues nuk mbështet service workers');
-                    return null;
-                }
-
-                console.log('Requesting notification permission...');
-                const permission = await Notification.requestPermission();
-                console.log('Permission result:', permission);
-
-                if (permission !== 'granted') {
-                    console.log('Notification permission denied');
-                    alert('Leja për njoftime u refuzua / Notification permission denied');
-                    return null;
-                }
-
-                console.log('Checking for service worker registration...');
-                let registration;
-
-                const existingRegistrations = await navigator.serviceWorker.getRegistrations();
-                const existingSW = existingRegistrations.find(r =>
-                    r.active?.scriptURL?.includes('firebase-messaging-sw.js')
-                );
-
-                if (existingSW) {
-                    console.log('Using existing service worker');
-                    registration = existingSW;
-                } else {
-                    console.log('Registering new service worker...');
-                    registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                    console.log('Service worker registered:', registration);
-                    await navigator.serviceWorker.ready;
-                    console.log('Service worker is ready');
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                console.log('Getting FCM token...');
-                const messaging = getMessaging(firebaseApp);
-                const token = await getToken(messaging, {
-                    vapidKey: VAPID_KEY,
-                    serviceWorkerRegistration: registration
-                });
-                console.log('FCM Token obtained:', token);
-                return token;
-            }
-        } catch (error) {
-            console.error('Error initializing push notifications:', error);
-            alert('Gabim në aktivizimin e njoftimeve: ' + error.message);
-            return null;
-        }
-    };
-
-    // Save push subscription to Supabase
-    const savePushSubscription = async (token) => {
-        if (!user || !token) return;
-
-        try {
-            const deviceInfo = `${navigator.userAgent.substring(0, 100)}`;
-            console.log('Saving push subscription for user:', user.id);
-            console.log('Device info:', deviceInfo);
-
-            // Delete ALL existing subscriptions for this user first
-            const { error: deleteUserError } = await supabase
-                .from('push_subscriptions')
-                .delete()
-                .eq('user_id', user.id);
-
-            if (deleteUserError) {
-                console.log('Delete user tokens result:', deleteUserError);
-            }
-
-            // Also delete if this exact token exists (for any user) 
-            const { error: deleteTokenError } = await supabase
-                .from('push_subscriptions')
-                .delete()
-                .eq('fcm_token', token);
-
-            if (deleteTokenError) {
-                console.log('Delete token result:', deleteTokenError);
-            }
-
-            // Small delay to ensure deletes are committed
-            await new Promise(resolve => setTimeout(resolve, 100));
-
-            // Now insert the new subscription
-            const { error } = await supabase
-                .from('push_subscriptions')
-                .insert({
-                    user_id: user.id,
-                    fcm_token: token,
-                    device_info: deviceInfo
-                });
-
-            if (error) throw error;
-            console.log('Push subscription saved successfully');
-        } catch (error) {
-            console.error('Error saving push subscription:', error);
-        }
-    };
-
-    // Load notification preferences from Supabase
-    const loadNotificationPreferences = async () => {
-        if (!user) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('notification_preferences')
-                .select('*')
-                .eq('user_id', user.id)
-                .single();
-
-            if (error && error.code !== 'PGRST116') throw error;
-
-            if (data) {
-                setNotificationPreferences({
-                    notify_news: data.notify_news,
-                    notify_events: data.notify_events
-                });
-            }
-        } catch (error) {
-            console.error('Error loading notification preferences:', error);
-        }
-    };
-
-    // Save notification preferences to Supabase
-    const saveNotificationPreferences = async () => {
-        if (!user) return;
-
-        try {
-            // First check if preferences exist
-            const { data: existing } = await supabase
-                .from('notification_preferences')
-                .select('user_id')
-                .eq('user_id', user.id)
-                .single();
-
-            let error;
-            if (existing) {
-                // Update existing
-                const result = await supabase
-                    .from('notification_preferences')
-                    .update({
-                        notify_news: notificationPreferences.notify_news,
-                        notify_events: notificationPreferences.notify_events,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('user_id', user.id);
-                error = result.error;
-            } else {
-                // Insert new
-                const result = await supabase
-                    .from('notification_preferences')
-                    .insert({
-                        user_id: user.id,
-                        notify_news: notificationPreferences.notify_news,
-                        notify_events: notificationPreferences.notify_events,
-                        updated_at: new Date().toISOString()
-                    });
-                error = result.error;
-            }
-
-            if (error) throw error;
-
-            alert(t('Preferencat u ruajtën!', 'Preferences saved!'));
-            setShowNotificationModal(false);
-        } catch (error) {
-            console.error('Error saving notification preferences:', error);
-            alert(t('Gabim në ruajtjen e preferencave', 'Error saving preferences'));
-        }
-    };
-
-    // Enable notifications
-    const enableNotifications = async () => {
-        try {
-            console.log('=== ENABLE NOTIFICATIONS CLICKED ===');
-
-            const token = await initializePushNotifications();
-
-            if (token) {
-                if (token === 'native-pending') {
-                    // Native app - token will come via listener
-                    setNotificationsEnabled(true);
-                } else {
-                    // Web - we have the token directly
-                    console.log('Token received, saving...');
-                    setPushSubscription(token);
-                    setNotificationsEnabled(true);
-                    await savePushSubscription(token);
-                }
-
-                // Check if preferences exist first
-                const { data: existing } = await supabase
-                    .from('notification_preferences')
-                    .select('user_id')
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (existing) {
-                    await supabase
-                        .from('notification_preferences')
-                        .update({
-                            notify_news: true,
-                            notify_events: true,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('user_id', user.id);
-                } else {
-                    await supabase
-                        .from('notification_preferences')
-                        .insert({
-                            user_id: user.id,
-                            notify_news: true,
-                            notify_events: true,
-                            updated_at: new Date().toISOString()
-                        });
-                }
-
-                console.log('Notifications enabled successfully!');
-
-                // Show iOS instructions only for web (not native app)
-                if (!isNativeApp && isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
-                    setShowIOSInstructions(true);
-                }
-            } else {
-                console.log('No token received - notifications not enabled');
-            }
-        } catch (error) {
-            console.error('Error in enableNotifications:', error);
-            alert('Gabim: ' + error.message);
-        }
-    };
-
-    // Disable notifications completely
-    const disableNotifications = async () => {
-        if (!user) return;
-
-        try {
-            // 1. Delete FCM token from database
-            await supabase
-                .from('push_subscriptions')
-                .delete()
-                .eq('user_id', user.id);
-
-            // 2. Delete notification preferences
-            await supabase
-                .from('notification_preferences')
-                .delete()
-                .eq('user_id', user.id);
-
-            // 3. Unregister - different for native vs web
-            if (isNativeApp) {
-                await PushNotifications.removeAllListeners();
-            } else if ('serviceWorker' in navigator) {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                for (const registration of registrations) {
-                    await registration.unregister();
-                }
-            }
-
-            // 4. Update local state
-            setNotificationsEnabled(false);
-            setPushSubscription(null);
-            setNotificationPreferences({ notify_news: true, notify_events: true });
-
-            // 5. Close the modal
-            setShowNotificationModal(false);
-
-            // 6. Show confirmation
-            alert(t(
-                'Njoftimet u çaktivizuan me sukses. Nuk do të marrësh më njoftime.',
-                'Notifications disabled successfully. You will no longer receive notifications.'
-            ));
-
-        } catch (error) {
-            console.error('Error disabling notifications:', error);
-            alert(t('Gabim në çaktivizimin e njoftimeve', 'Error disabling notifications'));
-        }
-    };
-
-    // Check if notifications are already enabled
-    const checkNotificationStatus = async () => {
-        if (!user) return;
-
-        try {
-            const { data } = await supabase
-                .from('push_subscriptions')
-                .select('fcm_token')
-                .eq('user_id', user.id)
-                .limit(1);
-
-            if (data && data.length > 0) {
-                setNotificationsEnabled(true);
-                setPushSubscription(data[0].fcm_token);
-            }
-        } catch (error) {
-            console.error('Error checking notification status:', error);
-        }
-    };
-
-    // Send notification to users (for admin panel)
-    const sendNotificationToUsers = async (type, title, body, url) => {
-        try {
-            const { data: preferences, error: prefError } = await supabase
-                .from('notification_preferences')
-                .select('user_id')
-                .eq(type === 'news' ? 'notify_news' : 'notify_events', true);
-
-            if (prefError) throw prefError;
-
-            if (!preferences || preferences.length === 0) {
-                alert(t('Nuk ka përdorues të abonuar për këtë lloj njoftimi', 'No users subscribed to this notification type'));
-                return;
-            }
-
-            const userIds = preferences.map(p => p.user_id);
-
-            const { data: subscriptions, error: subError } = await supabase
-                .from('push_subscriptions')
-                .select('fcm_token')
-                .in('user_id', userIds);
-
-            if (subError) throw subError;
-
-            if (!subscriptions || subscriptions.length === 0) {
-                alert(t('Nuk ka pajisje të regjistruara', 'No devices registered'));
-                return;
-            }
-
-            // Deduplicate FCM tokens to prevent multiple notifications
-            const tokens = [...new Set(subscriptions.map(s => s.fcm_token))];
-
-            const { error: sendError } = await supabase.functions.invoke('send-notification', {
-                body: {
-                    tokens,
-                    notification: {
-                        title,
-                        body,
-                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png'
-                    },
-                    data: { type, url }
-                }
-            });
-
-            if (sendError) throw sendError;
-
-            alert(t(`Njoftimi u dërgua te ${tokens.length} pajisje!`, `Notification sent to ${tokens.length} devices!`));
-        } catch (error) {
-            console.error('Error sending notification:', error);
-            alert(t('Gabim në dërgimin e njoftimit', 'Error sending notification'));
-        }
-    };
-
     useEffect(() => {
         setHasPageLoaded(true);
 
@@ -2750,98 +2103,8 @@ const RinON = () => {
             })();
         }
 
-        // Also listen for messages from service worker (when app was open in background)
-        const handleServiceWorkerMessage = async (event) => {
-            if (event.data?.type === 'NOTIFICATION_CLICK') {
-                const url = event.data?.url;
-                if (url) {
-                    console.log('Service worker message received:', url);
-                    const [type, id] = url.split(':');
-
-                    if (type === 'article') {
-                        let article = articles.find(a => a.id === id);
-
-                        if (!article) {
-                            const { data } = await supabase
-                                .from('articles')
-                                .select('*')
-                                .eq('id', id)
-                                .single();
-
-                            if (data) {
-                                article = {
-                                    id: data.id,
-                                    titleAl: data.title_al,
-                                    titleEn: data.title_en,
-                                    contentAl: data.content_al,
-                                    contentEn: data.content_en,
-                                    category: data.category,
-                                    image: data.image,
-                                    source: data.source,
-                                    featured: data.featured,
-                                    postType: data.post_type || 'lajme',
-                                    date: new Date(data.created_at).toISOString().split('T')[0]
-                                };
-                            }
-                        }
-
-                        if (article) openArticle(article);
-                    } else if (type === 'event') {
-                        let event = otherEvents.find(e => e.id === id);
-
-                        if (!event) {
-                            const { data } = await supabase
-                                .from('events')
-                                .select('*')
-                                .eq('id', id)
-                                .single();
-
-                            if (data) {
-                                event = {
-                                    id: data.id,
-                                    titleAl: data.title_al,
-                                    titleEn: data.title_en,
-                                    dateAl: data.date_al,
-                                    dateEn: data.date_en,
-                                    type: data.type,
-                                    descAl: data.desc_al,
-                                    descEn: data.desc_en,
-                                    location: data.location,
-                                    image: data.image,
-                                    date: data.date,
-                                    time: data.time,
-                                    endTime: data.end_time,
-                                    address: data.address,
-                                    category: data.category,
-                                    spots_left: data.spots_left,
-                                    total_spots: data.total_spots,
-                                    is_free: data.is_free,
-                                    price: data.price,
-                                    attendees: data.attendees,
-                                    partner: data.partner,
-                                    registration_link: data.registration_link,
-                                    is_featured: data.is_featured,
-                                    is_trending: data.is_trending,
-                                    tags: data.tags
-                                };
-                            }
-                        }
-
-                        if (event) {
-                            setSelectedEvent(event);
-                            setShowEventModal(true);
-                        }
-                    }
-                }
-            }
-        };
-
-        navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
-
-        return () => {
-            navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
-        };
-    }, [otherEvents, articles]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Set body background color to prevent purple showing on zoom out
     useEffect(() => {
@@ -2875,176 +2138,6 @@ const RinON = () => {
         };
     }, [darkMode]);
 
-    // Load notification preferences when user logs in
-    useEffect(() => {
-        if (user) {
-            loadNotificationPreferences();
-            checkNotificationStatus();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
-
-    // ============================================
-    // NATIVE APP - Handle notification that launched the app
-    // This catches notifications clicked when app was completely closed
-    // ============================================
-    useEffect(() => {
-        if (!isNativeApp) return;
-
-        const checkLaunchNotification = async () => {
-            try {
-                const notificationList = await PushNotifications.getDeliveredNotifications();
-                console.log('Delivered notifications:', notificationList);
-
-                // Check if app was launched from a notification
-                // by checking URL parameters or deep link
-                const urlParams = new URLSearchParams(window.location.search);
-                const openArticle = urlParams.get('openArticle');
-                const openEvent = urlParams.get('openEvent');
-
-                if (openArticle) {
-                    const { data: articleData } = await supabase
-                        .from('articles')
-                        .select('*')
-                        .eq('id', parseInt(openArticle))
-                        .single();
-
-                    if (articleData) {
-                        const article = {
-                            id: articleData.id,
-                            titleAl: articleData.title_al,
-                            titleEn: articleData.title_en,
-                            contentAl: articleData.content_al,
-                            contentEn: articleData.content_en,
-                            category: articleData.category,
-                            image: articleData.image,
-                            source: articleData.source,
-                            featured: articleData.featured,
-                            postType: articleData.post_type || 'lajme',
-                            date: new Date(articleData.created_at).toISOString().split('T')[0]
-                        };
-                        setTimeout(() => openArticle(article), 500);
-                    }
-                } else if (openEvent) {
-                    const { data: eventData } = await supabase
-                        .from('events')
-                        .select('*')
-                        .eq('id', parseInt(openEvent))
-                        .single();
-
-                    if (eventData) {
-                        setTimeout(() => {
-                            setSelectedEvent(eventData);
-                            setShowEventModal(true);
-                        }, 500);
-                    }
-                }
-            } catch (err) {
-                console.error('Error checking launch notification:', err);
-            }
-        };
-
-        checkLaunchNotification();
-    }, []);
-
-    // ============================================
-    // NATIVE APP - Capacitor Push Notification Listeners
-    // ============================================
-    useEffect(() => {
-        if (!isNativeApp || !user) return;
-
-        // Helper function to handle notification data
-        const handleNotificationData = async (data) => {
-            const url = data.url || '';
-
-            if (url) {
-                const parts = url.replace(/["']/g, '').split(':');
-                const type = parts[0];
-                const id = parts.slice(1).join(':');
-
-                if (type === 'article') {
-                    try {
-                        const { data: articleData } = await supabase
-                            .from('articles')
-                            .select('*')
-                            .eq('id', parseInt(id) || id)
-                            .single();
-
-                        if (articleData) {
-                            const article = {
-                                id: articleData.id,
-                                titleAl: articleData.title_al,
-                                titleEn: articleData.title_en,
-                                contentAl: articleData.content_al,
-                                contentEn: articleData.content_en,
-                                category: articleData.category,
-                                image: articleData.image,
-                                source: articleData.source,
-                                featured: articleData.featured,
-                                postType: articleData.post_type || 'lajme',
-                                date: new Date(articleData.created_at).toISOString().split('T')[0]
-                            };
-                            openArticle(article);
-                        }
-                    } catch (err) {
-                        console.error('Error fetching article:', err);
-                    }
-                } else if (type === 'event') {
-                    try {
-                        const { data: eventData } = await supabase
-                            .from('events')
-                            .select('*')
-                            .eq('id', parseInt(id) || id)
-                            .single();
-
-                        if (eventData) {
-                            setSelectedEvent(eventData);
-                            setShowEventModal(true);
-                        }
-                    } catch (err) {
-                        console.error('Error fetching event:', err);
-                    }
-                }
-            }
-        };
-
-        // Handle registration - receive token
-        const registrationListener = PushNotifications.addListener('registration', async (token) => {
-            console.log('=== NATIVE PUSH REGISTRATION SUCCESS ===');
-            console.log('FCM Token:', token.value);
-
-            setPushSubscription(token.value);
-            await savePushSubscription(token.value);
-        });
-
-        // Handle registration error
-        const registrationErrorListener = PushNotifications.addListener('registrationError', (error) => {
-            console.error('Push registration error:', error);
-        });
-
-        // Handle notification received while app is in foreground
-        const notificationReceivedListener = PushNotifications.addListener('pushNotificationReceived', (notification) => {
-            console.log('=== NATIVE PUSH RECEIVED (Foreground) ===');
-            console.log('Notification:', notification);
-        });
-
-        // Handle notification click/tap
-        const notificationActionListener = PushNotifications.addListener('pushNotificationActionPerformed', async (action) => {
-            console.log('=== NATIVE PUSH CLICKED ===');
-            console.log('Action:', action);
-
-            const data = action.notification.data || {};
-            await handleNotificationData(data);
-        });
-
-        return () => {
-            registrationListener.then(l => l.remove());
-            registrationErrorListener.then(l => l.remove());
-            notificationReceivedListener.then(l => l.remove());
-            notificationActionListener.then(l => l.remove());
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
 
     // ============================================
     // NATIVE APP - Navigation history for back button
@@ -3079,10 +2172,6 @@ const RinON = () => {
             }
             if (showEventModal) {
                 setShowEventModal(false);
-                return;
-            }
-            if (showNotificationModal) {
-                setShowNotificationModal(false);
                 return;
             }
             if (showAuthModal) {
@@ -3129,66 +2218,7 @@ const RinON = () => {
             backButtonListener.then(l => l.remove());
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [showArticleModal, showEventModal, showNotificationModal, showAuthModal, mobileMenuOpen, currentPage]);
-
-    // ============================================
-    // WEB - Foreground Message Handler
-    // ============================================
-    useEffect(() => {
-        if (isNativeApp || !notificationsEnabled) return;
-
-        try {
-            const messaging = getMessaging(firebaseApp);
-
-            const unsubscribe = onMessage(messaging, async (payload) => {
-                console.log('=== WEB FOREGROUND MESSAGE RECEIVED ===');
-                console.log('Payload:', JSON.stringify(payload, null, 2));
-
-                const data = payload.data || {};
-                const notification = payload.notification || {};
-
-                const title = data.title || notification.title || 'RinON';
-                const body = data.body || notification.body || '';
-                const url = data.url || '';
-                const clickUrl = data.click_url || '';
-                const tag = data.tag || `rinon-${url || Date.now()}`;
-
-                if (Notification.permission === 'granted') {
-                    console.log('Showing foreground notification with tag:', tag);
-
-                    const notif = new Notification(title, {
-                        body: body,
-                        icon: 'https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/bigiii.png',
-                        tag: tag,
-                        data: { url, clickUrl }
-                    });
-
-                    notif.onclick = (event) => {
-                        event.preventDefault();
-                        notif.close();
-
-                        if (clickUrl) {
-                            window.location.href = clickUrl;
-                        } else if (url) {
-                            const parts = url.replace(/["']/g, '').split(':');
-                            const type = parts[0];
-                            const id = parts.slice(1).join(':');
-
-                            if (type === 'article') {
-                                window.location.href = `/?openArticle=${id}`;
-                            } else if (type === 'event') {
-                                window.location.href = `/?openEvent=${id}`;
-                            }
-                        }
-                    };
-                }
-            });
-
-            return () => unsubscribe();
-        } catch (error) {
-            console.error('Error setting up foreground messaging:', error);
-        }
-    }, [notificationsEnabled]);
+    }, [showArticleModal, showEventModal, showAuthModal, mobileMenuOpen, currentPage]);
 
     // First-time visitor tooltip
     useEffect(() => {
@@ -4456,7 +3486,7 @@ const RinON = () => {
 
             if (error) throw error;
 
-            // Store the article ID for notifications
+            // Store the article ID for editing
             const savedArticleId = data?.[0]?.id;
             if (savedArticleId) {
                 setEditingItem({ ...editingItem, id: savedArticleId });
@@ -4548,7 +3578,7 @@ const RinON = () => {
 
             if (error) throw error;
 
-            // Store the event ID for notifications
+            // Store the event ID for editing
             const savedEventId = data?.[0]?.id;
             if (savedEventId) {
                 setEditingItem({ ...editingItem, id: savedEventId });
@@ -6292,17 +5322,6 @@ const RinON = () => {
                             >
                                 <Search className="w-5 h-5" />
                             </button>
-                            {user && (
-                                <button
-                                    onClick={() => setShowNotificationModal(true)}
-                                    className={`p-2 rounded relative ${darkMode ? 'text-gray-400 hover:bg-white/5' : 'text-gray-500 hover:bg-gray-50'}`}
-                                >
-                                    <Bell className="w-5 h-5" />
-                                    {!notificationsEnabled && (
-                                        <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                                    )}
-                                </button>
-                            )}
                         </div>
 
                         {/* Auth */}
@@ -6727,35 +5746,6 @@ const RinON = () => {
                                 </button>
                             </div>
 
-                            {/* Notify Users Button */}
-                            <button
-                                onClick={async () => {
-                                    if (!formData.titleAl) {
-                                        alert(t('Ju lutem ruani artikullin para se të dërgoni njoftim', 'Please save the article before sending notification'));
-                                        return;
-                                    }
-
-                                    // Get the article ID - use editingItem which gets set after save
-                                    let articleId = editingItem?.id;
-
-                                    if (!articleId) {
-                                        // If no ID yet, user needs to save first
-                                        alert(t('Ju lutem ruani artikullin para se të dërgoni njoftim', 'Please save the article before sending notification'));
-                                        return;
-                                    }
-
-                                    await sendNotificationToUsers(
-                                        'news',
-                                        formData.titleAl,
-                                        t('📰 Për ty!', '📰 For you!'),
-                                        `article:${articleId}` // Deep link format
-                                    );
-                                }}
-                                className="w-full px-4 py-3 border border-amber-500/50 text-amber-400 rounded-xl hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
-                            >
-                                <Bell className="w-4 h-4" />
-                                {t('Njofto Përdoruesit', 'Notify Users')}
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -6980,35 +5970,6 @@ const RinON = () => {
                                 </button>
                             </div>
 
-                            {/* Notify Users Button */}
-                            <button
-                                onClick={async () => {
-                                    if (!eventFormData.titleAl) {
-                                        alert(t('Ju lutem ruani eventin para se të dërgoni njoftim', 'Please save the event before sending notification'));
-                                        return;
-                                    }
-
-                                    // Get the event ID - use editingItem which gets set after save
-                                    let eventId = editingItem?.id;
-
-                                    if (!eventId) {
-                                        // If no ID yet, user needs to save first
-                                        alert(t('Ju lutem ruani eventin para se të dërgoni njoftim', 'Please save the event before sending notification'));
-                                        return;
-                                    }
-
-                                    await sendNotificationToUsers(
-                                        'events',
-                                        eventFormData.titleAl,
-                                        t('🎉 Për ty!', '🎉 For you!'),
-                                        `event:${eventId}` // Deep link format
-                                    );
-                                }}
-                                className="w-full px-4 py-3 border border-amber-500/50 text-amber-400 rounded-xl hover:bg-amber-500/10 transition-all flex items-center justify-center gap-2"
-                            >
-                                <Bell className="w-4 h-4" />
-                                {t('Njofto Përdoruesit', 'Notify Users')}
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -8903,14 +7864,14 @@ const RinON = () => {
                             <div className="py-16 md:py-20" style={{ background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #FCD34D 100%)' }}>
                                 <div className="max-w-2xl mx-auto px-4 text-center">
                                     <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                        <Bell className="w-8 h-8 text-[#134E4A]" />
+                                        <Star className="w-8 h-8 text-[#134E4A]" />
                                     </div>
                                     <h3 className="text-2xl md:text-3xl font-extrabold mb-4 text-[#292524]">
                                         {t('Mos humb asnjë mundësi', 'Don\'t miss any opportunity')}
                                     </h3>
                                     <p className="mb-8 text-lg text-[#292524]/70">
-                                        {t('Regjistrohu falas dhe merr njoftime kur ka diçka të re për ty',
-                                            'Sign up free and get notified when there\'s something new for you')}
+                                        {t('Regjistrohu falas dhe ruaj artikujt dhe eventet që të interesojnë',
+                                            'Sign up free and save articles and events that interest you')}
                                     </p>
                                     <button
                                         onClick={() => {
@@ -10374,10 +9335,10 @@ const RinON = () => {
                         <div className={`mx-6 p-4 rounded-2xl mb-6 ${darkMode ? 'bg-[#3D3A36]' : 'bg-white'}`}>
                             <div className="flex items-center gap-4 mb-3 last:mb-0">
                                 <div className="w-10 h-10 rounded-xl bg-[#F97316]/10 flex items-center justify-center flex-shrink-0">
-                                    <Bell className="w-5 h-5 text-[#F97316]" />
+                                    <Star className="w-5 h-5 text-[#F97316]" />
                                 </div>
                                 <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-[#1F2937]'}`}>
-                                    {t('Njoftime për evente & mundësi', 'Event & opportunity notifications')}
+                                    {t('Zbulo evente & mundësi të reja', 'Discover new events & opportunities')}
                                 </p>
                             </div>
                             <div className="flex items-center gap-4 mb-3 last:mb-0">
@@ -10895,28 +9856,6 @@ const RinON = () => {
                 </div>
             </footer>
 
-            {/* Notification Modal */}
-            <NotificationModal
-                show={showNotificationModal}
-                onClose={() => setShowNotificationModal(false)}
-                darkMode={darkMode}
-                t={t}
-                preferences={notificationPreferences}
-                setPreferences={setNotificationPreferences}
-                onSave={saveNotificationPreferences}
-                onEnableNotifications={enableNotifications}
-                onDisableNotifications={disableNotifications}
-                notificationsEnabled={notificationsEnabled}
-                isIOS={isIOS}
-            />
-
-            {/* iOS Instructions Banner */}
-            <IOSInstructionsBanner
-                show={showIOSInstructions}
-                onClose={() => setShowIOSInstructions(false)}
-                darkMode={darkMode}
-                t={t}
-            />
         </div>
     );
 };
