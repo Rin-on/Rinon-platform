@@ -4425,14 +4425,15 @@ const RinON = () => {
                                 className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
                             />
 
-                            <input
-                                type="text"
-                                placeholder={t('Tipi', 'Type')}
+                            <select
                                 value={eventFormData.type}
                                 onChange={(e) => setEventFormData({ ...eventFormData, type: e.target.value })}
-                                maxLength="50"
-                                className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
-                            />
+                                className="w-full px-4 py-3 bg-[#3D3A36] border border-amber-500/30 rounded-xl text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                            >
+                                <option value="">{t('Tipi i eventit', 'Event type')}</option>
+                                <option value="event">{t('Event i zakonshëm', 'Regular event')}</option>
+                                <option value="partnership">{t('Bashkëpunim', 'Partnership')}</option>
+                            </select>
 
                             <select
                                 value={eventFormData.category}
