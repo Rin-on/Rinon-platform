@@ -3854,7 +3854,8 @@ const RinON = () => {
                                 { key: 'home', label: t('Home', 'Home') },
                                 { key: 'lajme', label: "N'gazeta" },
                                 { key: 'events', label: t('Evente', 'Events') },
-
+                                { key: 'partners', label: t('Bashkëpunime', 'Partners') },
+                                { key: 'about', label: t('Rreth Nesh', 'About') },
                             ].map(item => (
                                 <button
                                     key={item.key}
@@ -4751,7 +4752,8 @@ const RinON = () => {
                             <nav className="px-6 py-2">
                                 <div className="space-y-1">
                                     {[
-                                        { page: 'home', label: t('Lajme', 'News') },
+                                        { page: 'home', label: t('Home', 'Home') },
+                                        { page: 'lajme', label: "N'gazeta" },
                                         { page: 'events', label: t('Evente', 'Events') },
                                         { page: 'partners', label: t('Bashkëpunime', 'Partners') },
                                         { page: 'about', label: t('Rreth Nesh', 'About') },
@@ -7037,7 +7039,7 @@ const RinON = () => {
                     {/* Links row */}
                     <div className="flex flex-wrap justify-center gap-6 md:gap-10 mb-10">
                         <button onClick={() => changePage('lajme')} className="text-white/60 hover:text-[#EAB308] transition-colors text-sm font-medium">
-                            {t('Lajme', 'News')}
+                            N'gazeta
                         </button>
                         <button onClick={() => changePage('events')} className="text-white/60 hover:text-[#EAB308] transition-colors text-sm font-medium">
                             {t('Evente', 'Events')}
