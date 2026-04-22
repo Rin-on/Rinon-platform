@@ -3854,7 +3854,7 @@ const RinON = () => {
                                 { key: 'home', label: t('Home', 'Home') },
                                 { key: 'lajme', label: "N'gazeta" },
                                 { key: 'events', label: t('Evente', 'Events') },
-                                { key: 'shiko', label: t('Shiko', 'Watch') },
+
                             ].map(item => (
                                 <button
                                     key={item.key}
@@ -3961,7 +3961,7 @@ const RinON = () => {
                                 { key: 'home', label: t('Home', 'Home') },
                                 { key: 'lajme', label: "N'gazeta" },
                                 { key: 'events', label: t('Evente', 'Events') },
-                                { key: 'shiko', label: t('🎬 Shiko', '🎬 Watch') },
+
                                 { key: 'partners', label: t('Bashkëpunime', 'Partners') },
                                 { key: 'about', label: t('Rreth Nesh', 'About') },
                             ].map(item => (
