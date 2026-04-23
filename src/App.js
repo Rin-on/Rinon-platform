@@ -5413,7 +5413,7 @@ const RinON = () => {
                         })()}
 
                         {/* ==========================================
-                            SECTION 2: Latest 2 Articles
+                            SECTION 2: Latest 2 Articles — image card layout
                            ========================================== */}
                         {(() => {
                             const heroId = (articles.find(a => a.is_head_article) || articles[0])?.id;
@@ -5421,11 +5421,11 @@ const RinON = () => {
                             if (latestTwo.length === 0) return null;
                             return (
                                 <HomeFadeSection className="px-4 mt-6">
-                                    <div className="flex flex-col gap-3">
+                                    <div className="flex flex-col gap-4">
                                         {latestTwo.map(article => (
                                             <div
                                                 key={article.id}
-                                                className={`flex items-center gap-3 cursor-pointer rounded-xl p-3 transition-all shadow-sm ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}`}
+                                                className="relative rounded-xl overflow-hidden shadow-sm cursor-pointer h-48 md:h-56"
                                                 onClick={() => {
                                                     setSelectedArticle(article);
                                                     setShowArticleModal(true);
@@ -5433,26 +5433,31 @@ const RinON = () => {
                                                 }}
                                             >
                                                 <img
-                                                    src={article.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400'}
+                                                    src={article.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'}
                                                     alt={article.titleAl}
-                                                    className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
-                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400'; }}
+                                                    className="absolute inset-0 w-full h-full object-cover"
+                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
                                                 />
-                                                <div className="min-w-0 flex-1">
-                                                    {article.category && (
-                                                        <span className="text-xs text-amber-600 uppercase font-medium">{article.category}</span>
-                                                    )}
-                                                    <h3 className={`text-base font-semibold line-clamp-2 mt-0.5 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                                        {language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
-                                                    </h3>
-                                                    <p className="text-xs text-gray-400 mt-1">{article.date}</p>
-                                                </div>
-                                                {showAdmin && (
-                                                    <div className="flex flex-col gap-1 flex-shrink-0">
-                                                        <button onClick={(e) => { e.stopPropagation(); editArticle(article); }} className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700"><Edit className="h-3 w-3" /></button>
-                                                        <button onClick={(e) => { e.stopPropagation(); deleteArticle(article.id); }} className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600"><Trash2 className="h-3 w-3" /></button>
+                                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)' }} />
+                                                {article.category && (
+                                                    <div className="absolute top-3 left-3 z-10">
+                                                        <span className="bg-amber-400 text-gray-900 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide">
+                                                            {article.category}
+                                                        </span>
                                                     </div>
                                                 )}
+                                                {showAdmin && (
+                                                    <div className="absolute top-3 right-3 z-10 flex gap-1.5">
+                                                        <button onClick={(e) => { e.stopPropagation(); editArticle(article); }} className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 shadow"><Edit className="h-3 w-3" /></button>
+                                                        <button onClick={(e) => { e.stopPropagation(); deleteArticle(article.id); }} className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow"><Trash2 className="h-3 w-3" /></button>
+                                                    </div>
+                                                )}
+                                                <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
+                                                    <h3 className="text-lg font-bold text-white leading-tight line-clamp-2">
+                                                        {language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
+                                                    </h3>
+                                                    <p className="text-xs text-gray-300 mt-1">{article.date}</p>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -5463,25 +5468,36 @@ const RinON = () => {
                         {/* ==========================================
                             SECTION 3: Category Pills + Bridge to N'gazeta
                            ========================================== */}
-                        <HomeFadeSection className="px-4 mt-8">
+                        <HomeFadeSection className="px-4 mt-10">
+                            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">
+                                {t('Kërko sipas temës', 'Browse by topic')}
+                            </p>
                             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                                {['Arsim', 'Grant', 'Mundësi', 'Thirrje', 'Politikë', 'Sport'].map(cat => (
+                                {[
+                                    { label: 'Arsim', Icon: GraduationCap },
+                                    { label: 'Grant', Icon: Award },
+                                    { label: 'Mundësi', Icon: Star },
+                                    { label: 'Thirrje', Icon: Bell },
+                                    { label: 'Politikë', Icon: Users },
+                                    { label: 'Sport', Icon: Play },
+                                ].map(({ label, Icon }) => (
                                     <button
-                                        key={cat}
+                                        key={label}
                                         onClick={() => {
-                                            setSelectedCategoryFilter(cat);
+                                            setSelectedCategoryFilter(label);
                                             changePage('lajme');
                                         }}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium border flex-shrink-0 transition-all ${darkMode ? 'border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}
+                                        className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium border flex-shrink-0 transition-colors ${darkMode ? 'border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700' : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-amber-50 hover:border-amber-300'}`}
                                     >
-                                        {cat}
+                                        <Icon className="w-4 h-4 mr-1.5" />
+                                        {label}
                                     </button>
                                 ))}
                             </div>
-                            <div className="mt-3">
+                            <div className="mt-4 flex justify-center">
                                 <button
                                     onClick={() => changePage('lajme')}
-                                    className="text-amber-600 font-semibold text-sm hover:text-amber-700 transition-colors"
+                                    className="inline-flex items-center gap-1 bg-amber-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-amber-600 transition-colors"
                                 >
                                     {t("Shiko të gjitha artikujt në N'gazeta →", "View all articles in N'gazeta →")}
                                 </button>
@@ -5504,24 +5520,30 @@ const RinON = () => {
                                 return `${d.getDate()} ${alMonths[d.getMonth()]} ${d.getFullYear()}`;
                             };
                             return (
-                                <HomeFadeSection className="px-4 mt-8">
-                                    <div
-                                        className={`border-l-4 border-amber-400 rounded-xl p-4 shadow-sm cursor-pointer transition-all ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}`}
-                                        onClick={() => changePage('events')}
-                                    >
-                                        <p className="text-amber-600 font-semibold text-sm">{formatDateAl(nextEvent.date)}</p>
-                                        <h3 className={`text-lg font-semibold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            {language === 'al' ? nextEvent.titleAl : (nextEvent.titleEn || nextEvent.titleAl)}
-                                        </h3>
-                                        {nextEvent.location && (
-                                            <div className={`flex items-center gap-1.5 mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                <MapPin className="w-4 h-4 flex-shrink-0" />
-                                                <span className="text-sm">{nextEvent.location}</span>
+                                <>
+                                    <div className={`h-px mx-4 my-8 ${darkMode ? 'hidden' : 'bg-gray-200'}`} />
+                                    <HomeFadeSection className="px-4 mt-10">
+                                        <div
+                                            className={`border-l-4 border-amber-400 rounded-xl p-4 shadow-sm cursor-pointer transition-all flex items-center gap-3 ${darkMode ? 'bg-gray-800 border-amber-500 hover:bg-gray-700' : 'bg-amber-50 hover:bg-amber-100'}`}
+                                            onClick={() => changePage('events')}
+                                        >
+                                            <div className="flex-1 min-w-0">
+                                                <p className={`text-lg font-bold ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>{formatDateAl(nextEvent.date)}</p>
+                                                <h3 className={`text-base font-semibold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                    {language === 'al' ? nextEvent.titleAl : (nextEvent.titleEn || nextEvent.titleAl)}
+                                                </h3>
+                                                {nextEvent.location && (
+                                                    <div className={`flex items-center gap-1.5 mt-1.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                                                        <span className="text-sm">{nextEvent.location}</span>
+                                                    </div>
+                                                )}
+                                                <p className={`text-sm font-medium mt-2 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>{t('Shiko eventin →', 'View event →')}</p>
                                             </div>
-                                        )}
-                                        <p className="text-amber-600 text-sm font-medium mt-3">{t('Shiko eventin →', 'View event →')}</p>
-                                    </div>
-                                </HomeFadeSection>
+                                            <ChevronRight className={`w-5 h-5 flex-shrink-0 ${darkMode ? 'text-amber-400' : 'text-amber-400'}`} />
+                                        </div>
+                                    </HomeFadeSection>
+                                </>
                             );
                         })()}
 
@@ -5529,17 +5551,24 @@ const RinON = () => {
                             SECTION 5: Rreth Nesh (mini)
                            ========================================== */}
                         <HomeFadeSection>
-                            <div className="bg-gray-900 text-white mt-8 py-12 px-4">
-                                <h2 className="text-2xl font-bold mb-3">RinON</h2>
-                                <p className="text-gray-300 text-base leading-relaxed mb-6">
+                            <div className="relative overflow-hidden mt-8 py-12 px-4" style={{ background: darkMode ? 'linear-gradient(135deg, #111827 0%, #1f2937 100%)' : 'linear-gradient(135deg, #111827 0%, #1f2937 100%)' }}>
+                                <div className="absolute right-4 top-4 w-32 h-32 rounded-full border-2 pointer-events-none" style={{ borderColor: 'rgba(245,158,11,0.1)' }} />
+                                <h2 className="text-3xl font-bold text-white mb-3">RinON</h2>
+                                <p className="text-gray-300 text-lg leading-relaxed mb-2">
                                     {t(
                                         'Platforma dixhitale ku të rinjtë shqiptarë gjejnë mundësi, informacion dhe komunitet.',
                                         'The digital platform where Albanian youth find opportunities, information and community.'
                                     )}
                                 </p>
+                                <p className="text-gray-400 text-base leading-relaxed mb-6">
+                                    {t(
+                                        'Nga lajmet te mundësitë — gjithçka që rinia shqiptare ka nevojë, në një vend.',
+                                        'From news to opportunities — everything Albanian youth needs, in one place.'
+                                    )}
+                                </p>
                                 <button
                                     onClick={() => changePage('about')}
-                                    className="text-amber-400 font-semibold text-sm hover:text-amber-300 transition-colors"
+                                    className="text-amber-400 hover:text-amber-300 font-medium transition-colors"
                                 >
                                     {t('Lexo më shumë për ne →', 'Read more about us →')}
                                 </button>
@@ -5552,7 +5581,8 @@ const RinON = () => {
                         {partners.length > 0 && (
                             <HomeFadeSection>
                                 <div className={`py-6 overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                                    <div className="flex gap-10 overflow-x-auto px-4 scrollbar-hide items-center">
+                                    <p className="text-xs uppercase tracking-widest text-gray-400 text-center mb-4">BASHKË ME</p>
+                                    <div className="flex gap-8 overflow-x-auto px-4 scrollbar-hide items-center justify-center">
                                         {partners.map((partner) => (
                                             <a
                                                 key={partner.id}
@@ -5564,8 +5594,8 @@ const RinON = () => {
                                                 <img
                                                     src={partner.image}
                                                     alt={partner.nameAl}
-                                                    className="h-8 w-auto object-contain"
-                                                    style={{ filter: 'grayscale(100%) opacity(0.6)' }}
+                                                    className="h-10 w-auto object-contain"
+                                                    style={{ filter: darkMode ? 'brightness(0) invert(1) opacity(0.4)' : 'grayscale(70%) opacity(0.7)' }}
                                                     onError={(e) => { e.target.style.display = 'none'; }}
                                                 />
                                             </a>
@@ -6510,10 +6540,10 @@ const RinON = () => {
                 SCROLL TO TOP BUTTON
                 Appears after scrolling down
                ========================================== */}
-            {showScrollTop && (
+            {showScrollTop && currentPage !== 'home' && (
                 <button
                     onClick={scrollToTop}
-                    className={`fixed bottom-24 md:bottom-8 left-4 z-40 w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 animate-fadeIn ${darkMode
+                    className={`fixed bottom-24 md:bottom-8 left-4 z-40 w-10 h-10 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 animate-fadeIn ${darkMode
                         ? 'bg-[#3D3A36] text-amber-400 border border-amber-500/30 hover:bg-amber-500/20'
                         : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'
                         }`}
