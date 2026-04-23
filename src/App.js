@@ -5370,7 +5370,7 @@ const RinON = () => {
                             return (
                                 <HomeFadeSection>
                                     <div
-                                        className="relative cursor-pointer overflow-hidden md:h-[50vh]"
+                                        className="relative cursor-pointer overflow-hidden md:h-[45vh]"
                                         style={{ height: '60vh', minHeight: '300px' }}
                                         onClick={() => {
                                             setSelectedArticle(heroArticle);
@@ -5420,12 +5420,15 @@ const RinON = () => {
                             const latestTwo = articles.filter(a => a.id !== heroId).slice(0, 2);
                             if (latestTwo.length === 0) return null;
                             return (
-                                <HomeFadeSection className="px-4 mt-6">
-                                    <div className="flex flex-col gap-4">
+                                <HomeFadeSection className="mt-1">
+                                    <p className={`text-xs uppercase tracking-wider font-semibold px-4 mt-6 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>
+                                        {t('Më të fundit', 'Latest')}
+                                    </p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
                                         {latestTwo.map(article => (
                                             <div
                                                 key={article.id}
-                                                className="relative rounded-xl overflow-hidden shadow-sm cursor-pointer h-48 md:h-56"
+                                                className="relative rounded-xl overflow-hidden shadow-sm cursor-pointer h-40 md:h-48"
                                                 onClick={() => {
                                                     setSelectedArticle(article);
                                                     setShowArticleModal(true);
@@ -5465,12 +5468,18 @@ const RinON = () => {
                             );
                         })()}
 
+                        {/* Accent strip between articles and categories */}
+                        <div className="h-1 rounded-full mx-4 mt-8 mb-2" style={{ background: 'linear-gradient(to right, #f59e0b, #f97316, #14b8a6)' }} />
+
                         {/* ==========================================
                             SECTION 3: Category Pills + Bridge to N'gazeta
                            ========================================== */}
-                        <HomeFadeSection className="px-4 mt-10">
-                            <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">
-                                {t('Kërko sipas temës', 'Browse by topic')}
+                        <HomeFadeSection className="px-4 mt-2">
+                            <h3 className={`text-xl font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {t('Çfarë po kërkon?', 'What are you looking for?')}
+                            </h3>
+                            <p className={`text-sm mb-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {t('Gjej artikuj sipas interesit tënd', 'Find articles by your interest')}
                             </p>
                             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                                 {[
@@ -5499,7 +5508,9 @@ const RinON = () => {
                                     onClick={() => changePage('lajme')}
                                     className="inline-flex items-center gap-1 bg-amber-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-amber-600 transition-colors"
                                 >
-                                    {t("Shiko të gjitha artikujt në N'gazeta →", "View all articles in N'gazeta →")}
+                                    {language === 'al'
+                                        ? `Shiko të gjitha ${articles.length} artikujt në N'gazeta →`
+                                        : `View all ${articles.length} articles in N'gazeta →`}
                                 </button>
                             </div>
                         </HomeFadeSection>
@@ -5522,7 +5533,13 @@ const RinON = () => {
                             return (
                                 <>
                                     <div className={`h-px mx-4 my-8 ${darkMode ? 'hidden' : 'bg-gray-200'}`} />
-                                    <HomeFadeSection className="px-4 mt-10">
+                                    <HomeFadeSection className="px-4 mt-8">
+                                        <div className={`flex items-center gap-2 mb-3`}>
+                                            <Calendar className="w-5 h-5 text-amber-500" />
+                                            <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                {t('Eventi i Ardhshëm', 'Next Event')}
+                                            </h3>
+                                        </div>
                                         <div
                                             className={`border-l-4 border-amber-400 rounded-xl p-4 shadow-sm cursor-pointer transition-all flex items-center gap-3 ${darkMode ? 'bg-gray-800 border-amber-500 hover:bg-gray-700' : 'bg-amber-50 hover:bg-amber-100'}`}
                                             onClick={() => changePage('events')}
@@ -5548,30 +5565,37 @@ const RinON = () => {
                         })()}
 
                         {/* ==========================================
-                            SECTION 5: Rreth Nesh (mini)
+                            SECTION 5: CTA — Bëhu pjesë e RinON
                            ========================================== */}
                         <HomeFadeSection>
-                            <div className="relative overflow-hidden mt-8 py-12 px-4" style={{ background: darkMode ? 'linear-gradient(135deg, #111827 0%, #1f2937 100%)' : 'linear-gradient(135deg, #111827 0%, #1f2937 100%)' }}>
+                            <div className="relative overflow-hidden mt-8 py-12 px-4" style={{ background: 'linear-gradient(135deg, #111827 0%, #1f2937 100%)' }}>
                                 <div className="absolute right-4 top-4 w-32 h-32 rounded-full border-2 pointer-events-none" style={{ borderColor: 'rgba(245,158,11,0.1)' }} />
-                                <h2 className="text-3xl font-bold text-white mb-3">RinON</h2>
-                                <p className="text-gray-300 text-lg leading-relaxed mb-2">
+                                <h2 className="text-2xl font-bold text-white">
+                                    {t('Bëhu pjesë e RinON', 'Be part of RinON')}
+                                </h2>
+                                <p className="text-gray-400 text-base mt-2 leading-relaxed">
                                     {t(
-                                        'Platforma dixhitale ku të rinjtë shqiptarë gjejnë mundësi, informacion dhe komunitet.',
-                                        'The digital platform where Albanian youth find opportunities, information and community.'
+                                        'Ndiq lajmet, mundësitë dhe eventin e ardhshëm — gjithçka në një vend.',
+                                        'Follow the news, opportunities and the next event — all in one place.'
                                     )}
                                 </p>
-                                <p className="text-gray-400 text-base leading-relaxed mb-6">
-                                    {t(
-                                        'Nga lajmet te mundësitë — gjithçka që rinia shqiptare ka nevojë, në një vend.',
-                                        'From news to opportunities — everything Albanian youth needs, in one place.'
-                                    )}
-                                </p>
-                                <button
-                                    onClick={() => changePage('about')}
-                                    className="text-amber-400 hover:text-amber-300 font-medium transition-colors"
-                                >
-                                    {t('Lexo më shumë për ne →', 'Read more about us →')}
-                                </button>
+                                <div className="flex flex-wrap gap-3 mt-6">
+                                    <a
+                                        href="https://instagram.com/rinon.al"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition"
+                                    >
+                                        <Instagram className="w-4 h-4" />
+                                        {t('Na ndiq në Instagram', 'Follow us on Instagram')}
+                                    </a>
+                                    <button
+                                        onClick={() => changePage('about')}
+                                        className="inline-flex items-center gap-2 border border-gray-600 text-gray-300 px-5 py-2.5 rounded-full text-sm font-medium hover:border-gray-400 hover:text-white transition"
+                                    >
+                                        {t('Rreth nesh →', 'About us →')}
+                                    </button>
+                                </div>
                             </div>
                         </HomeFadeSection>
 
@@ -5582,7 +5606,7 @@ const RinON = () => {
                             <HomeFadeSection>
                                 <div className={`py-6 overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
                                     <p className="text-xs uppercase tracking-widest text-gray-400 text-center mb-4">BASHKË ME</p>
-                                    <div className="flex gap-8 overflow-x-auto px-4 scrollbar-hide items-center justify-center">
+                                    <div className="flex gap-10 overflow-x-auto px-4 scrollbar-hide items-center justify-center">
                                         {partners.map((partner) => (
                                             <a
                                                 key={partner.id}
