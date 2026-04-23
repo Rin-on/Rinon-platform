@@ -2,3 +2,12 @@
   @tailwind components;
   @tailwind utilities;
 
+@keyframes heroZoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+}
+
+.hero-zoom {
+    animation: heroZoom 15s ease-in-out infinite alternate;
+}
+

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, MessageCircle, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, ArrowRight, ChevronUp, FileText, Shield } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, ChevronUp, FileText, Shield } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
@@ -1461,12 +1461,29 @@ const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, up
         </div>
     );
 };
+const HomeFadeSection = ({ children, className = '' }) => {
+    const ref = React.useRef(null);
+    const [visible, setVisible] = React.useState(false);
+    React.useEffect(() => {
+        const obs = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+            { threshold: 0.05 }
+        );
+        if (ref.current) obs.observe(ref.current);
+        return () => obs.disconnect();
+    }, []);
+    return (
+        <div ref={ref} className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${className}`}>
+            {children}
+        </div>
+    );
+};
+
 const RinON = () => {
     const [language, setLanguage] = useState('al');
     const [currentPage, setCurrentPage] = useState('home');
     const [activeCategory] = useState('Te Gjitha'); // Setter unused - using selectedCategoryFilter instead
     const [showAdmin, setShowAdmin] = useState(false);
-    const [showTopBanner, setShowTopBanner] = useState(true);
     const [showArticleModal, setShowArticleModal] = useState(false);
     const [selectedArticle, setSelectedArticle] = useState(null);
     const [showEventModal, setShowEventModal] = useState(false);
@@ -1492,13 +1509,7 @@ const RinON = () => {
     const [savedArticles, setSavedArticles] = useState([]);
     const [showScrollTop, setShowScrollTop] = useState(false);
 
-    // NEW HOMEPAGE STATES
-    const [heroCarouselIndex, setHeroCarouselIndex] = useState(0);
     const [showHomeSignupPopup, setShowHomeSignupPopup] = useState(false);
-    const [quotes, setQuotes] = useState([]);
-    const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
-    const [showAddQuoteForm, setShowAddQuoteForm] = useState(false);
-    const [quoteFormData, setQuoteFormData] = useState({ quote_text: '', author_name: '', author_role: '' });
 
     // N'gazeta content type filter: 'all' (Home), 'lajme' (News only), 'artikuj' (Articles only)
     const [contentTypeFilter, setContentTypeFilter] = useState('all');
@@ -2090,7 +2101,6 @@ const RinON = () => {
         loadTeamMembers();
         loadEventInterests();
         loadVideos();
-        loadQuotes();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -2104,35 +2114,6 @@ const RinON = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
-    // Hero carousel auto-rotation
-    useEffect(() => {
-        if (currentPage !== 'home') return;
-
-        const heroQuestions = [
-            t('Dëshiron të ndryshosh diçka në komunitetin tënd?', 'Want to change something in your community?'),
-            t('Kërkon mundësi për të rritur aftësitë e tua?', 'Looking for opportunities to grow your skills?'),
-            t('Do të lidhesh me të rinj që mendojnë si ti?', 'Want to connect with like-minded youth?'),
-            t('Gati të bëhesh pjesë e një lëvizjeje?', 'Ready to be part of a movement?')
-        ];
-
-        const interval = setInterval(() => {
-            setHeroCarouselIndex(prev => (prev + 1) % heroQuestions.length);
-        }, 4500);
-
-        return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentPage, language]);
-
-    // Quote rotation
-    useEffect(() => {
-        if (quotes.length <= 1) return;
-
-        const interval = setInterval(() => {
-            setCurrentQuoteIndex(prev => (prev + 1) % quotes.length);
-        }, 6000);
-
-        return () => clearInterval(interval);
-    }, [quotes.length]);
 
     // Show signup popup after scrolling on homepage (only for non-logged-in users)
     useEffect(() => {
@@ -2508,58 +2489,6 @@ const RinON = () => {
             console.error(handleError(err, 'deleteVideo'));
         }
     };
-
-    // ==========================================
-    // QUOTES FEATURE
-    // ==========================================
-    const loadQuotes = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('quotes')
-                .select('*')
-                .eq('is_active', true)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setQuotes(data || []);
-        } catch (err) {
-            console.error(handleError(err, 'loadQuotes'));
-        }
-    };
-
-    const submitQuote = async () => {
-        if (!userProfile?.is_admin) return;
-
-        try {
-            const { error } = await supabase.from('quotes').insert([{
-                quote_text: quoteFormData.quote_text,
-                author_name: quoteFormData.author_name,
-                author_role: quoteFormData.author_role,
-                is_active: true
-            }]);
-
-            if (error) throw error;
-
-            loadQuotes();
-            setShowAddQuoteForm(false);
-            setQuoteFormData({ quote_text: '', author_name: '', author_role: '' });
-        } catch (err) {
-            console.error(handleError(err, 'submitQuote'));
-        }
-    };
-
-    const deleteQuote = async (quoteId) => {
-        if (!userProfile?.is_admin) return;
-        if (!window.confirm(t('Je i sigurt?', 'Are you sure?'))) return;
-
-        try {
-            await supabase.from('quotes').delete().eq('id', quoteId);
-            loadQuotes();
-        } catch (err) {
-            console.error(handleError(err, 'deleteQuote'));
-        }
-    };
-
 
     const deleteArticle = async (id) => {
         if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë artikull?', 'Are you sure you want to delete this article?'))) {
@@ -5433,452 +5362,217 @@ const RinON = () => {
                 ) : currentPage === 'home' ? (
                     <>
                         {/* ==========================================
-                            TOP BANNER - Floating/Fixed with dismiss
+                            SECTION 1: Hero Article — full-width, above the fold
                            ========================================== */}
-                        {!user && showTopBanner && (
-                            <div className="fixed top-16 left-0 right-0 z-40 bg-[#134E4A] py-2 px-2 shadow-lg animate-slideDown">
-                                <div className="max-w-6xl mx-auto flex items-center justify-center gap-2 text-white text-xs sm:text-sm">
-                                    <span className="bg-[#0D9488] text-white px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wide whitespace-nowrap">
-                                        100% Falas
-                                    </span>
-                                    <span className="text-white/90 truncate max-w-[150px] sm:max-w-none">
-                                        {t('Bashkohu me 500+ të rinj', 'Join 500+ youth')}
-                                    </span>
-                                    <button
-                                        onClick={() => { setAuthMode('register'); setShowAuthModal(true); }}
-                                        className="text-[#EAB308] font-semibold hover:text-[#FDE047] transition-colors whitespace-nowrap"
+                        {(() => {
+                            const heroArticle = articles.find(a => a.is_head_article) || articles[0];
+                            if (!heroArticle) return null;
+                            return (
+                                <HomeFadeSection>
+                                    <div
+                                        className="relative cursor-pointer overflow-hidden md:h-[50vh]"
+                                        style={{ height: '60vh', minHeight: '300px' }}
+                                        onClick={() => {
+                                            setSelectedArticle(heroArticle);
+                                            setShowArticleModal(true);
+                                            setCurrentPage('lajme');
+                                        }}
                                     >
-                                        {t('Regjistrohu', 'Register')} →
-                                    </button>
-                                    <button
-                                        onClick={() => setShowTopBanner(false)}
-                                        className="text-white/60 hover:text-white transition-colors p-0.5 ml-1"
-                                        aria-label="Dismiss"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Spacer for fixed banner */}
-                        {!user && showTopBanner && <div className="h-8"></div>}
+                                        <img
+                                            src={heroArticle.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200'}
+                                            alt={language === 'al' ? heroArticle.titleAl : (heroArticle.titleEn || heroArticle.titleAl)}
+                                            className="absolute inset-0 w-full h-full object-cover hero-zoom"
+                                            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200'; }}
+                                        />
+                                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.7) 100%)' }} />
+                                        {heroArticle.category && (
+                                            <div className="absolute top-4 left-4 z-10">
+                                                <span className="bg-amber-400 text-gray-900 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
+                                                    {heroArticle.category}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {showAdmin && (
+                                            <div className="absolute top-4 right-4 z-10 flex gap-2">
+                                                <button onClick={(e) => { e.stopPropagation(); editArticle(heroArticle); }} className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 shadow-lg"><Edit className="h-4 w-4" /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); deleteArticle(heroArticle.id); }} className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 shadow-lg"><Trash2 className="h-4 w-4" /></button>
+                                            </div>
+                                        )}
+                                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-10">
+                                            <h1 className="text-2xl md:text-4xl font-bold text-white leading-tight line-clamp-2 mb-2">
+                                                {language === 'al' ? heroArticle.titleAl : (heroArticle.titleEn || heroArticle.titleAl)}
+                                            </h1>
+                                            <p className="text-sm text-gray-300">
+                                                {heroArticle.author && <span>{t('Nga', 'By')} {heroArticle.author} · </span>}
+                                                {heroArticle.date}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </HomeFadeSection>
+                            );
+                        })()}
 
                         {/* ==========================================
-                            FEATURED SECTION - Gradient Yellow with Pattern
+                            SECTION 2: Latest 2 Articles
                            ========================================== */}
-                        <div className="py-4 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #CA8A04 0%, #EAB308 50%, #FDE047 100%)' }}>
-                            {/* Pattern background with circles */}
-                            <div className="absolute inset-0 overflow-hidden opacity-20">
-                                {/* RinON circles */}
-                                <div className="absolute -top-4 -left-4 w-24 h-24 rounded-full border-4 border-[#CA8A04] flex items-center justify-center">
-                                    <span className="text-[#CA8A04] font-bold text-xs">RinON</span>
-                                </div>
-                                <div className="absolute top-8 right-12 w-16 h-16 rounded-full border-4 border-[#CA8A04]"></div>
-                                <div className="absolute bottom-2 left-1/4 w-20 h-20 rounded-full border-4 border-[#CA8A04] flex items-center justify-center">
-                                    <span className="text-[#CA8A04] font-bold text-xs">RinON</span>
-                                </div>
-                                <div className="absolute -bottom-6 right-1/3 w-28 h-28 rounded-full border-4 border-[#CA8A04]"></div>
-                                <div className="absolute top-1/2 -right-8 w-24 h-24 rounded-full border-4 border-[#CA8A04] flex items-center justify-center">
-                                    <span className="text-[#CA8A04] font-bold text-xs">RinON</span>
-                                </div>
-                                <div className="absolute -top-8 left-1/2 w-20 h-20 rounded-full border-4 border-[#CA8A04]"></div>
-                            </div>
-
-                            <div className="max-w-6xl mx-auto relative z-10">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-2 h-2 bg-[#134E4A] rounded-full animate-pulse"></div>
-                                    <span className="text-[#134E4A] text-xs font-bold uppercase tracking-widest">
-                                        {t('Të zgjedhura për ty', 'Selected for you')}
-                                    </span>
-                                </div>
-                                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                                    {/* Show only items marked for homepage */}
-                                    {[...otherEvents.filter(e => e.showOnHomepage), ...articles.filter(a => a.showOnHomepage)].slice(0, 3).map((item, idx) => {
-                                        // Events have location property, articles have category/source
-                                        const isEvent = item.location !== undefined || item.descAl !== undefined;
-                                        return (
+                        {(() => {
+                            const heroId = (articles.find(a => a.is_head_article) || articles[0])?.id;
+                            const latestTwo = articles.filter(a => a.id !== heroId).slice(0, 2);
+                            if (latestTwo.length === 0) return null;
+                            return (
+                                <HomeFadeSection className="px-4 mt-6">
+                                    <div className="flex flex-col gap-3">
+                                        {latestTwo.map(article => (
                                             <div
-                                                key={idx}
-                                                onClick={() => isEvent ? openEvent(item) : openArticle(item)}
-                                                className="flex-shrink-0 w-64 bg-[#292524] rounded-xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform border border-[#292524] hover:border-white/30"
+                                                key={article.id}
+                                                className={`flex items-center gap-3 cursor-pointer rounded-xl p-3 transition-all shadow-sm ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}`}
+                                                onClick={() => {
+                                                    setSelectedArticle(article);
+                                                    setShowArticleModal(true);
+                                                    setCurrentPage('lajme');
+                                                }}
                                             >
                                                 <img
-                                                    src={item.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400'}
-                                                    alt={item.titleAl || item.title_al}
-                                                    className="w-full h-24 object-cover"
-                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400'; }}
+                                                    src={article.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400'}
+                                                    alt={article.titleAl}
+                                                    className="w-24 h-24 rounded-lg object-cover flex-shrink-0"
+                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400'; }}
                                                 />
-                                                <div className="p-3">
-                                                    <span className={`inline-block px-2 py-0.5 text-[10px] font-bold uppercase rounded-full mb-1.5 ${isEvent ? 'bg-[#0D9488] text-white' : 'bg-[#EAB308] text-[#292524]'}`}>
-                                                        {isEvent ? t('Event', 'Event') : t('Lajm', 'News')}
-                                                    </span>
-                                                    <h3 className="text-white font-bold text-xs line-clamp-2 mb-1">
-                                                        {language === 'al' ? (item.titleAl || item.title_al) : (item.titleEn || item.title_en || item.titleAl || item.title_al)}
+                                                <div className="min-w-0 flex-1">
+                                                    {article.category && (
+                                                        <span className="text-xs text-amber-600 uppercase font-medium">{article.category}</span>
+                                                    )}
+                                                    <h3 className={`text-base font-semibold line-clamp-2 mt-0.5 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                        {language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
                                                     </h3>
-                                                    <p className="text-white/50 text-[10px]">
-                                                        {isEvent ? `${item.date} • ${item.location || t('Tiranë', 'Tirana')}` : (item.category || item.source)}
-                                                    </p>
+                                                    <p className="text-xs text-gray-400 mt-1">{article.date}</p>
                                                 </div>
+                                                {showAdmin && (
+                                                    <div className="flex flex-col gap-1 flex-shrink-0">
+                                                        <button onClick={(e) => { e.stopPropagation(); editArticle(article); }} className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700"><Edit className="h-3 w-3" /></button>
+                                                        <button onClick={(e) => { e.stopPropagation(); deleteArticle(article.id); }} className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600"><Trash2 className="h-3 w-3" /></button>
+                                                    </div>
+                                                )}
                                             </div>
-                                        );
-                                    })}
-                                    {otherEvents.filter(e => e.showOnHomepage).length === 0 && articles.filter(a => a.showOnHomepage).length === 0 && (
-                                        <div className="flex-shrink-0 w-64 bg-[#292524] rounded-xl p-4 text-center">
-                                            <p className="text-white/60 text-sm">{t('Asnjë përmbajtje e zgjedhur', 'No selected content')}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                                        ))}
+                                    </div>
+                                </HomeFadeSection>
+                            );
+                        })()}
 
                         {/* ==========================================
-                            HERO SECTION - Compact Questions
+                            SECTION 3: Category Pills + Bridge to N'gazeta
                            ========================================== */}
-                        <div className={`relative py-6 md:py-8 ${darkMode ? 'bg-[#1a1918]' : 'bg-[#FFFBF7]'}`}>
-                            {/* Decorative blobs */}
-                            <div className="absolute top-5 right-10 w-32 h-32 bg-[#EAB308]/10 rounded-full blur-3xl"></div>
-                            <div className="absolute bottom-5 left-10 w-28 h-28 bg-[#0D9488]/10 rounded-full blur-3xl"></div>
-
-                            <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-                                {/* Tagline badge */}
-                                <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-3 ${darkMode ? 'bg-[#134E4A]' : 'bg-[#134E4A]'}`}>
-                                    <div className="w-1.5 h-1.5 bg-[#EAB308] rounded-full"></div>
-                                    <span className="text-white text-xs font-semibold tracking-wide">
-                                        {t('Frymezo Rininë, Ndrysho Botën', 'Inspire Youth, Change the World')}
-                                    </span>
-                                </div>
-
-                                {/* Carousel Questions - BIGGER YELLOW text */}
-                                <div className="relative h-14 md:h-16 mb-2 overflow-hidden">
-                                    {[
-                                        t('Dëshiron të bësh ndryshim?', 'Want to make a difference?'),
-                                        t('Kërkon mundësi të reja?', 'Looking for new opportunities?'),
-                                        t('Do të takosh njerëz si ti?', 'Want to meet people like you?'),
-                                        t('Gati për aventurën tënde?', 'Ready for your adventure?')
-                                    ].map((question, index) => (
-                                        <h1
-                                            key={index}
-                                            className={`absolute inset-0 flex items-center justify-center text-2xl md:text-4xl lg:text-5xl font-black leading-tight px-4 transition-all duration-500 ${heroCarouselIndex === index
-                                                ? 'opacity-100 translate-y-0'
-                                                : 'opacity-0 translate-y-6 pointer-events-none'
-                                                } text-[#EAB308]`}
-                                            style={{ textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-                                        >
-                                            {question}
-                                        </h1>
-                                    ))}
-                                </div>
-
-                                {/* Carousel Dots */}
-                                <div className="flex justify-center gap-2 mb-3">
-                                    {[0, 1, 2, 3].map(index => (
-                                        <button
-                                            key={index}
-                                            onClick={() => setHeroCarouselIndex(index)}
-                                            className={`h-1.5 rounded-full transition-all duration-300 ${heroCarouselIndex === index
-                                                ? 'w-6 bg-[#EAB308]'
-                                                : darkMode ? 'w-1.5 bg-gray-600 hover:bg-gray-500' : 'w-1.5 bg-gray-300 hover:bg-gray-400'
-                                                }`}
-                                        />
-                                    ))}
-                                </div>
-
-                                {/* Static Description */}
-                                <p className={`text-sm max-w-md mx-auto mb-4 leading-relaxed ${darkMode ? 'text-gray-400' : 'text-[#292524]/70'}`}>
-                                    {t('Evente, mundësi, dhe një komunitet i tërë të rinjsh që po veprojnë — gjithçka në një vend.',
-                                        'Events, opportunities, and a whole community of youth taking action — all in one place.')}
-                                </p>
-
-                                {/* Single CTA Button - Visible on mobile first view */}
+                        <HomeFadeSection className="px-4 mt-8">
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                {['Arsim', 'Grant', 'Mundësi', 'Thirrje', 'Politikë', 'Sport'].map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => {
+                                            setSelectedCategoryFilter(cat);
+                                            changePage('lajme');
+                                        }}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium border flex-shrink-0 transition-all ${darkMode ? 'border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'}`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="mt-3">
                                 <button
-                                    onClick={() => {
-                                        document.getElementById('zbulo')?.scrollIntoView({ behavior: 'smooth' });
-                                    }}
-                                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#EAB308] text-[#292524] rounded-full font-bold text-sm hover:bg-[#CA8A04] transition-all hover:scale-105 shadow-lg shadow-[#EAB308]/30"
+                                    onClick={() => changePage('lajme')}
+                                    className="text-amber-600 font-semibold text-sm hover:text-amber-700 transition-colors"
                                 >
-                                    {t('Lexo më shumë', 'Read more')}
-                                    <ArrowRight className="w-4 h-4" />
+                                    {t("Shiko të gjitha artikujt në N'gazeta →", "View all articles in N'gazeta →")}
                                 </button>
                             </div>
-                        </div>
+                        </HomeFadeSection>
 
                         {/* ==========================================
-                            WHAT IS RINON SECTION
+                            SECTION 4: Next Upcoming Event (conditional)
                            ========================================== */}
-                        <div id="about-rinon" className="py-16 md:py-20 bg-[#134E4A] relative overflow-hidden">
-                            {/* Decorative blob */}
-                            <div className="absolute top-0 right-0 w-96 h-96 bg-[#0D9488] rounded-full opacity-20 blur-3xl -mr-48 -mt-48"></div>
+                        {(() => {
+                            const today = new Date().toISOString().split('T')[0];
+                            const nextEvent = [...otherEvents]
+                                .filter(e => e.date)
+                                .sort((a, b) => a.date.localeCompare(b.date))
+                                .find(e => e.date >= today);
+                            if (!nextEvent) return null;
+                            const alMonths = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor'];
+                            const formatDateAl = (dateStr) => {
+                                const d = new Date(dateStr + 'T00:00:00');
+                                return `${d.getDate()} ${alMonths[d.getMonth()]} ${d.getFullYear()}`;
+                            };
+                            return (
+                                <HomeFadeSection className="px-4 mt-8">
+                                    <div
+                                        className={`border-l-4 border-amber-400 rounded-xl p-4 shadow-sm cursor-pointer transition-all ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}`}
+                                        onClick={() => changePage('events')}
+                                    >
+                                        <p className="text-amber-600 font-semibold text-sm">{formatDateAl(nextEvent.date)}</p>
+                                        <h3 className={`text-lg font-semibold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            {language === 'al' ? nextEvent.titleAl : (nextEvent.titleEn || nextEvent.titleAl)}
+                                        </h3>
+                                        {nextEvent.location && (
+                                            <div className={`flex items-center gap-1.5 mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                <MapPin className="w-4 h-4 flex-shrink-0" />
+                                                <span className="text-sm">{nextEvent.location}</span>
+                                            </div>
+                                        )}
+                                        <p className="text-amber-600 text-sm font-medium mt-3">{t('Shiko eventin →', 'View event →')}</p>
+                                    </div>
+                                </HomeFadeSection>
+                            );
+                        })()}
 
-                            <div className="max-w-3xl mx-auto px-4 text-center relative z-10">
-                                <span className="text-[#EAB308] text-xs font-bold uppercase tracking-widest mb-4 block">
-                                    {t('Rreth Nesh', 'About Us')}
-                                </span>
-                                <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6">
-                                    {t('Çfarë është RinON?', 'What is RinON?')}
-                                </h2>
-                                <p className="text-white/80 text-lg leading-relaxed mb-8">
+                        {/* ==========================================
+                            SECTION 5: Rreth Nesh (mini)
+                           ========================================== */}
+                        <HomeFadeSection>
+                            <div className="bg-gray-900 text-white mt-8 py-12 px-4">
+                                <h2 className="text-2xl font-bold mb-3">RinON</h2>
+                                <p className="text-gray-300 text-base leading-relaxed mb-6">
                                     {t(
-                                        'RinON është platforma dixhitale ku të rinjtë shqiptarë gjejnë mundësi, lidhen me njëri-tjetrin, dhe bëhen pjesë e një lëvizjeje që po ndryshon Shqipërinë. Nga evente dhe bursa deri te komuniteti dhe përmbajtja frymëzuese — gjithçka që të duhet për të vepruar është këtu.',
-                                        'RinON is the digital platform where Albanian youth find opportunities, connect with each other, and become part of a movement that is changing Albania. From events and scholarships to community and inspiring content — everything you need to take action is here.'
+                                        'Platforma dixhitale ku të rinjtë shqiptarë gjejnë mundësi, informacion dhe komunitet.',
+                                        'The digital platform where Albanian youth find opportunities, information and community.'
                                     )}
                                 </p>
                                 <button
                                     onClick={() => changePage('about')}
-                                    className="inline-flex items-center gap-2 text-[#EAB308] font-semibold hover:gap-4 transition-all"
+                                    className="text-amber-400 font-semibold text-sm hover:text-amber-300 transition-colors"
                                 >
-                                    {t('Lexo më shumë për ne', 'Read more about us')}
-                                    <ArrowRight className="w-5 h-5" />
+                                    {t('Lexo më shumë për ne →', 'Read more about us →')}
                                 </button>
                             </div>
-                        </div>
+                        </HomeFadeSection>
 
                         {/* ==========================================
-                            DISCOVER SECTION - Gradient Background
-                           ========================================== */}
-                        <div id="zbulo" className="py-16 md:py-20" style={{ background: darkMode ? 'linear-gradient(135deg, #1a1918 0%, #134E4A 100%)' : 'linear-gradient(135deg, #292524 0%, #1c1917 50%, #134E4A 100%)' }}>
-                            <div className="max-w-5xl mx-auto px-4">
-                                {/* Section header */}
-                                <div className="text-center mb-12">
-                                    <span className="text-[#EAB308] text-xs font-bold uppercase tracking-widest">
-                                        {t('Zbulo', 'Discover')}
-                                    </span>
-                                    <h2 className="text-3xl md:text-4xl font-extrabold mt-3 text-white">
-                                        {t('Çfarë të pret këtu?', 'What awaits you here?')}
-                                    </h2>
-                                </div>
-
-                                {/* Feature Cards - Bento Grid (3 cards without Shiko) */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Evente Card - Larger */}
-                                    <div
-                                        onClick={() => changePage('events')}
-                                        className="group relative p-8 rounded-2xl cursor-pointer overflow-hidden transition-all duration-300 hover:scale-[1.02] bg-white/5 backdrop-blur-sm border border-white/10 hover:border-[#EAB308] md:row-span-2"
-                                    >
-                                        <div className="absolute top-0 right-0 w-40 h-40 bg-[#EAB308]/10 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500"></div>
-                                        <div className="relative h-full flex flex-col">
-                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#EAB308] to-[#CA8A04] flex items-center justify-center mb-6 group-hover:rotate-6 transition-transform shadow-lg">
-                                                <Calendar className="w-7 h-7 text-white" />
-                                            </div>
-                                            <h3 className="text-2xl font-bold mb-3 text-white">
-                                                {t('Evente', 'Events')}
-                                            </h3>
-                                            <p className="text-white/60 mb-6 flex-grow">
-                                                {t('Workshop, konferenca, dhe aktivitete që të ndihmojnë të rritesh profesionalisht dhe personalisht. Gjej eventin e ardhshëm dhe rezervo vendin tënd.', 'Workshops, conferences, and activities that help you grow professionally and personally. Find the next event and reserve your spot.')}
-                                            </p>
-                                            <span className="text-[#EAB308] font-semibold flex items-center gap-2 group-hover:gap-4 transition-all">
-                                                {t('Shiko kalendarin', 'View calendar')} <ArrowRight className="w-4 h-4" />
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Mundësi Card */}
-                                    <div
-                                        onClick={() => changePage('lajme')}
-                                        className="group relative p-8 rounded-2xl cursor-pointer overflow-hidden transition-all duration-300 hover:scale-[1.02] bg-white/5 backdrop-blur-sm border border-white/10 hover:border-[#0D9488]"
-                                    >
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#0D9488]/10 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
-                                        <div className="relative">
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0D9488] to-[#0F766E] flex items-center justify-center mb-5 group-hover:rotate-6 transition-transform shadow-lg">
-                                                <TrendingUp className="w-6 h-6 text-white" />
-                                            </div>
-                                            <h3 className="text-xl font-bold mb-2 text-white">
-                                                {t('N`Gazeta', 'Newspaper')}
-                                            </h3>
-                                            <p className="text-white/60 mb-4 text-sm">
-                                                {t('Lajme, artikuj, dhe mundësi për ty', 'Grants, scholarships, and programs for you')}
-                                            </p>
-                                            <span className="text-[#0D9488] font-semibold flex items-center gap-2 group-hover:gap-3 transition-all text-sm">
-                                                {t('Shiko Gazetën', 'Find opportunities')} <ArrowRight className="w-4 h-4" />
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ==========================================
-                            STATS BAR - White background
-                           ========================================== */}
-                        <div className={`py-12 ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
-                            <div className="max-w-4xl mx-auto px-4">
-                                <div className="flex justify-center gap-10 md:gap-16 flex-wrap">
-                                    <div className="text-center">
-                                        <div className="text-4xl md:text-5xl font-extrabold text-[#134E4A]">500+</div>
-                                        <div className={`text-sm font-medium mt-1 ${darkMode ? 'text-gray-400' : 'text-[#292524]/60'}`}>
-                                            {t('Të rinj aktivë', 'Active youth')}
-                                        </div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-4xl md:text-5xl font-extrabold text-[#134E4A]">50+</div>
-                                        <div className={`text-sm font-medium mt-1 ${darkMode ? 'text-gray-400' : 'text-[#292524]/60'}`}>
-                                            {t('Evente të organizuara', 'Events organized')}
-                                        </div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-4xl md:text-5xl font-extrabold text-[#134E4A]">15+</div>
-                                        <div className={`text-sm font-medium mt-1 ${darkMode ? 'text-gray-400' : 'text-[#292524]/60'}`}>
-                                            {t('Partnerë', 'Partners')}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ==========================================
-                            PARTNER LOGOS - White background
+                            SECTION 6: Partner Logos (simplified, grayscale)
                            ========================================== */}
                         {partners.length > 0 && (
-                            <div className={`py-10 overflow-hidden ${darkMode ? 'bg-[#1a1918]' : 'bg-[#FAF9F7]'}`}>
-                                <p className={`text-center text-xs uppercase tracking-[0.3em] mb-6 font-semibold ${darkMode ? 'text-gray-600' : 'text-[#292524]/40'}`}>
-                                    {t('Bashkë me', 'Together with')}
-                                </p>
-                                <div className="relative">
-                                    <div className="flex gap-16 animate-marquee">
+                            <HomeFadeSection>
+                                <div className={`py-6 overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                                    <div className="flex gap-10 overflow-x-auto px-4 scrollbar-hide items-center">
                                         {partners.map((partner) => (
                                             <a
                                                 key={partner.id}
                                                 href={partner.link}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+                                                className="flex-shrink-0 transition-opacity hover:opacity-100"
                                             >
                                                 <img
                                                     src={partner.image}
                                                     alt={partner.nameAl}
-                                                    className="h-8 md:h-10 w-auto object-contain grayscale hover:grayscale-0 transition-all"
-                                                />
-                                            </a>
-                                        ))}
-                                        {partners.map((partner) => (
-                                            <a
-                                                key={`dup-${partner.id}`}
-                                                href={partner.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
-                                            >
-                                                <img
-                                                    src={partner.image}
-                                                    alt={partner.nameAl}
-                                                    className="h-8 md:h-10 w-auto object-contain grayscale hover:grayscale-0 transition-all"
+                                                    className="h-8 w-auto object-contain"
+                                                    style={{ filter: 'grayscale(100%) opacity(0.6)' }}
+                                                    onError={(e) => { e.target.style.display = 'none'; }}
                                                 />
                                             </a>
                                         ))}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* ==========================================
-                            QUOTES / TESTIMONIALS - Teal background
-                           ========================================== */}
-                        <div className="bg-[#134E4A] py-16">
-                            <div className="max-w-3xl mx-auto px-4 text-center">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 bg-[#EAB308]/15 border border-[#EAB308]/30">
-                                    <MessageCircle className="w-4 h-4 text-[#EAB308]" />
-                                    <span className="text-[#EAB308] text-sm font-semibold">{t('Nga komuniteti', 'From the community')}</span>
-                                </div>
-
-                                {quotes.length > 0 ? (
-                                    <div className="relative min-h-[150px]">
-                                        {quotes.map((quote, index) => (
-                                            <div
-                                                key={quote.id}
-                                                className={`transition-all duration-500 ${currentQuoteIndex === index
-                                                    ? 'opacity-100'
-                                                    : 'opacity-0 absolute inset-0'
-                                                    }`}
-                                            >
-                                                <blockquote className="text-xl md:text-2xl lg:text-3xl font-semibold leading-relaxed mb-6 text-white italic">
-                                                    "{quote.quote_text}"
-                                                </blockquote>
-                                                <p className="text-[#EAB308] font-semibold">
-                                                    — {quote.author_name}
-                                                </p>
-                                                {quote.author_role && (
-                                                    <p className="text-white/60 text-sm mt-1">{quote.author_role}</p>
-                                                )}
-
-                                                {userProfile?.is_admin && showAdmin && (
-                                                    <button
-                                                        onClick={() => deleteQuote(quote.id)}
-                                                        className="mt-4 text-red-400 text-sm hover:text-red-300"
-                                                    >
-                                                        {t('Fshi', 'Delete')}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <blockquote className="text-xl md:text-2xl lg:text-3xl font-semibold leading-relaxed mb-6 text-white italic">
-                                            "{t('RinON më ndihmoi të gjej mundësi që nuk do t\'i kisha zbuluar vetë. Tani jam pjesë e një komuniteti që më frymëzon çdo ditë.',
-                                                'RinON helped me find opportunities I wouldn\'t have discovered on my own. Now I\'m part of a community that inspires me every day.')}"
-                                        </blockquote>
-                                        <p className="text-[#EAB308] font-semibold">
-                                            — Ana Kelmendi
-                                        </p>
-                                        <p className="text-white/60 text-sm mt-1">{t('Studente në Tiranë', 'Student in Tirana')}</p>
-                                    </div>
-                                )}
-
-                                {quotes.length > 1 && (
-                                    <div className="flex justify-center gap-2 mt-8">
-                                        {quotes.map((_, index) => (
-                                            <button
-                                                key={index}
-                                                onClick={() => setCurrentQuoteIndex(index)}
-                                                className={`w-2 h-2 rounded-full transition-all ${currentQuoteIndex === index
-                                                    ? 'bg-[#EAB308]'
-                                                    : 'bg-white/30 hover:bg-white/50'
-                                                    }`}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-
-                                {userProfile?.is_admin && showAdmin && (
-                                    <button
-                                        onClick={() => setShowAddQuoteForm(true)}
-                                        className="mt-8 px-6 py-2 bg-[#EAB308] text-[#292524] rounded-lg font-semibold hover:bg-[#CA8A04]"
-                                    >
-                                        + {t('Shto Citat', 'Add Quote')}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-
-                        {/* ==========================================
-                            FINAL CTA - Soft yellow background
-                           ========================================== */}
-                        {!user && (
-                            <div className="py-16 md:py-20" style={{ background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #FCD34D 100%)' }}>
-                                <div className="max-w-2xl mx-auto px-4 text-center">
-                                    <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mx-auto mb-6 shadow-lg">
-                                        <Star className="w-8 h-8 text-[#134E4A]" />
-                                    </div>
-                                    <h3 className="text-2xl md:text-3xl font-extrabold mb-4 text-[#292524]">
-                                        {t('Mos humb asnjë mundësi', 'Don\'t miss any opportunity')}
-                                    </h3>
-                                    <p className="mb-8 text-lg text-[#292524]/70">
-                                        {t('Regjistrohu falas dhe ruaj artikujt dhe eventet që të interesojnë',
-                                            'Sign up free and save articles and events that interest you')}
-                                    </p>
-                                    <button
-                                        onClick={() => {
-                                            setAuthMode('register');
-                                            setShowAuthModal(true);
-                                        }}
-                                        className="px-10 py-4 bg-[#134E4A] text-white rounded-full font-bold text-lg hover:bg-[#0D9488] transition-all hover:scale-105 shadow-lg"
-                                    >
-                                        {t('Krijo Llogari Falas', 'Create Free Account')}
-                                    </button>
-                                </div>
-                            </div>
+                            </HomeFadeSection>
                         )}
                     </>
                 ) : currentPage === 'lajme' ? (
@@ -6505,74 +6199,6 @@ const RinON = () => {
                 </div>
             )}
 
-            {/* Add Quote Form Modal */}
-            {showAddQuoteForm && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-                    onClick={(e) => e.target === e.currentTarget && setShowAddQuoteForm(false)}
-                >
-                    <div className={`w-full max-w-md rounded-2xl p-6 ${darkMode ? 'bg-[#2D2A26]' : 'bg-[#FFFBF7]'}`}>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-[#1F2937]'}`}>
-                                {t('Shto Citat', 'Add Quote')}
-                            </h2>
-                            <button onClick={() => setShowAddQuoteForm(false)} className={darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-[#1F2937]/40 hover:text-[#1F2937]'}>
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-[#1F2937]/60'}`}>
-                                    {t('Citati', 'Quote')} *
-                                </label>
-                                <textarea
-                                    value={quoteFormData.quote_text}
-                                    onChange={(e) => setQuoteFormData({ ...quoteFormData, quote_text: e.target.value })}
-                                    rows={3}
-                                    className={`w-full px-4 py-3 rounded-xl resize-none border transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]/20 focus:border-[#F97316] ${darkMode ? 'bg-[#3D3A36] text-white border-transparent' : 'bg-white text-[#1F2937] border-gray-200'}`}
-                                    placeholder={t('Shkruaj citatin këtu...', 'Write the quote here...')}
-                                />
-                            </div>
-
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-[#1F2937]/60'}`}>
-                                    {t('Emri', 'Name')} *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={quoteFormData.author_name}
-                                    onChange={(e) => setQuoteFormData({ ...quoteFormData, author_name: e.target.value })}
-                                    className={`w-full px-4 py-3 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]/20 focus:border-[#F97316] ${darkMode ? 'bg-[#3D3A36] text-white border-transparent' : 'bg-white text-[#1F2937] border-gray-200'}`}
-                                    placeholder="Emri Mbiemri"
-                                />
-                            </div>
-
-                            <div>
-                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-400' : 'text-[#1F2937]/60'}`}>
-                                    {t('Roli/Shkolla', 'Role/School')}
-                                </label>
-                                <input
-                                    type="text"
-                                    value={quoteFormData.author_role}
-                                    onChange={(e) => setQuoteFormData({ ...quoteFormData, author_role: e.target.value })}
-                                    className={`w-full px-4 py-3 rounded-xl border transition-colors focus:outline-none focus:ring-2 focus:ring-[#F97316]/20 focus:border-[#F97316] ${darkMode ? 'bg-[#3D3A36] text-white border-transparent' : 'bg-white text-[#1F2937] border-gray-200'}`}
-                                    placeholder="Studente, Universiteti i Tiranës"
-                                />
-                            </div>
-
-                            <button
-                                onClick={submitQuote}
-                                disabled={!quoteFormData.quote_text || !quoteFormData.author_name}
-                                className="w-full py-4 bg-[#F97316] text-white rounded-xl font-semibold hover:bg-[#EA580C] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {t('Shto Citatin', 'Add Quote')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Youthful Signup Popup */}
             {showHomeSignupPopup && !user && (
                 <div
@@ -6946,7 +6572,7 @@ const RinON = () => {
                 FLOATING ACTION BUTTON (FAB) - Mobile Settings
                 Quick access to language, dark mode, etc.
                ========================================== */}
-            <div className="md:hidden fixed bottom-24 right-4 z-50">
+            {currentPage !== 'home' && <div className="md:hidden fixed bottom-24 right-4 z-50">
                 {/* FAB Menu Items */}
                 <div className={`absolute bottom-14 right-0 flex flex-col gap-2 transition-all duration-300 ${fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
                     {/* User: Write Your Own Article */}
@@ -7006,7 +6632,7 @@ const RinON = () => {
                 >
                     <Plus className="w-6 h-6 text-white" />
                 </button>
-            </div>
+            </div>}
 
             {/* Spacer for bottom nav on mobile */}
             <div className="md:hidden h-20"></div>
