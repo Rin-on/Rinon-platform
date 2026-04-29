@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, ChevronUp, FileText, Shield } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, ChevronDown, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, Bell, ChevronUp, FileText, Shield, ArrowRight } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
@@ -1475,6 +1475,24 @@ const HomeFadeSection = ({ children, className = '' }) => {
     return (
         <div ref={ref} className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} ${className}`}>
             {children}
+        </div>
+    );
+};
+
+const ScrollHint = () => {
+    const ref = React.useRef(null);
+    const [visible, setVisible] = React.useState(true);
+    React.useEffect(() => {
+        const obs = new IntersectionObserver(
+            ([entry]) => { if (!entry.isIntersecting) setVisible(false); },
+            { threshold: 0 }
+        );
+        if (ref.current) obs.observe(ref.current);
+        return () => obs.disconnect();
+    }, []);
+    return (
+        <div ref={ref} className={`hidden md:flex justify-center py-3 transition-opacity duration-500 ${visible ? 'opacity-60' : 'opacity-0'}`}>
+            <ChevronDown className="w-5 h-5 text-gray-400 animate-bob" />
         </div>
     );
 };
@@ -5370,7 +5388,7 @@ const RinON = () => {
                             return (
                                 <HomeFadeSection>
                                     <div
-                                        className="relative cursor-pointer overflow-hidden md:h-[45vh]"
+                                        className="group relative cursor-pointer overflow-hidden md:h-[55vh]"
                                         style={{ height: '60vh', minHeight: '300px' }}
                                         onClick={() => {
                                             setSelectedArticle(heroArticle);
@@ -5381,10 +5399,10 @@ const RinON = () => {
                                         <img
                                             src={heroArticle.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200'}
                                             alt={language === 'al' ? heroArticle.titleAl : (heroArticle.titleEn || heroArticle.titleAl)}
-                                            className="absolute inset-0 w-full h-full object-cover hero-zoom"
+                                            className="absolute inset-0 w-full h-full object-cover hero-zoom group-hover:scale-[1.02] transition-transform duration-500"
                                             onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200'; }}
                                         />
-                                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.7) 100%)' }} />
+                                        <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.75) 100%)' }} />
                                         {heroArticle.category && (
                                             <div className="absolute top-4 left-4 z-10">
                                                 <span className="bg-amber-400 text-gray-900 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
@@ -5402,10 +5420,15 @@ const RinON = () => {
                                             <h1 className="text-2xl md:text-4xl font-bold text-white leading-tight line-clamp-2 mb-2">
                                                 {language === 'al' ? heroArticle.titleAl : (heroArticle.titleEn || heroArticle.titleAl)}
                                             </h1>
-                                            <p className="text-sm text-gray-300">
-                                                {heroArticle.author && <span>{t('Nga', 'By')} {heroArticle.author} · </span>}
-                                                {heroArticle.date}
-                                            </p>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-sm text-gray-300">
+                                                    {heroArticle.author && <span>{t('Nga', 'By')} {heroArticle.author} · </span>}
+                                                    {heroArticle.date}
+                                                </p>
+                                                <span className="hidden md:inline-flex items-center gap-1 text-sm text-white opacity-80 group-hover:opacity-100 transition-opacity font-medium">
+                                                    {t('Lexo artikullin', 'Read article')} <ArrowRight className="w-4 h-4" />
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </HomeFadeSection>
@@ -5413,22 +5436,26 @@ const RinON = () => {
                         })()}
 
                         {/* ==========================================
-                            SECTION 2: Latest 2 Articles — image card layout
+                            SECTION 2: Latest Articles — horizontal scrollable carousel
                            ========================================== */}
                         {(() => {
                             const heroId = (articles.find(a => a.is_head_article) || articles[0])?.id;
-                            const latestTwo = articles.filter(a => a.id !== heroId).slice(0, 2);
-                            if (latestTwo.length === 0) return null;
+                            const latestSix = articles.filter(a => a.id !== heroId).slice(0, 6);
+                            if (latestSix.length === 0) return null;
                             return (
                                 <HomeFadeSection className="mt-1">
-                                    <p className={`text-xs uppercase tracking-wider font-semibold px-4 mt-6 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>
-                                        {t('Më të fundit', 'Latest')}
-                                    </p>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
-                                        {latestTwo.map(article => (
+                                    <div className="flex items-center gap-2 px-4 mt-6 mb-3">
+                                        <TrendingUp className="w-4 h-4 text-amber-500" />
+                                        <p className={`text-sm font-bold uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            {t('Më të fundit', 'Latest')}
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-3 overflow-x-auto pb-3 px-4 scrollbar-hide snap-x snap-mandatory">
+                                        {latestSix.map(article => (
                                             <div
                                                 key={article.id}
-                                                className="relative rounded-xl overflow-hidden shadow-sm cursor-pointer h-40 md:h-48"
+                                                className="relative rounded-xl overflow-hidden shadow-sm cursor-pointer flex-shrink-0 snap-start"
+                                                style={{ width: '72vw', maxWidth: '260px', height: '180px' }}
                                                 onClick={() => {
                                                     setSelectedArticle(article);
                                                     setShowArticleModal(true);
@@ -5441,7 +5468,7 @@ const RinON = () => {
                                                     className="absolute inset-0 w-full h-full object-cover"
                                                     onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
                                                 />
-                                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.72) 100%)' }} />
+                                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.75) 100%)' }} />
                                                 {article.category && (
                                                     <div className="absolute top-3 left-3 z-10">
                                                         <span className="bg-amber-400 text-gray-900 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide">
@@ -5456,20 +5483,34 @@ const RinON = () => {
                                                     </div>
                                                 )}
                                                 <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
-                                                    <h3 className="text-lg font-bold text-white leading-tight line-clamp-2">
+                                                    <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
                                                         {language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
                                                     </h3>
                                                     <p className="text-xs text-gray-300 mt-1">{article.date}</p>
                                                 </div>
                                             </div>
                                         ))}
+                                        {/* End card — link to N'gazeta */}
+                                        <div
+                                            className="relative rounded-xl overflow-hidden cursor-pointer flex-shrink-0 snap-start flex flex-col items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 transition-colors"
+                                            style={{ width: '72vw', maxWidth: '200px', height: '180px' }}
+                                            onClick={() => changePage('lajme')}
+                                        >
+                                            <Newspaper className="w-8 h-8 text-white opacity-90" />
+                                            <p className="text-white font-bold text-sm text-center px-3">
+                                                {language === 'al' ? `Shiko të gjitha ${articles.length} artikujt` : `View all ${articles.length} articles`}
+                                            </p>
+                                            <span className="text-white text-xs opacity-80 font-medium">N'gazeta →</span>
+                                        </div>
                                     </div>
                                 </HomeFadeSection>
                             );
                         })()}
 
+                        <ScrollHint />
+
                         {/* Accent strip between articles and categories */}
-                        <div className="h-1 rounded-full mx-4 mt-8 mb-2" style={{ background: 'linear-gradient(to right, #f59e0b, #f97316, #14b8a6)' }} />
+                        <div className="h-1 rounded-full mx-4 mt-4 mb-2" style={{ background: 'linear-gradient(to right, #f59e0b, #f97316, #14b8a6)' }} />
 
                         {/* ==========================================
                             SECTION 3: Category Pills + Bridge to N'gazeta
@@ -5502,16 +5543,6 @@ const RinON = () => {
                                         {label}
                                     </button>
                                 ))}
-                            </div>
-                            <div className="mt-4 flex justify-center">
-                                <button
-                                    onClick={() => changePage('lajme')}
-                                    className="inline-flex items-center gap-1 bg-amber-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-amber-600 transition-colors"
-                                >
-                                    {language === 'al'
-                                        ? `Shiko të gjitha ${articles.length} artikujt në N'gazeta →`
-                                        : `View all ${articles.length} articles in N'gazeta →`}
-                                </button>
                             </div>
                         </HomeFadeSection>
 
