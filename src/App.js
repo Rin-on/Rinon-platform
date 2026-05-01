@@ -1493,6 +1493,26 @@ const ScrollHint = () => {
     );
 };
 
+const formatDateAl = (dateStr) => {
+    if (!dateStr) return '';
+    const months = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor'];
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+};
+
+const getCategoryColor = (category) => {
+    const colors = {
+        'Aktualitet': 'bg-red-500',
+        'Arsim & Karrierë': 'bg-blue-500',
+        'Kulturë': 'bg-purple-500',
+        'Opinione': 'bg-teal-500',
+        'Shoqëri': 'bg-green-500',
+        'Rreth Europës': 'bg-indigo-500',
+    };
+    return colors[category] || 'bg-amber-500';
+};
+
 const RinON = () => {
     const [language, setLanguage] = useState('al');
     const [currentPage, setCurrentPage] = useState('home');
@@ -1516,7 +1536,7 @@ const RinON = () => {
     // Search & Filter States
     const [searchQuery, setSearchQuery] = useState('');
     const [showSearchBar, setShowSearchBar] = useState(false);
-    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('Home');
+    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('Te Gjitha');
 
     // UX Enhancement States
     const [, setShowFirstTimeTooltip] = useState(false); // Value unused, only setter needed
@@ -2037,7 +2057,7 @@ const RinON = () => {
 
 
 
-    // Native Share function - opens device share sheet
+    // eslint-disable-next-line no-unused-vars
     const handleNativeShare = async (item, type) => {
         const title = language === 'al' ? item.titleAl : item.titleEn;
         const url = `${window.location.origin}/${type}/${item.id}`;
@@ -5256,13 +5276,13 @@ const RinON = () => {
                                             </div>
                                         )}
                                         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 z-10">
-                                            <h1 className="text-2xl md:text-4xl font-bold text-white leading-tight line-clamp-2 mb-2">
+                                            <h1 className="text-2xl md:text-4xl font-bold text-white leading-tight line-clamp-2 mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                                                 {language === 'al' ? heroArticle.titleAl : (heroArticle.titleEn || heroArticle.titleAl)}
                                             </h1>
                                             <div className="flex items-center justify-between">
                                                 <p className="text-sm text-gray-300">
                                                     {heroArticle.author && <span>{t('Nga', 'By')} {heroArticle.author} · </span>}
-                                                    {heroArticle.date}
+                                                    {formatDateAl(heroArticle.date)}
                                                 </p>
                                                 <span className="hidden md:inline-flex items-center gap-1 text-sm text-white opacity-80 group-hover:opacity-100 transition-opacity font-medium">
                                                     {t('Lexo artikullin', 'Read article')} <ArrowRight className="w-4 h-4" />
@@ -5310,7 +5330,7 @@ const RinON = () => {
                                                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.75) 100%)' }} />
                                                 {article.category && (
                                                     <div className="absolute top-3 left-3 z-10">
-                                                        <span className="bg-amber-400 text-gray-900 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide">
+                                                        <span className={`text-white px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${getCategoryColor(article.category)}`}>
                                                             {article.category}
                                                         </span>
                                                     </div>
@@ -5322,10 +5342,10 @@ const RinON = () => {
                                                     </div>
                                                 )}
                                                 <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
-                                                    <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">
+                                                    <h3 className="text-sm font-bold text-white leading-tight line-clamp-2" style={{ fontFamily: "'Playfair Display', serif" }}>
                                                         {language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
                                                     </h3>
-                                                    <p className="text-xs text-gray-300 mt-1">{article.date}</p>
+                                                    <p className="text-xs text-gray-300 mt-1">{formatDateAl(article.date)}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -5503,47 +5523,53 @@ const RinON = () => {
                             <>
                                 {/* Mobile: single column / Desktop: two-column grid */}
                                 <div className="px-4 md:px-6 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 md:max-w-6xl md:mx-auto">
-                                    {ngazetaFilteredContent.map((article) => (
-                                        <div
-                                            key={article.id}
-                                            className="rounded-xl overflow-hidden shadow-sm cursor-pointer"
-                                            onClick={() => openArticle(article)}
-                                        >
-                                            {/* Image section */}
-                                            <div className="relative h-44 md:h-52">
-                                                <img
-                                                    src={article.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'}
-                                                    alt={language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
-                                                    className="absolute inset-0 w-full h-full object-cover"
-                                                    onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
-                                                />
-                                                <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 35%, rgba(0,0,0,0.75) 100%)' }} />
-                                                {article.category && (
-                                                    <span className="absolute top-3 left-3 bg-amber-500 text-white text-xs px-3 py-1 rounded-full font-semibold">
-                                                        {article.category}
-                                                    </span>
-                                                )}
-                                                {showAdmin && (
-                                                    <div className="absolute top-3 right-3 flex gap-1.5 z-10">
-                                                        <button onClick={(e) => { e.stopPropagation(); editArticle(article); }} className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 shadow"><Edit className="h-3 w-3" /></button>
-                                                        <button onClick={(e) => { e.stopPropagation(); deleteArticle(article.id); }} className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow"><Trash2 className="h-3 w-3" /></button>
+                                    {ngazetaFilteredContent.map((article, index) => {
+                                        const isWide = index === 0 || index % 5 === 0;
+                                        return (
+                                            <div
+                                                key={article.id}
+                                                className={`group rounded-xl overflow-hidden shadow-sm cursor-pointer md:hover:scale-[1.02] md:hover:shadow-md transition-transform duration-300 ${isWide ? 'md:col-span-2' : ''}`}
+                                                onClick={() => openArticle(article)}
+                                            >
+                                                {/* Image section */}
+                                                <div className={`relative overflow-hidden h-44 ${isWide ? 'md:h-72' : 'md:h-52'}`}>
+                                                    <img
+                                                        src={article.image || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'}
+                                                        alt={language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
+                                                        className="absolute inset-0 w-full h-full object-cover md:group-hover:scale-105 transition-transform duration-500"
+                                                        onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800'; }}
+                                                    />
+                                                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 35%, rgba(0,0,0,0.75) 100%)' }} />
+                                                    {article.category && (
+                                                        <span className={`absolute top-3 left-3 text-white text-xs px-3 py-1 rounded-full font-semibold ${getCategoryColor(article.category)}`}>
+                                                            {article.category}
+                                                        </span>
+                                                    )}
+                                                    {showAdmin && (
+                                                        <div className="absolute top-3 right-3 flex gap-1.5 z-10">
+                                                            <button onClick={(e) => { e.stopPropagation(); editArticle(article); }} className="bg-blue-600 text-white p-1.5 rounded-full hover:bg-blue-700 shadow"><Edit className="h-3 w-3" /></button>
+                                                            <button onClick={(e) => { e.stopPropagation(); deleteArticle(article.id); }} className="bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow"><Trash2 className="h-3 w-3" /></button>
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute bottom-3 left-3 right-3 z-10">
+                                                        <h3
+                                                            className={`font-bold text-white leading-tight line-clamp-2 ${isWide ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'}`}
+                                                            style={{ fontFamily: "'Playfair Display', serif" }}
+                                                        >
+                                                            {language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
+                                                        </h3>
                                                     </div>
-                                                )}
-                                                <div className="absolute bottom-3 left-3 right-3 z-10">
-                                                    <h3 className="text-lg md:text-xl font-bold text-white leading-tight line-clamp-2">
-                                                        {language === 'al' ? article.titleAl : (article.titleEn || article.titleAl)}
-                                                    </h3>
+                                                </div>
+                                                {/* Info bar */}
+                                                <div className={`flex justify-between items-center py-2 px-3 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                                                    <span className="text-xs text-gray-500">{formatDateAl(article.date)}</span>
+                                                    {article.author && (
+                                                        <span className={`text-xs font-medium ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>{article.author}</span>
+                                                    )}
                                                 </div>
                                             </div>
-                                            {/* Info bar */}
-                                            <div className={`flex justify-between items-center py-2 px-3 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                                                <span className="text-xs text-gray-500">{article.date}</span>
-                                                {article.author && (
-                                                    <span className={`text-xs font-medium ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>{article.author}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                                 {/* Article count footer */}
                                 <p className="text-xs text-gray-400 text-center py-4">
@@ -5605,7 +5631,7 @@ const RinON = () => {
                             </button>
                         </div>
                         <div className="p-8">
-                            <h2 className="text-4xl font-bold text-white mb-4">
+                            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
                                 {language === 'al' ? selectedArticle.titleAl : selectedArticle.titleEn}
                             </h2>
                             {/* Author and Source info */}
@@ -5635,7 +5661,7 @@ const RinON = () => {
                                 {selectedArticle.date && (
                                     <div className="flex items-center gap-2 ml-auto">
                                         <Clock className="w-4 h-4 text-gray-500" />
-                                        <span className="text-sm text-gray-400">{selectedArticle.date}</span>
+                                        <span className="text-sm text-gray-400">{formatDateAl(selectedArticle.date)}</span>
                                     </div>
                                 )}
                             </div>
@@ -6254,7 +6280,7 @@ const RinON = () => {
                 FLOATING ACTION BUTTON (FAB) - Mobile Settings
                 Quick access to language, dark mode, etc.
                ========================================== */}
-            {currentPage !== 'home' && <div className="md:hidden fixed bottom-24 right-4 z-50">
+            {currentPage !== 'home' && currentPage !== 'lajme' && <div className="md:hidden fixed bottom-24 right-4 z-50">
                 {/* FAB Menu Items */}
                 <div className={`absolute bottom-14 right-0 flex flex-col gap-2 transition-all duration-300 ${fabOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
                     {/* User: Write Your Own Article */}
