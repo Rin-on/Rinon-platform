@@ -5609,6 +5609,7 @@ const RinON = () => {
                         onTouchMove={(e) => e.stopPropagation()}
                         onTouchEnd={(e) => e.stopPropagation()}
                     >
+                        {/* Hero Image */}
                         <div className="relative h-80">
                             <img
                                 src={selectedArticle.image}
@@ -5622,20 +5623,30 @@ const RinON = () => {
                             <button
                                 onClick={() => {
                                     setShowArticleModal(false);
-                                    // Reset URL back to home
                                     window.history.pushState({}, '', '/');
                                 }}
-                                className="absolute top-4 right-4 bg-[#2D2A26]/80 hover:bg-[#2D2A26] p-2 rounded-full backdrop-blur-lg transition-all"
+                                className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all"
                             >
-                                <X className="h-6 w-6 text-white" />
+                                <X className="w-6 h-6 text-white" />
                             </button>
                         </div>
-                        <div className="p-8">
-                            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+
+                        {/* Article Content */}
+                        <div className="px-5 md:px-8 pt-6 pb-10">
+                            {/* Category badge */}
+                            {selectedArticle.category && (
+                                <span className={`inline-block text-xs px-3 py-1 rounded-full font-semibold text-white mb-3 ${getCategoryColor(selectedArticle.category)}`}>
+                                    {selectedArticle.category}
+                                </span>
+                            )}
+
+                            {/* Title */}
+                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
                                 {language === 'al' ? selectedArticle.titleAl : selectedArticle.titleEn}
                             </h2>
-                            {/* Author and Source info */}
-                            <div className="flex flex-wrap items-center gap-4 mb-6">
+
+                            {/* Author / Date / Source row */}
+                            <div className="flex flex-wrap items-center gap-4 mb-4">
                                 {selectedArticle.author && (
                                     <div className="flex items-center gap-2">
                                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
@@ -5665,10 +5676,28 @@ const RinON = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className="prose prose-invert prose-lg max-w-none">
-                                <p className="text-gray-300 leading-relaxed whitespace-pre-line">
-                                    {language === 'al' ? selectedArticle.contentAl : selectedArticle.contentEn}
-                                </p>
+
+                            {/* Save / Share toolbar */}
+                            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/10">
+                                <button
+                                    onClick={() => toggleSaveArticle(selectedArticle.id)}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors ${savedArticles.includes(selectedArticle.id) ? 'bg-amber-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                                >
+                                    {savedArticles.includes(selectedArticle.id) ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                                    {savedArticles.includes(selectedArticle.id) ? t('Ruajtur', 'Saved') : t('Ruaj', 'Save')}
+                                </button>
+                                <button
+                                    onClick={() => { setShareItem({ item: selectedArticle, type: 'article' }); setShowShareModal(true); }}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
+                                >
+                                    <Share2 className="w-4 h-4" />
+                                    {t('Ndaj', 'Share')}
+                                </button>
+                            </div>
+
+                            {/* Article body */}
+                            <div className="text-base md:text-lg text-gray-200 leading-loose whitespace-pre-line">
+                                {language === 'al' ? selectedArticle.contentAl : selectedArticle.contentEn}
                             </div>
                         </div>
                     </div>
