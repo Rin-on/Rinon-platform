@@ -1610,6 +1610,7 @@ const RinON = () => {
     const [showPendingLetters, setShowPendingLetters] = useState(false);
     const [letterFormData, setLetterFormData] = useState({ initials: '', destination: '', profession: '', content: '' });
     const [letterSubmitStatus, setLetterSubmitStatus] = useState(null); // null | 'submitting' | 'success' | 'error'
+    const [editingLetter, setEditingLetter] = useState(null); // { id, initials, destination, profession, content }
     const letterFormRef = React.useRef(null);
 
     // ==========================================
@@ -5725,21 +5726,93 @@ const RinON = () => {
                                         : 'bg-white border-stone-200 border-l-amber-300/50'
                                     }`}
                                 >
-                                    <p
-                                        className={`text-lg md:text-xl leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}
-                                        style={{ fontFamily: "'Caveat', cursive" }}
-                                    >
-                                        {letter.content}
-                                    </p>
-                                    <div className={`h-px mt-6 ${darkMode ? 'bg-gray-800' : 'bg-stone-200'}`} />
-                                    <div className="flex items-center justify-between mt-4">
-                                        <span className={`text-sm font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            {letter.initials}
-                                        </span>
-                                        <span className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                            {letter.profession} · {letter.destination}
-                                        </span>
-                                    </div>
+                                    {/* Admin controls */}
+                                    {showAdmin && userProfile?.is_admin && editingLetter?.id !== letter.id && (
+                                        <div className="flex gap-2 justify-end mb-3">
+                                            <button
+                                                onClick={() => setEditingLetter({ ...letter })}
+                                                className="p-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                                            >
+                                                <Edit className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={async () => {
+                                                    await supabase.from('letters').delete().eq('id', letter.id);
+                                                    loadLetters();
+                                                }}
+                                                className="p-1.5 rounded bg-red-600 hover:bg-red-700 text-white transition-colors"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Inline edit form */}
+                                    {editingLetter?.id === letter.id ? (
+                                        <div className="space-y-3">
+                                            <textarea
+                                                value={editingLetter.content}
+                                                onChange={(e) => setEditingLetter({ ...editingLetter, content: e.target.value })}
+                                                rows={5}
+                                                maxLength={1000}
+                                                className={`w-full px-3 py-2 rounded border text-base resize-none focus:outline-none focus:border-amber-400 transition-colors ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-stone-50 border-stone-300 text-gray-900'}`}
+                                                style={{ fontFamily: "'Caveat', cursive" }}
+                                            />
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {['initials', 'destination', 'profession'].map(field => (
+                                                    <input
+                                                        key={field}
+                                                        type="text"
+                                                        value={editingLetter[field]}
+                                                        onChange={(e) => setEditingLetter({ ...editingLetter, [field]: e.target.value })}
+                                                        placeholder={field}
+                                                        className={`px-3 py-2 rounded border text-sm focus:outline-none focus:border-amber-400 transition-colors ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-stone-50 border-stone-300 text-gray-900'}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={async () => {
+                                                        await supabase.from('letters').update({
+                                                            initials: editingLetter.initials,
+                                                            destination: editingLetter.destination,
+                                                            profession: editingLetter.profession,
+                                                            content: editingLetter.content
+                                                        }).eq('id', letter.id);
+                                                        setEditingLetter(null);
+                                                        loadLetters();
+                                                    }}
+                                                    className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition-colors"
+                                                >
+                                                    {t('Ruaj', 'Save')}
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingLetter(null)}
+                                                    className={`px-4 py-1.5 text-sm font-medium rounded transition-colors ${darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-stone-200 text-gray-700 hover:bg-stone-300'}`}
+                                                >
+                                                    {t('Anulo', 'Cancel')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p
+                                                className={`text-lg md:text-xl leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}
+                                                style={{ fontFamily: "'Caveat', cursive" }}
+                                            >
+                                                {letter.content}
+                                            </p>
+                                            <div className={`h-px mt-6 ${darkMode ? 'bg-gray-800' : 'bg-stone-200'}`} />
+                                            <div className="flex items-center justify-between mt-4">
+                                                <span className={`text-sm font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                                    {letter.initials}
+                                                </span>
+                                                <span className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                    {letter.profession} · {letter.destination}
+                                                </span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             ))}
                         </div>
