@@ -5493,7 +5493,52 @@ const RinON = () => {
                         })()}
 
                         {/* ==========================================
-                            SECTION 5: CTA — Bëhu pjesë e RinON
+                            SECTION 5: Letra nga Rinasi teaser
+                           ========================================== */}
+                        {letters.length > 0 && (() => {
+                            const teaser = letters[0];
+                            const preview = teaser.content.length > 160 ? teaser.content.substring(0, 160) + '…' : teaser.content;
+                            return (
+                                <HomeFadeSection className="px-4 mt-8">
+                                    <div className={`h-px mb-8 ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`} />
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-4 h-px bg-amber-400" />
+                                        <p className={`text-xs uppercase tracking-widest font-semibold ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                                            {t('Letra nga Rinasi', 'Letters from Those Who Left')}
+                                        </p>
+                                    </div>
+                                    <div
+                                        className={`rounded-sm border-l-2 border-amber-300/60 p-5 cursor-pointer ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-stone-200'}`}
+                                        onClick={() => changePage('letra')}
+                                    >
+                                        <p
+                                            className={`text-lg leading-relaxed ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}
+                                            style={{ fontFamily: "'Caveat', cursive" }}
+                                        >
+                                            "{preview}"
+                                        </p>
+                                        <div className={`h-px mt-4 mb-3 ${darkMode ? 'bg-gray-800' : 'bg-stone-200'}`} />
+                                        <div className="flex items-center justify-between">
+                                            <span className={`text-sm font-semibold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                                {teaser.initials}
+                                            </span>
+                                            <span className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                                {teaser.profession} · {teaser.destination}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => changePage('letra')}
+                                        className={`mt-3 text-sm font-medium transition-colors ${darkMode ? 'text-amber-400 hover:text-amber-300' : 'text-amber-600 hover:text-amber-700'}`}
+                                    >
+                                        {t(`Lexo të gjitha letrat (${letters.length}) →`, `Read all letters (${letters.length}) →`)}
+                                    </button>
+                                </HomeFadeSection>
+                            );
+                        })()}
+
+                        {/* ==========================================
+                            SECTION 6: CTA — Bëhu pjesë e RinON
                            ========================================== */}
                         <HomeFadeSection>
                             <div className="relative overflow-hidden mt-8 py-12 px-4" style={{ background: 'linear-gradient(135deg, #111827 0%, #1f2937 100%)' }}>
