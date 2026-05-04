@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, ChevronDown, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, ChevronUp, Shield, ArrowRight, LayoutGrid, Palette, MessageSquare } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, ChevronDown, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, ChevronUp, Shield, ArrowRight, LayoutGrid, Palette, MessageSquare, Feather } from 'lucide-react';
 import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
@@ -1614,6 +1614,14 @@ const RinON = () => {
     const letterFormRef = React.useRef(null);
 
     // ==========================================
+    // BASHKOHU — Community Signup Form
+    // ==========================================
+    const [signupForm, setSignupForm] = useState({ first_name: '', last_name: '', organization: '', phone: '' });
+    const [selectedActivities, setSelectedActivities] = useState([]);
+    const [signupSubmitting, setSignupSubmitting] = useState(false);
+    const [signupSuccess, setSignupSuccess] = useState(false);
+
+    // ==========================================
     // EVENT INTERESTS ("Who's Going?")
     // ==========================================
     const [eventInterests, setEventInterests] = useState({}); // { eventId: count }
@@ -1787,6 +1795,13 @@ const RinON = () => {
                 console.error('Event not found:', openEventId);
             }
         };
+
+        // Handle ?page= URL parameter (e.g. rinon.al/?page=bashkohu from QR code)
+        const pageParam = urlParams.get('page');
+        if (pageParam === 'bashkohu') {
+            setCurrentPage('bashkohu');
+            window.history.replaceState({}, '', '/');
+        }
 
         // Execute handlers
         if (openArticleId) handleArticleOpen();
@@ -3796,10 +3811,10 @@ const RinON = () => {
     return (
         <div
             className={`min-h-screen w-full transition-colors duration-300 ${darkMode ? 'bg-[#2D2A26]' : 'bg-gray-50'}`}
-            style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 80px)' : '80px' }}
+            style={{ paddingBottom: currentPage === 'bashkohu' ? '0' : isNativeApp ? 'env(safe-area-inset-bottom, 80px)' : '80px' }}
         >
 
-            <header className={`border-b sticky top-0 z-50 ${darkMode ? 'bg-[#2D2A26] border-[#3D3A36]' : 'bg-[#FFFBF7] border-gray-100'}`}>
+            {currentPage !== 'bashkohu' && <header className={`border-b sticky top-0 z-50 ${darkMode ? 'bg-[#2D2A26] border-[#3D3A36]' : 'bg-[#FFFBF7] border-gray-100'}`}>
                 <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-8">
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => changePage('home')}>
@@ -3981,7 +3996,7 @@ const RinON = () => {
                         </div>
                     </div>
                 )}
-            </header>
+            </header>}
 
             {/* Search overlay - simplified */}
             {showSearchBar && (
@@ -5996,6 +6011,189 @@ const RinON = () => {
                     <PartnershipsPage />
                 ) : currentPage === 'about' ? (
                     <AboutPage />
+                ) : currentPage === 'bashkohu' ? (
+                    /* ==========================================
+                       BASHKOHU — FRESSH Community Signup Form
+                       Standalone page, no nav, full-screen
+                       ========================================== */
+                    <div className={`min-h-screen animate-fadeIn ${darkMode ? 'bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950' : 'bg-gradient-to-b from-amber-50 via-white to-amber-50'}`}>
+                        {signupSuccess ? (
+                            /* ── Success Screen ───────────────────────── */
+                            <div className="flex flex-col items-center justify-center min-h-screen py-16 px-6 text-center animate-fadeIn">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${darkMode ? 'bg-green-900/30' : 'bg-green-100'}`}>
+                                    <Check className="w-8 h-8 text-green-500" />
+                                </div>
+                                <h2 className={`mt-6 text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                                    style={{ fontFamily: "'Playfair Display', serif" }}>
+                                    Faleminderit, {signupForm.first_name}!
+                                </h2>
+                                <p className={`mt-2 text-base ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    Je tani pjesë e komunitetit të RinON.
+                                </p>
+                                <a
+                                    href="https://instagram.com/rinon_albania"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-8 inline-flex items-center gap-2.5 bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 text-white px-8 py-3.5 rounded-xl font-bold text-base shadow-lg hover:shadow-xl transition-all duration-200"
+                                >
+                                    <Instagram className="w-5 h-5" />
+                                    Na ndiq në Instagram
+                                </a>
+                                <p className="mt-3 text-xs text-gray-400">për tu njoftuar për aktivitetet e ardhshme</p>
+                                <button
+                                    onClick={() => changePage('home')}
+                                    className="mt-8 text-amber-600 text-sm font-medium hover:text-amber-700 transition-colors"
+                                >
+                                    Eksploro rinon.al →
+                                </button>
+                            </div>
+                        ) : (
+                            /* ── Signup Form ─────────────────────────── */
+                            <>
+                                {/* Top welcome section */}
+                                <div className="pt-12 pb-6 px-6 flex flex-col items-center">
+                                    <div className="relative">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-[#EAB308] to-[#0D9488] rounded-full opacity-30 blur-md animate-pulse"></div>
+                                        <div className="relative w-12 h-12 rounded-full bg-white border-2 border-[#EAB308] flex items-center justify-center shadow-md overflow-hidden">
+                                            <img
+                                                src="https://hslwkxwarflnvjfytsul.supabase.co/storage/v1/object/public/image/rinon%20switch%20button.jpeg"
+                                                alt="RinON"
+                                                className="h-9 w-9 object-contain rounded-full"
+                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <h1
+                                        className={`mt-4 text-3xl font-bold text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}
+                                        style={{ fontFamily: "'Playfair Display', serif" }}
+                                    >
+                                        Mirë se vini!
+                                    </h1>
+                                    <p className={`mt-2 text-base text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        Bashkohu me komunitetin e RinON
+                                    </p>
+                                    <p className={`mt-4 text-sm text-center max-w-sm leading-relaxed ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                        RinON është platforma dixhitale për rininë shqiptare. Lajme, mundësi, evente dhe një komunitet i tërë që punon për të ardhmen tënde.
+                                    </p>
+                                    <div className="w-12 h-0.5 bg-amber-400 mx-auto mt-6"></div>
+                                </div>
+
+                                {/* Form */}
+                                <div className="max-w-md mx-auto px-6 pt-8 pb-12">
+                                    <div className="space-y-5">
+                                        {/* Emri */}
+                                        <div>
+                                            <label className={`text-sm font-semibold mb-1.5 block ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Emri *</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Emri yt"
+                                                value={signupForm.first_name}
+                                                onChange={e => setSignupForm(f => ({ ...f, first_name: e.target.value }))}
+                                                className={`w-full px-4 py-3.5 text-base rounded-xl border placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+                                            />
+                                        </div>
+
+                                        {/* Mbiemri */}
+                                        <div>
+                                            <label className={`text-sm font-semibold mb-1.5 block ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Mbiemri *</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Mbiemri yt"
+                                                value={signupForm.last_name}
+                                                onChange={e => setSignupForm(f => ({ ...f, last_name: e.target.value }))}
+                                                className={`w-full px-4 py-3.5 text-base rounded-xl border placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+                                            />
+                                        </div>
+
+                                        {/* Organizata */}
+                                        <div>
+                                            <label className={`text-sm font-semibold mb-1.5 block ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Organizata</label>
+                                            <input
+                                                type="text"
+                                                placeholder="P.sh. FRESSH, Universitet..."
+                                                value={signupForm.organization}
+                                                onChange={e => setSignupForm(f => ({ ...f, organization: e.target.value }))}
+                                                className={`w-full px-4 py-3.5 text-base rounded-xl border placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+                                            />
+                                        </div>
+
+                                        {/* Telefon */}
+                                        <div>
+                                            <label className={`text-sm font-semibold mb-1.5 block ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Numri i telefonit *</label>
+                                            <input
+                                                type="tel"
+                                                placeholder="+355 6X XXX XXXX"
+                                                value={signupForm.phone}
+                                                onChange={e => setSignupForm(f => ({ ...f, phone: e.target.value }))}
+                                                className={`w-full px-4 py-3.5 text-base rounded-xl border placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition-all duration-200 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+                                            />
+                                        </div>
+
+                                        {/* Aktivitete — chip multi-select */}
+                                        <div>
+                                            <label className={`text-sm font-semibold mb-1.5 block ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Çfarë aktivitetesh të interesojnë?</label>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {['Trajnim', 'Debat', 'Ndihmë komunitare', 'Ekskursion', 'Networking', 'Festë'].map(activity => {
+                                                    const isSelected = selectedActivities.includes(activity);
+                                                    return (
+                                                        <button
+                                                            key={activity}
+                                                            type="button"
+                                                            onClick={() => setSelectedActivities(prev =>
+                                                                isSelected ? prev.filter(a => a !== activity) : [...prev, activity]
+                                                            )}
+                                                            className={`px-4 py-2 rounded-full text-sm font-medium border cursor-pointer transition-all duration-200 ${
+                                                                isSelected
+                                                                    ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
+                                                                    : darkMode
+                                                                        ? 'bg-gray-800 border-gray-700 text-gray-400 hover:border-amber-500/50'
+                                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-amber-300'
+                                                            }`}
+                                                        >
+                                                            {activity}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Submit button */}
+                                    <button
+                                        onClick={async () => {
+                                            if (!signupForm.first_name.trim() || !signupForm.last_name.trim() || !signupForm.phone.trim()) return;
+                                            setSignupSubmitting(true);
+                                            try {
+                                                const { error } = await supabase.from('community_signups').insert({
+                                                    first_name: signupForm.first_name.trim(),
+                                                    last_name: signupForm.last_name.trim(),
+                                                    organization: signupForm.organization.trim() || null,
+                                                    phone: signupForm.phone.trim(),
+                                                    preferred_activities: selectedActivities,
+                                                    source: 'fressh'
+                                                });
+                                                if (error) throw error;
+                                                setSignupSuccess(true);
+                                            } catch (err) {
+                                                console.error('Signup error:', err);
+                                                alert('Ndodhi një gabim. Provo sërish.');
+                                            } finally {
+                                                setSignupSubmitting(false);
+                                            }
+                                        }}
+                                        disabled={signupSubmitting || !signupForm.first_name.trim() || !signupForm.last_name.trim() || !signupForm.phone.trim()}
+                                        className={`mt-8 w-full py-3.5 rounded-xl font-bold text-base text-white transition-all duration-200 ${
+                                            signupSubmitting || !signupForm.first_name.trim() || !signupForm.last_name.trim() || !signupForm.phone.trim()
+                                                ? 'bg-amber-400 opacity-70 cursor-not-allowed'
+                                                : 'bg-amber-500 hover:bg-amber-600 active:bg-amber-700'
+                                        }`}
+                                    >
+                                        {signupSubmitting ? 'Duke u regjistruar...' : 'Regjistrohu'}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 ) : null}
             </main>
 
@@ -6675,7 +6873,7 @@ const RinON = () => {
                 Clean, elevated design with larger touch targets
                 Added safe-area padding for Android navigation bar
                ========================================== */}
-            <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t ${darkMode ? 'bg-[#1a1918] border-[#2D2A26]' : 'bg-white border-gray-100'}`}
+            {currentPage !== 'bashkohu' && <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t ${darkMode ? 'bg-[#1a1918] border-[#2D2A26]' : 'bg-white border-gray-100'}`}
                 style={{ paddingBottom: isNativeApp ? 'env(safe-area-inset-bottom, 16px)' : '0px' }}
             >
                 <div className={`flex items-center justify-around ${isNativeApp ? 'pt-2 pb-1' : 'py-2'}`}>
@@ -6683,6 +6881,7 @@ const RinON = () => {
                         { key: 'home', icon: Home, label: 'Home' },
                         { key: 'events', icon: Calendar, label: 'Evente' },
                         { key: 'lajme', icon: Newspaper, label: "N'gazeta" },
+                        { key: 'letra', icon: Feather, label: 'Letra' },
                     ].map(item => {
                         const Icon = item.icon;
                         const isActive = currentPage === item.key;
@@ -6713,7 +6912,7 @@ const RinON = () => {
                         <span className="text-[10px] mt-1">{user ? 'Profil' : 'Hyr'}</span>
                     </button>
                 </div>
-            </nav>
+            </nav>}
 
             {/* ==========================================
                 FLOATING ACTION BUTTON (FAB) - Mobile Settings
