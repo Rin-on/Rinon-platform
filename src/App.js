@@ -6247,6 +6247,24 @@ const RinON = () => {
                                                     source: 'general',
                                                 });
                                                 if (error) throw error;
+                                                // Fire-and-forget — don't block the success screen if email fails
+                                                fetch(`${supabase.supabaseUrl}/functions/v1/send-signup-emails`, {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': `Bearer ${supabase.supabaseKey}`,
+                                                    },
+                                                    body: JSON.stringify({
+                                                        first_name: signupForm.first_name.trim(),
+                                                        last_name: signupForm.last_name.trim(),
+                                                        age: parseInt(signupForm.age, 10),
+                                                        email: signupForm.email.trim(),
+                                                        phone: signupForm.phone.trim(),
+                                                        reason: signupForm.reason.trim(),
+                                                        skills: signupForm.skills.trim() || null,
+                                                        referral_source: signupForm.referral_source || null,
+                                                    }),
+                                                }).catch(e => console.error('Email notification failed:', e));
                                                 setSignupSuccess(true);
                                             } catch (err) {
                                                 console.error('Signup error:', err);
