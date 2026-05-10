@@ -13,6 +13,9 @@ import TermsModal from './components/TermsModal';
 import AuthModal from './components/AuthModal';
 import PreferencesModal from './components/PreferencesModal';
 import { HomeFadeSection, ScrollHint } from './components/HomeFadeSection';
+import EventsPage from './pages/EventsPage';
+import PartnersPage from './pages/PartnersPage';
+import AboutPage from './pages/AboutPage';
 
 // Check if running as native app
 const isNativeApp = Capacitor.isNativePlatform();
@@ -1738,157 +1741,6 @@ const RinON = () => {
         setShowShareModal(true);
     };
 
-
-    // Updated EventsPage Component with Hero Slider
-    const EventsPage = () => (
-        <div className="relative max-w-7xl mx-auto px-4 py-12 overflow-hidden">
-            {/* Decorative Yellow Circles Background */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {/* Large circle top right */}
-                <div className={`absolute -top-20 -right-20 w-72 h-72 rounded-full border-4 ${darkMode ? 'border-amber-500/20' : 'border-amber-400/30'} flex items-center justify-center`}>
-                    <span className={`text-4xl font-black ${darkMode ? 'text-amber-500/10' : 'text-amber-400/20'} tracking-wider`}>RinON</span>
-                </div>
-                {/* Medium circle left */}
-                <div className={`absolute top-40 -left-16 w-48 h-48 rounded-full ${darkMode ? 'bg-amber-500/5' : 'bg-amber-400/10'}`} />
-                {/* Small filled circle */}
-                <div className={`absolute top-1/3 right-1/4 w-16 h-16 rounded-full ${darkMode ? 'bg-amber-500/10' : 'bg-amber-400/15'}`} />
-                {/* Circle with RinON text bottom left */}
-                <div className={`absolute bottom-40 -left-10 w-64 h-64 rounded-full border-2 ${darkMode ? 'border-amber-500/15' : 'border-amber-400/25'} flex items-center justify-center`}>
-                    <span className={`text-2xl font-bold ${darkMode ? 'text-amber-500/8' : 'text-amber-400/15'} tracking-widest rotate-12`}>RinON</span>
-                </div>
-                {/* Small circle bottom right */}
-                <div className={`absolute bottom-20 right-10 w-24 h-24 rounded-full border-3 ${darkMode ? 'border-amber-500/20' : 'border-amber-400/30'}`} />
-                {/* Tiny accent circles */}
-                <div className={`absolute top-60 right-20 w-8 h-8 rounded-full ${darkMode ? 'bg-amber-500/15' : 'bg-amber-400/25'}`} />
-                <div className={`absolute bottom-60 left-40 w-6 h-6 rounded-full ${darkMode ? 'bg-amber-500/20' : 'bg-amber-400/30'}`} />
-                {/* Large outline circle center-right */}
-                <div className={`absolute top-1/2 -right-32 w-96 h-96 rounded-full border ${darkMode ? 'border-amber-500/10' : 'border-amber-400/20'}`} />
-            </div>
-
-            {/* Page Header */}
-            <div className="relative z-10 text-center mb-10">
-                <h1 className={`text-5xl md:text-6xl font-black mb-3 ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
-                    {t('Ndonjë e re?', 'Anything new?')}
-                </h1>
-                <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {t('Zgjidh datën dhe zbulo mundësitë', 'Pick a date and discover opportunities')}
-                </p>
-            </div>
-
-            {/* Calendar View Only */}
-            <div className="relative z-10">
-                <EventCalendar
-                    language={language}
-                    darkMode={darkMode}
-                    events={otherEvents}
-                    showAdmin={showAdmin}
-                    editEvent={editEvent}
-                    deleteEvent={deleteEvent}
-                    t={t}
-                    openShareModal={openShareModal}
-                    openEvent={openEvent}
-                    currentDate={calendarDate}
-                    setCurrentDate={setCalendarDate}
-                    eventInterests={eventInterests}
-                    userEventInterests={userEventInterests}
-                    toggleEventInterest={toggleEventInterest}
-                />
-            </div>
-        </div>
-    );
-
-    const PartnershipsPage = () => {
-        const partnershipEvents = otherEvents.filter(event => event.type === 'partnership');
-
-        return (
-            <div className="max-w-7xl mx-auto px-4 py-12">
-                <div className="text-center mb-12">
-                    <h1 className={`text-5xl font-bold mb-4 ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>
-                        {t('Evente Bashkëpunimi', 'Partnership Events')}
-                    </h1>
-                    <p className={`text-xl ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {t('Bashkëpunimet tona me organizata të ndryshme', 'Our partnerships with various organizations')}
-                    </p>
-                </div>
-
-                {partnershipEvents.length === 0 ? (
-                    <div className="text-center py-20">
-                        <div className="w-20 h-20 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-amber-500/30">
-                            <Users className={`w-10 h-10 ${darkMode ? 'text-amber-500' : 'text-amber-600'}`} />
-                        </div>
-                        <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                            {t('Asnjë event bashkëpunimi ende', 'No partnership events yet')}
-                        </h3>
-                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Eventet e bashkëpunimit do të shfaqen këtu kur të publikohen', 'Partnership events will appear here when published')}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {partnershipEvents.map((event) => (
-                            <div
-                                key={event.id}
-                                className={`backdrop-blur-lg rounded-2xl border hover:border-amber-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20 overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
-                            >
-                                <div className="relative h-48">
-                                    <img
-                                        src={event.image}
-                                        alt={event.titleAl}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                                    {showAdmin && (
-                                        <div className="absolute top-3 right-3 flex gap-2">
-                                            <button
-                                                onClick={() => editEvent(event)}
-                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => deleteEvent(event.id)}
-                                                className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="p-6">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Users className="w-5 h-5 text-amber-500" />
-                                        <span className="text-sm text-amber-500 font-medium">
-                                            {t('Bashkëpunim', 'Partnership')}
-                                        </span>
-                                    </div>
-                                    <h3 className={`text-xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                        {language === 'al' ? event.titleAl : event.titleEn}
-                                    </h3>
-                                    <div className={`flex items-center text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        <Calendar className="w-4 h-4 mr-2" />
-                                        <span>{language === 'al' ? event.dateAl : event.dateEn}</span>
-                                    </div>
-                                    {event.location && (
-                                        <div className={`flex items-center text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                            <MapPin className="w-4 h-4 mr-2" />
-                                            <span>{event.location}</span>
-                                        </div>
-                                    )}
-                                    <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        {language === 'al' ? event.descAl : event.descEn}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     // ==========================================
     // SHIKO PAGE - Videos, Podcasts, Documentaries
     // ==========================================
@@ -2183,168 +2035,6 @@ const RinON = () => {
             </div>
         );
     };
-
-    const AboutPage = () => (
-        <div className="max-w-6xl mx-auto px-4 py-12">
-            <h1 className={`text-5xl font-bold mb-8 text-center ${darkMode ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] bg-clip-text text-transparent' : 'text-[#2D2A26]'}`}>{t('Rreth Nesh', 'About Us')}</h1>
-
-            <div className={`backdrop-blur-lg rounded-2xl border p-8 mb-8 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}>
-                <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{t('Përshkrimi', 'Description')}</h2>
-                <p className={`leading-relaxed mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {t(
-                        'RinON është një platformë dixhitale e dedikuar për rininë shqiptare, e krijuar për të promovuar aktivizmin, kulturën, edukimin dhe zhvillimin personal të të rinjve. Ne besojmë se të rinjtë janë motori i ndryshimit dhe përparimit të shoqërisë sonë.',
-                        'RinON is a digital platform dedicated to Albanian youth, created to promote activism, culture, education and personal development of young people. We believe that young people are the engine of change and progress in our society.'
-                    )}
-                </p>
-
-                <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{t('Vizioni Ynë', 'Our Vision')}</h2>
-                <p className={`leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    {t(
-                        'Të krijojmë një komunitet të fortë dhe aktiv të të rinjve shqiptarë që punojnë së bashku për një të ardhme më të mirë. Ne synojmë të jemi platforma kryesore për lajme, ngjarje dhe diskutime që ndikojnë në jetën e përditshme të të rinjve në Shqipëri.',
-                        'To create a strong and active community of young Albanians working together for a better future. We aim to be the main platform for news, events and discussions that affect the daily lives of young people in Albania.'
-                    )}
-                </p>
-            </div>
-
-            {partners.length > 0 && (
-                <div className="mb-12">
-                    <h2 className={`text-4xl font-bold mb-6 text-center ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                        {t('Partnerët Tanë', 'Our Partners')}
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {partners.map((partner) => (
-                            <div
-                                key={partner.id}
-                                className={`backdrop-blur-lg rounded-2xl border hover:border-amber-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20 overflow-hidden ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
-                            >
-                                <div className="relative h-64">
-                                    <img
-                                        src={partner.image}
-                                        alt={partner.nameAl}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            e.target.src = 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800';
-                                        }}
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                                    {showAdmin && (
-                                        <div className="absolute top-3 right-3 flex gap-2">
-                                            <button
-                                                onClick={() => editPartner(partner)}
-                                                className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition z-10 shadow-lg"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => deletePartner(partner.id)}
-                                                className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition z-10 shadow-lg"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="p-6">
-                                    <h3 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{language === 'al' ? partner.nameAl : partner.nameEn}</h3>
-
-                                    <div className="mb-4">
-                                        <h4 className="font-semibold text-amber-500 mb-1">{t('Përshkrimi', 'Description')}</h4>
-                                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.descriptionAl : partner.descriptionEn}</p>
-                                    </div>
-
-                                    {(partner.visionAl || partner.visionEn) && (
-                                        <div className="mb-4">
-                                            <h4 className="font-semibold text-amber-500 mb-1">{t('Vizioni', 'Vision')}</h4>
-                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.visionAl : partner.visionEn}</p>
-                                        </div>
-                                    )}
-
-                                    {(partner.goalsAl || partner.goalsEn) && (
-                                        <div className="mb-4">
-                                            <h4 className="font-semibold text-amber-500 mb-1">{t('Qëllimet', 'Goals')}</h4>
-                                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{language === 'al' ? partner.goalsAl : partner.goalsEn}</p>
-                                        </div>
-                                    )}
-
-                                    {partner.website && (
-                                        <a href={partner.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 font-medium">
-                                            {t('Vizito faqen', 'Visit website')} →
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            <div className="mb-12">
-                <h2 className={`text-4xl font-bold mb-6 text-center ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{t('Ekipi Ynë', 'Our Team')}</h2>
-                {staffMembers.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                            {t('Anëtarët e ekipit do të shfaqen këtu', 'Team members will appear here')}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {staffMembers.map((member) => (
-                            <div
-                                key={member.id}
-                                className={`backdrop-blur-lg rounded-2xl border p-6 hover:border-amber-500/50 transition-all transform hover:scale-[1.02] hover:shadow-xl hover:shadow-amber-500/20 relative ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-gray-200'}`}
-                            >
-                                {showAdmin && (
-                                    <div className="absolute top-3 right-3 flex gap-2">
-                                        <button
-                                            onClick={() => editMember(member)}
-                                            className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition shadow-lg"
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => deleteMember(member.id)}
-                                            className="bg-[#FF6B6B] text-white p-2 rounded-full hover:bg-[#FF5252] transition shadow-lg"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
-                                    </div>
-                                )}
-                                <h3 className={`font-bold text-lg mb-1 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>{member.name}</h3>
-                                <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{member.role}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl p-6 text-center border border-amber-500/30 backdrop-blur-lg transition-all hover:scale-105">
-                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50">
-                        <Users className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>5000+</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Anëtarë Aktivë', 'Active Members')}</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl p-6 text-center border border-amber-500/30 backdrop-blur-lg transition-all hover:scale-105">
-                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50">
-                        <Calendar className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>150+</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Evente të Organizuara', 'Events Organized')}</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl p-6 text-center border border-amber-500/30 backdrop-blur-lg transition-all hover:scale-105">
-                    <div className="w-16 h-16 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/50">
-                        <Leaf className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className={`font-bold text-2xl mb-2 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>15+</h3>
-                    <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t('Projekte Rinore', 'Youth Projects')}</p>
-                </div>
-            </div>
-        </div>
-    );
-
 
     return (
         <div
@@ -4222,7 +3912,22 @@ const RinON = () => {
                         )}
                     </>
                 ) : currentPage === 'events' ? (
-                    <EventsPage />
+                    <EventsPage
+                        darkMode={darkMode}
+                        t={t}
+                        language={language}
+                        otherEvents={otherEvents}
+                        showAdmin={showAdmin}
+                        editEvent={editEvent}
+                        deleteEvent={deleteEvent}
+                        openShareModal={openShareModal}
+                        openEvent={openEvent}
+                        calendarDate={calendarDate}
+                        setCalendarDate={setCalendarDate}
+                        eventInterests={eventInterests}
+                        userEventInterests={userEventInterests}
+                        toggleEventInterest={toggleEventInterest}
+                    />
                 ) : currentPage === 'shiko' ? (
                     <ShikoPage />
                 ) : currentPage === 'letra' ? (
@@ -4546,9 +4251,28 @@ const RinON = () => {
                         </div>
                     </div>
                 ) : currentPage === 'partners' ? (
-                    <PartnershipsPage />
+                    <PartnersPage
+                        darkMode={darkMode}
+                        t={t}
+                        language={language}
+                        otherEvents={otherEvents}
+                        showAdmin={showAdmin}
+                        editEvent={editEvent}
+                        deleteEvent={deleteEvent}
+                    />
                 ) : currentPage === 'about' ? (
-                    <AboutPage />
+                    <AboutPage
+                        darkMode={darkMode}
+                        t={t}
+                        language={language}
+                        partners={partners}
+                        staffMembers={staffMembers}
+                        showAdmin={showAdmin}
+                        editPartner={editPartner}
+                        deletePartner={deletePartner}
+                        editMember={editMember}
+                        deleteMember={deleteMember}
+                    />
                 ) : currentPage === 'bashkohu' ? (
                     /* ==========================================
                        BASHKOHU — RinON Member Application Form
