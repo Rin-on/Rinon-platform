@@ -1,148 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { Menu, X, Globe, ChevronLeft, ChevronRight, ChevronDown, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, ChevronUp, Shield, ArrowRight, LayoutGrid, Palette, MessageSquare, Feather, PenTool, FileText, Mail } from 'lucide-react';
-import DOMPurify from 'dompurify';
 
 // Capacitor imports for native app
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 
+import supabase from './utils/supabase';
+import { trackPageView, trackArticleRead, updateReadDuration, formatDateAl, getCategoryColor, validateInput, validatePassword, handleError, uploadImage } from './utils/helpers';
+
 // Check if running as native app
 const isNativeApp = Capacitor.isNativePlatform();
-
-// ── Analytics helpers (module-level, use supabase directly) ──────────────
-const getSessionId = () => {
-    let sid = window.sessionStorage.getItem('rinon_session');
-    if (!sid) {
-        sid = crypto.randomUUID();
-        window.sessionStorage.setItem('rinon_session', sid);
-    }
-    return sid;
-};
-
-const trackPageView = async (page, userId = null) => {
-    try {
-        await supabase.from('page_views').insert({
-            page,
-            referrer: document.referrer || null,
-            user_agent: navigator.userAgent,
-            session_id: getSessionId(),
-            user_id: userId || null,
-        });
-    } catch (e) {}
-};
-
-const trackArticleRead = async (articleId, userId = null) => {
-    try {
-        const { data } = await supabase.from('article_reads').insert({
-            article_id: articleId,
-            session_id: getSessionId(),
-            user_id: userId || null,
-        }).select('id').single();
-        return data?.id;
-    } catch (e) { return null; }
-};
-
-const updateReadDuration = async (readId, durationSeconds, scrollDepth) => {
-    if (!readId) return;
-    try {
-        await supabase.from('article_reads').update({
-            read_duration_seconds: Math.round(durationSeconds),
-            scroll_depth: Math.round(scrollDepth),
-        }).eq('id', readId);
-    } catch (e) {}
-};
-
-// Initialize Supabase
-const supabase = createClient(
-    'https://hslwkxwarflnvjfytsul.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHdreHdhcmZsbnZqZnl0c3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxNzY5NzcsImV4cCI6MjA3NTc1Mjk3N30.bwAqhvyRaNaec9vkJRytf_ktZRPrbbbViiTGcjWIus4'
-);
-
-// Validation utilities
-const validateInput = {
-    text: (input, maxLength = 1000) => {
-        if (typeof input !== 'string') return false;
-        if (input.trim().length === 0) return false;
-        if (input.length > maxLength) return false;
-        return true;
-    },
-
-    email: (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    },
-
-    url: (url) => {
-        if (!url) return true;
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
-    },
-
-    sanitizeHtml: (dirty) => {
-        if (!dirty) return '';
-        return DOMPurify.sanitize(dirty, {
-            ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],
-            ALLOWED_ATTR: []
-        });
-    }
-};
-
-
-// Password validation
-const validatePassword = (password) => {
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-
-    if (password.length < minLength) {
-        return { valid: false, message: 'Password must be at least 8 characters' };
-    }
-
-    if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
-        return {
-            valid: false,
-            message: 'Password must contain uppercase, lowercase, and numbers'
-        };
-    }
-
-    return { valid: true };
-};
-
-// Error handler
-const handleError = (error, context) => {
-    console.error(`Error in ${context}:`, error);
-    return 'An error occurred. Please try again.';
-};
-
-// Image upload utility
-const uploadImage = async (file) => {
-    try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        const { error } = await supabase.storage
-            .from('images')
-            .upload(filePath, file);
-
-        if (error) throw error;
-
-        const { data: { publicUrl } } = supabase.storage
-            .from('images')
-            .getPublicUrl(filePath);
-
-        return publicUrl;
-    } catch (error) {
-        console.error('Error uploading image:', error);
-        throw error;
-    }
-};
 
 // Event Calendar Component
 const EventCalendar = React.memo(({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t, openShareModal, openEvent, currentDate, setCurrentDate, eventInterests, userEventInterests, toggleEventInterest }) => {
@@ -1534,26 +1401,6 @@ const ScrollHint = () => {
             <ChevronDown className="w-5 h-5 text-gray-400 animate-bob" />
         </div>
     );
-};
-
-const formatDateAl = (dateStr) => {
-    if (!dateStr) return '';
-    const months = ['Janar', 'Shkurt', 'Mars', 'Prill', 'Maj', 'Qershor', 'Korrik', 'Gusht', 'Shtator', 'Tetor', 'Nëntor', 'Dhjetor'];
-    const d = new Date(dateStr);
-    if (isNaN(d)) return dateStr;
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-};
-
-const getCategoryColor = (category) => {
-    const colors = {
-        'Aktualitet': 'bg-red-500',
-        'Arsim & Karrierë': 'bg-blue-500',
-        'Kulturë': 'bg-purple-500',
-        'Opinione': 'bg-teal-500',
-        'Shoqëri': 'bg-green-500',
-        'Rreth Europës': 'bg-indigo-500',
-    };
-    return colors[category] || 'bg-amber-500';
 };
 
 const RinON = () => {
