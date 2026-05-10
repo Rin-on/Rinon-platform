@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { Menu, X, Globe, ChevronLeft, ChevronRight, ChevronDown, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, ChevronUp, Shield, ArrowRight, LayoutGrid, Palette, MessageSquare, Feather, PenTool, FileText, Mail } from 'lucide-react';
 import DOMPurify from 'dompurify';
@@ -9,6 +9,49 @@ import { App as CapApp } from '@capacitor/app';
 
 // Check if running as native app
 const isNativeApp = Capacitor.isNativePlatform();
+
+// ── Analytics helpers (module-level, use supabase directly) ──────────────
+const getSessionId = () => {
+    let sid = window.sessionStorage.getItem('rinon_session');
+    if (!sid) {
+        sid = crypto.randomUUID();
+        window.sessionStorage.setItem('rinon_session', sid);
+    }
+    return sid;
+};
+
+const trackPageView = async (page, userId = null) => {
+    try {
+        await supabase.from('page_views').insert({
+            page,
+            referrer: document.referrer || null,
+            user_agent: navigator.userAgent,
+            session_id: getSessionId(),
+            user_id: userId || null,
+        });
+    } catch (e) {}
+};
+
+const trackArticleRead = async (articleId, userId = null) => {
+    try {
+        const { data } = await supabase.from('article_reads').insert({
+            article_id: articleId,
+            session_id: getSessionId(),
+            user_id: userId || null,
+        }).select('id').single();
+        return data?.id;
+    } catch (e) { return null; }
+};
+
+const updateReadDuration = async (readId, durationSeconds, scrollDepth) => {
+    if (!readId) return;
+    try {
+        await supabase.from('article_reads').update({
+            read_duration_seconds: Math.round(durationSeconds),
+            scroll_depth: Math.round(scrollDepth),
+        }).eq('id', readId);
+    } catch (e) {}
+};
 
 // Initialize Supabase
 const supabase = createClient(
@@ -1612,6 +1655,12 @@ const RinON = () => {
     const [letterSubmitStatus, setLetterSubmitStatus] = useState(null); // null | 'submitting' | 'success' | 'error'
     const [editingLetter, setEditingLetter] = useState(null); // { id, initials, destination, profession, content }
     const letterFormRef = React.useRef(null);
+    const articleReadRef = useRef(null); // tracks current article read session for duration update
+
+    // Analytics dashboard state (admin-only)
+    const [analyticsOpen, setAnalyticsOpen] = useState(false);
+    const [analyticsData, setAnalyticsData] = useState(null);
+    const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
     // ==========================================
     // BASHKOHU — Community Signup Form
@@ -1665,6 +1714,7 @@ const RinON = () => {
         setMobileMenuOpen(false);
         setTimeout(() => {
             setCurrentPage(page);
+            trackPageView(page, user?.id);
             setPageTransition(false);
             window.scrollTo({ top: 0, behavior: 'smooth' });
             setTimeout(() => setHasPageLoaded(true), 100);
@@ -2155,6 +2205,7 @@ const RinON = () => {
         loadEventInterests();
         loadVideos();
         loadLetters();
+        trackPageView('home');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -2168,6 +2219,20 @@ const RinON = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
+
+    // Track article open/close for reads and duration
+    useEffect(() => {
+        if (showArticleModal && selectedArticle) {
+            trackArticleRead(selectedArticle.id, user?.id).then(readId => {
+                articleReadRef.current = { readId, startTime: Date.now() };
+            });
+        } else if (!showArticleModal && articleReadRef.current?.readId) {
+            const duration = (Date.now() - articleReadRef.current.startTime) / 1000;
+            updateReadDuration(articleReadRef.current.readId, duration, 100);
+            articleReadRef.current = null;
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showArticleModal]);
 
     // Show signup popup after scrolling on homepage (only for non-logged-in users)
     useEffect(() => {
@@ -2573,6 +2638,19 @@ const RinON = () => {
         } catch (err) {
             console.error(handleError(err, 'deleteVideo'));
         }
+    };
+
+    const fetchAnalytics = async () => {
+        setAnalyticsLoading(true);
+        try {
+            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            const [{ data: pageViews }, { data: articleReads }] = await Promise.all([
+                supabase.from('page_views').select('page, session_id, created_at').gte('created_at', sevenDaysAgo),
+                supabase.from('article_reads').select('article_id, read_duration_seconds, created_at').gte('created_at', sevenDaysAgo),
+            ]);
+            setAnalyticsData({ pageViews: pageViews || [], articleReads: articleReads || [] });
+        } catch (e) {}
+        setAnalyticsLoading(false);
     };
 
     const deleteArticle = async (id) => {
@@ -6910,6 +6988,17 @@ const RinON = () => {
             {showAdmin && (
                 <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
                     <button
+                        onClick={() => {
+                            const next = !analyticsOpen;
+                            setAnalyticsOpen(next);
+                            if (next && !analyticsData) fetchAnalytics();
+                        }}
+                        className={`p-4 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-300 ${analyticsOpen ? 'bg-teal-600 text-white' : 'bg-gray-800 text-teal-400 hover:bg-gray-700'}`}
+                        title={t('Analitika', 'Analytics')}
+                    >
+                        <TrendingUp className="h-6 w-6" />
+                    </button>
+                    <button
                         onClick={() => setShowAddForm(true)}
                         className="bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white p-4 rounded-full shadow-2xl hover:from-amber-500 hover:to-[#FF5252] transform hover:scale-110 transition-all duration-300 animate-pulse-glow"
                         title={t('Shto Artikull', 'Add Article')}
@@ -6940,6 +7029,132 @@ const RinON = () => {
                     >
                         <Award className="h-6 w-6" />
                     </button>
+                </div>
+            )}
+
+            {/* ── Admin Analytics Panel ───────────────────────────────── */}
+            {showAdmin && userProfile?.is_admin && analyticsOpen && (
+                <div className={`fixed bottom-6 right-24 z-40 w-80 md:w-96 max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl border animate-fadeIn ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
+                    <div className={`sticky top-0 flex items-center justify-between px-5 py-4 border-b ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-100'}`}>
+                        <span className={`font-bold text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>Analitika — 7 ditët e fundit</span>
+                        <button
+                            onClick={() => { fetchAnalytics(); }}
+                            className={`text-xs px-3 py-1 rounded-lg transition-colors ${darkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                        >
+                            Rifresko
+                        </button>
+                    </div>
+
+                    {analyticsLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    ) : analyticsData ? (() => {
+                        const pvs = analyticsData.pageViews;
+                        const ars = analyticsData.articleReads;
+
+                        const totalViews = pvs.length;
+                        const uniqueSessions = new Set(pvs.map(v => v.session_id)).size;
+                        const totalReads = ars.length;
+                        const durations = ars.map(r => r.read_duration_seconds).filter(d => d > 0);
+                        const avgDuration = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+                        const avgMin = Math.floor(avgDuration / 60);
+                        const avgSec = Math.round(avgDuration % 60);
+                        const avgLabel = avgMin > 0 ? `${avgMin} min ${avgSec} sek` : `${avgSec} sek`;
+
+                        // Page views by page
+                        const pageCount = {};
+                        pvs.forEach(v => { pageCount[v.page] = (pageCount[v.page] || 0) + 1; });
+                        const pagesSorted = Object.entries(pageCount).sort((a, b) => b[1] - a[1]);
+
+                        // Top articles
+                        const artCount = {};
+                        ars.forEach(r => { artCount[r.article_id] = (artCount[r.article_id] || 0) + 1; });
+                        const artsSorted = Object.entries(artCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+                        // Views per day
+                        const dayCount = {};
+                        pvs.forEach(v => {
+                            const day = v.created_at.slice(0, 10);
+                            dayCount[day] = (dayCount[day] || 0) + 1;
+                        });
+                        const daysSorted = Object.entries(dayCount).sort((a, b) => a[0].localeCompare(b[0]));
+                        const maxDayViews = Math.max(...daysSorted.map(d => d[1]), 1);
+
+                        return (
+                            <div className="p-5 space-y-6">
+                                {/* Stat cards */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    {[
+                                        { value: totalViews, label: 'Vizita gjithsej' },
+                                        { value: uniqueSessions, label: 'Vizitorë unikë' },
+                                        { value: totalReads, label: 'Artikuj të lexuar' },
+                                        { value: avgLabel, label: 'Kohë mesatare' },
+                                    ].map(({ value, label }) => (
+                                        <div key={label} className={`rounded-xl p-4 text-center ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                            <p className="text-2xl font-bold text-amber-500">{value}</p>
+                                            <p className={`text-xs uppercase tracking-wider mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{label}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Pages + Articles side by side */}
+                                <div className="grid grid-cols-1 gap-5">
+                                    {/* Top pages */}
+                                    <div>
+                                        <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Faqet më të vizituara</p>
+                                        {pagesSorted.length === 0 ? (
+                                            <p className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Nuk ka të dhëna.</p>
+                                        ) : pagesSorted.map(([page, count]) => (
+                                            <div key={page} className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{page}</span>
+                                                <span className="text-sm font-bold text-amber-500">{count}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Top articles */}
+                                    <div>
+                                        <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Artikujt më të lexuar</p>
+                                        {artsSorted.length === 0 ? (
+                                            <p className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Nuk ka të dhëna.</p>
+                                        ) : artsSorted.map(([articleId, count]) => {
+                                            const art = articles.find(a => String(a.id) === String(articleId));
+                                            return (
+                                                <div key={articleId} className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                                    <span className={`text-sm font-medium truncate pr-3 max-w-[70%] ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        {art ? art.titleAl : `Artikull #${articleId}`}
+                                                    </span>
+                                                    <span className="text-sm font-bold text-amber-500 flex-shrink-0">{count}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Daily bar chart */}
+                                <div>
+                                    <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Vizita ditore</p>
+                                    {daysSorted.length === 0 ? (
+                                        <p className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Nuk ka të dhëna.</p>
+                                    ) : daysSorted.map(([day, count]) => (
+                                        <div key={day} className="flex items-center gap-3 mb-2">
+                                            <span className={`text-xs w-20 flex-shrink-0 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{formatDateAl(day)}</span>
+                                            <div className="flex-1 flex items-center gap-2">
+                                                <div
+                                                    className="h-3 bg-amber-400 rounded-full"
+                                                    style={{ width: `${Math.round((count / maxDayViews) * 100)}%`, minWidth: '4px' }}
+                                                />
+                                                <span className={`text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{count}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })() : (
+                        <p className={`text-xs text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Nuk ka të dhëna.</p>
+                    )}
                 </div>
             )}
 
