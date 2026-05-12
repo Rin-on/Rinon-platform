@@ -22,6 +22,8 @@ import NgazetaPage from './pages/NgazetaPage';
 import BashkohuPage from './pages/BashkohuPage';
 import PartnersPage from './pages/PartnersPage';
 import AboutPage from './pages/AboutPage';
+import ArticleModal from './components/ArticleModal';
+import EventModal from './components/EventModal';
 
 // Check if running as native app
 const isNativeApp = Capacitor.isNativePlatform();
@@ -3635,118 +3637,17 @@ const RinON = () => {
             </main>
 
             {showArticleModal && selectedArticle && (
-                <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) {
-                            setShowArticleModal(false);
-                            window.history.pushState({}, '', '/');
-                        }
-                    }}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onTouchMove={(e) => e.stopPropagation()}
-                    onTouchEnd={(e) => e.stopPropagation()}
-                >
-                    <div
-                        className="bg-[#2D2A26] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-amber-500/20 shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        onTouchMove={(e) => e.stopPropagation()}
-                        onTouchEnd={(e) => e.stopPropagation()}
-                    >
-                        {/* Hero Image */}
-                        <div className="relative h-80">
-                            <img
-                                src={selectedArticle.image}
-                                alt={selectedArticle.titleAl}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    e.target.src = 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800';
-                                }}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#2D2A26] via-transparent to-transparent" />
-                            <button
-                                onClick={() => {
-                                    setShowArticleModal(false);
-                                    window.history.pushState({}, '', '/');
-                                }}
-                                className="absolute top-3 right-3 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all"
-                            >
-                                <X className="w-6 h-6 text-white" />
-                            </button>
-                        </div>
-
-                        {/* Article Content */}
-                        <div className="px-5 md:px-8 pt-6 pb-10">
-                            {/* Category badge */}
-                            {selectedArticle.category && (
-                                <span className={`inline-block text-xs px-3 py-1 rounded-full font-semibold text-white mb-3 ${getCategoryColor(selectedArticle.category)}`}>
-                                    {selectedArticle.category}
-                                </span>
-                            )}
-
-                            {/* Title */}
-                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                {language === 'al' ? selectedArticle.titleAl : selectedArticle.titleEn}
-                            </h2>
-
-                            {/* Author / Date / Source row */}
-                            <div className="flex flex-wrap items-center gap-4 mb-4">
-                                {selectedArticle.author && (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                                            <span className="text-white text-sm font-bold">{selectedArticle.author.charAt(0).toUpperCase()}</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500">{t('Nga', 'By')}</p>
-                                            <p className="text-sm text-amber-400 font-medium">{selectedArticle.author}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {selectedArticle.source && (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                                            <ExternalLink className="w-4 h-4 text-gray-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-gray-500">{t('Burimi', 'Source')}</p>
-                                            <p className="text-sm text-gray-300">{selectedArticle.source}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {selectedArticle.date && (
-                                    <div className="flex items-center gap-2 ml-auto">
-                                        <Clock className="w-4 h-4 text-gray-500" />
-                                        <span className="text-sm text-gray-400">{formatDateAl(selectedArticle.date)}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Save / Share toolbar */}
-                            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/10">
-                                <button
-                                    onClick={() => toggleSaveArticle(selectedArticle.id)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm transition-colors ${savedArticles.includes(selectedArticle.id) ? 'bg-amber-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-                                >
-                                    {savedArticles.includes(selectedArticle.id) ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                                    {savedArticles.includes(selectedArticle.id) ? t('Ruajtur', 'Saved') : t('Ruaj', 'Save')}
-                                </button>
-                                <button
-                                    onClick={() => { setShareItem({ item: selectedArticle, type: 'article' }); setShowShareModal(true); }}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors"
-                                >
-                                    <Share2 className="w-4 h-4" />
-                                    {t('Ndaj', 'Share')}
-                                </button>
-                            </div>
-
-                            {/* Article body */}
-                            <div className="text-base md:text-lg text-gray-200 leading-loose whitespace-pre-line">
-                                {language === 'al' ? selectedArticle.contentAl : selectedArticle.contentEn}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <ArticleModal
+                    selectedArticle={selectedArticle}
+                    setShowArticleModal={setShowArticleModal}
+                    language={language}
+                    darkMode={darkMode}
+                    t={t}
+                    savedArticles={savedArticles}
+                    toggleSaveArticle={toggleSaveArticle}
+                    setShareItem={setShareItem}
+                    setShowShareModal={setShowShareModal}
+                />
             )}
 
             {/* Video Modal */}
@@ -4074,184 +3975,16 @@ const RinON = () => {
 
             {/* Event Modal */}
             {showEventModal && selectedEvent && (
-                <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
-                    onClick={(e) => {
-                        // Only close if clicking the backdrop itself, not the modal content
-                        if (e.target === e.currentTarget) {
-                            setShowEventModal(false);
-                            setSelectedEvent(null);
-                            window.history.pushState({}, '', '/events');
-                        }
-                    }}
-                >
-                    <div
-                        className={`rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-2xl ${darkMode ? 'bg-[#2D2A26] border-amber-500/20' : 'bg-white border-gray-200'}`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header Image */}
-                        <div className="relative h-72">
-                            <img
-                                src={selectedEvent.image}
-                                alt={selectedEvent.titleAl}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800';
-                                }}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#2D2A26] via-transparent to-transparent" />
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowEventModal(false);
-                                    setSelectedEvent(null);
-                                    window.history.pushState({}, '', '/events');
-                                }}
-                                className="absolute top-4 right-4 bg-[#2D2A26]/80 hover:bg-[#2D2A26] p-2 rounded-full backdrop-blur-lg transition-all"
-                            >
-                                <X className="h-6 w-6 text-white" />
-                            </button>
-
-                            {/* Event Type Badge */}
-                            <div className="absolute top-4 left-4 flex gap-2">
-                                {selectedEvent.type && (
-                                    <span className="px-4 py-2 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white text-sm font-bold rounded-full shadow-lg">
-                                        {selectedEvent.type}
-                                    </span>
-                                )}
-                                {selectedEvent.is_free && (
-                                    <span className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold rounded-full shadow-lg">
-                                        {t('FALAS', 'FREE')}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-8">
-                            <h2 className={`text-4xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                {language === 'al' ? selectedEvent.titleAl : (selectedEvent.titleEn || selectedEvent.titleAl)}
-                            </h2>
-
-                            {/* Event Details Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                {/* Date */}
-                                <div className={`flex items-center gap-3 p-4 rounded-xl ${darkMode ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-amber-50 border border-amber-200'}`}>
-                                    <div className="w-12 h-12 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] rounded-full flex items-center justify-center">
-                                        <Calendar className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Data', 'Date')}</p>
-                                        <p className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                            {language === 'al' ? selectedEvent.dateAl : (selectedEvent.dateEn || selectedEvent.dateAl)}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Time */}
-                                {selectedEvent.time && (
-                                    <div className={`flex items-center gap-3 p-4 rounded-xl ${darkMode ? 'bg-blue-600/10 border border-blue-500/30' : 'bg-blue-100 border border-blue-300'}`}>
-                                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-amber-500 rounded-full flex items-center justify-center">
-                                            <Clock className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Ora', 'Time')}</p>
-                                            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {selectedEvent.time}{selectedEvent.endTime ? ` - ${selectedEvent.endTime}` : ''}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Location */}
-                                {selectedEvent.location && (
-                                    <div className={`flex items-center gap-3 p-4 rounded-xl ${darkMode ? 'bg-[#FF6B6B]/10 border border-[#FF6B6B]/30' : 'bg-[#FFE5D9] border border-[#FF6B6B]/50'}`}>
-                                        <div className="w-12 h-12 bg-gradient-to-r from-pink-600 to-orange-600 rounded-full flex items-center justify-center">
-                                            <MapPin className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Vendndodhja', 'Location')}</p>
-                                            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {selectedEvent.location}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Spots Left */}
-                                {selectedEvent.spots_left !== undefined && (
-                                    <div className={`flex items-center gap-3 p-4 rounded-xl ${darkMode ? 'bg-orange-600/10 border border-orange-500/30' : 'bg-orange-100 border border-orange-300'}`}>
-                                        <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-red-600 rounded-full flex items-center justify-center">
-                                            <Users className="w-6 h-6 text-white" />
-                                        </div>
-                                        <div>
-                                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Vende', 'Spots')}</p>
-                                            <p className={`font-semibold ${selectedEvent.spots_left < 10 ? 'text-red-400' : darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                                {selectedEvent.spots_left > 0
-                                                    ? `${selectedEvent.spots_left} ${t('të mbetura', 'left')}`
-                                                    : t('MBUSH', 'FULL')
-                                                }
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Description */}
-                            <div className="mb-6">
-                                <h3 className={`text-xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-[#2D2A26]'}`}>
-                                    {t('Përshkrimi', 'Description')}
-                                </h3>
-                                <p className={`leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    {language === 'al' ? selectedEvent.descAl : (selectedEvent.descEn || selectedEvent.descAl)}
-                                </p>
-                            </div>
-
-                            {/* Tags */}
-                            {selectedEvent.tags && selectedEvent.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mb-6">
-                                    {selectedEvent.tags.map((tag, idx) => (
-                                        <span
-                                            key={idx}
-                                            className="px-3 py-1 bg-amber-500/20 text-amber-500 rounded-full text-sm"
-                                        >
-                                            #{tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-wrap gap-4">
-                                {selectedEvent.registration_link && (
-                                    <a
-                                        href={selectedEvent.registration_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex-1 px-6 py-4 bg-gradient-to-r from-amber-400 via-orange-500 to-[#FF6B6B] text-white rounded-xl hover:from-amber-500 hover:to-[#FF5252] transition-all text-center font-bold flex items-center justify-center gap-2 shadow-lg shadow-amber-500/50"
-                                    >
-                                        <ExternalLink className="w-5 h-5" />
-                                        {t('Regjistrohu Tani', 'Register Now')}
-                                    </a>
-                                )}
-                                <button
-                                    onClick={() => {
-                                        openShareModal(selectedEvent, 'event');
-                                    }}
-                                    className={`px-6 py-4 rounded-xl transition-all font-bold flex items-center justify-center gap-2 ${darkMode
-                                        ? 'bg-[#3D3A36] text-white hover:bg-[#4D4A46] border border-amber-500/30'
-                                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border border-gray-300'
-                                        }`}
-                                >
-                                    <Share2 className="w-5 h-5" />
-                                    {t('Shpërndaj', 'Share')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )
-            }
+                <EventModal
+                    selectedEvent={selectedEvent}
+                    setShowEventModal={setShowEventModal}
+                    setSelectedEvent={setSelectedEvent}
+                    language={language}
+                    darkMode={darkMode}
+                    t={t}
+                    openShareModal={openShareModal}
+                />
+            )}
             {showAdmin && (
                 <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
                     <button
