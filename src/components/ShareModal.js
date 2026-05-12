@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, Instagram, Download } from 'lucide-react';
+import { X, Copy, Check, Instagram, Download } from 'lucide-react'; // Share2 removed — unused
 
 const ShareModal = ({ isOpen, onClose, item, type, language, darkMode, t }) => {
     const [captionCopied, setCaptionCopied] = useState(false);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check } from 'lucide-react'; // X removed — unused
 
 const TermsModal = ({ showTermsModal, onAccept, onReject, darkMode, t }) => {
     const [activeTab, setActiveTab] = useState('terms'); // 'terms' or 'privacy'

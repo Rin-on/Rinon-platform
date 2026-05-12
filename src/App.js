@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, ChevronDown, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, ChevronUp, Shield, ArrowRight, LayoutGrid, Palette, MessageSquare } from 'lucide-react';
+import { X, Plus, Calendar, Users, Award, TrendingUp, Globe as GlobeIcon, GraduationCap, Newspaper, Search, ChevronUp, LayoutGrid, Palette, MessageSquare } from 'lucide-react';
 
 // Capacitor imports for native app
 import { Capacitor } from '@capacitor/core';
