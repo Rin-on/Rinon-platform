@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Globe, ChevronLeft, ChevronRight, ChevronDown, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, ChevronUp, Shield, ArrowRight, LayoutGrid, Palette, MessageSquare, Feather, PenTool, FileText, Mail } from 'lucide-react';
+import { Menu, X, Globe, ChevronLeft, ChevronRight, ChevronDown, Trash2, Plus, Calendar, Users, Award, Leaf, TrendingUp, Film, Play, MapPin, LogOut, Send, Heart, Sun, Moon, Edit, Brain, Globe as GlobeIcon, Clock, Star, Bookmark, ExternalLink, BookmarkCheck, Calendar as CalendarIcon, GraduationCap, Eye, EyeOff, Share2, Copy, Download, Check, Instagram, Home, Newspaper, User, Search, ChevronUp, Shield, ArrowRight, LayoutGrid, Palette, MessageSquare } from 'lucide-react';
 
 // Capacitor imports for native app
 import { Capacitor } from '@capacitor/core';
 import { App as CapApp } from '@capacitor/app';
 
 import supabase from './utils/supabase';
-import { trackPageView, trackArticleRead, updateReadDuration, formatDateAl, getCategoryColor, validateInput, validatePassword, handleError, uploadImage } from './utils/helpers';
-import EventCalendar from './components/EventCalendar';
+import { trackPageView, trackArticleRead, updateReadDuration } from './utils/helpers';
 import ShareModal from './components/ShareModal';
 import TermsModal from './components/TermsModal';
 import AuthModal from './components/AuthModal';
 import PreferencesModal from './components/PreferencesModal';
-import { HomeFadeSection, ScrollHint } from './components/HomeFadeSection';
 import Footer from './components/Footer';
 import BottomNav from './components/BottomNav';
 import HomePage from './pages/HomePage';
@@ -656,6 +654,7 @@ const RinON = () => {
         });
 
         return () => subscription.unsubscribe();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
