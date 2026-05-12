@@ -352,3 +352,147 @@ export const AddMemberForm = ({
         </div>
     );
 };
+
+export const AddVideoForm = ({
+    showAddVideoForm,
+    setShowAddVideoForm,
+    videoFormData,
+    setVideoFormData,
+    t,
+    submitVideo,
+    darkMode,
+}) => {
+    if (!showAddVideoForm) return null;
+    return (
+        <div
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={(e) => e.target === e.currentTarget && setShowAddVideoForm(false)}
+        >
+            <div className={`w-full max-w-lg rounded-xl p-6 max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#2D2A26]' : 'bg-white'}`}>
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {t('Shto Video', 'Add Video')}
+                    </h2>
+                    <button onClick={() => setShowAddVideoForm(false)} className={`p-1 rounded ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}>
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            YouTube ID *
+                        </label>
+                        <input
+                            type="text"
+                            value={videoFormData.youtubeId}
+                            onChange={(e) => setVideoFormData({ ...videoFormData, youtubeId: e.target.value })}
+                            placeholder="dQw4w9WgXcQ"
+                            className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                        />
+                        <p className={`text-xs mt-1 ${darkMode ? 'text-gray-600' : 'text-gray-400'}`}>
+                            {t('Nga URL: youtube.com/watch?v=', 'From URL: youtube.com/watch?v=')}
+                            <span className="text-amber-500">dQw4w9WgXcQ</span>
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Titulli (Shqip)', 'Title (Albanian)')} *
+                            </label>
+                            <input
+                                type="text"
+                                value={videoFormData.titleAl}
+                                onChange={(e) => setVideoFormData({ ...videoFormData, titleAl: e.target.value })}
+                                className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                            />
+                        </div>
+                        <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Titulli (Anglisht)', 'Title (English)')}
+                            </label>
+                            <input
+                                type="text"
+                                value={videoFormData.titleEn}
+                                onChange={(e) => setVideoFormData({ ...videoFormData, titleEn: e.target.value })}
+                                className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {t('Përshkrimi (Shqip)', 'Description (Albanian)')}
+                        </label>
+                        <textarea
+                            value={videoFormData.descriptionAl}
+                            onChange={(e) => setVideoFormData({ ...videoFormData, descriptionAl: e.target.value })}
+                            rows={3}
+                            className={`w-full px-3 py-2 rounded-lg resize-none ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Kategoria', 'Category')}
+                            </label>
+                            <select
+                                value={videoFormData.category}
+                                onChange={(e) => setVideoFormData({ ...videoFormData, category: e.target.value })}
+                                className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                            >
+                                <option value="podcast">🎙️ Podcast</option>
+                                <option value="events">📹 Evente</option>
+                                <option value="interviews">🎤 Intervista</option>
+                                <option value="external">🌍 Të Jashtme</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className={`block text-sm mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {t('Kohëzgjatja', 'Duration')}
+                            </label>
+                            <input
+                                type="text"
+                                value={videoFormData.duration}
+                                onChange={(e) => setVideoFormData({ ...videoFormData, duration: e.target.value })}
+                                placeholder="12:34"
+                                className={`w-full px-3 py-2 rounded-lg ${darkMode ? 'bg-[#3D3A36] text-white' : 'bg-gray-50 text-gray-900'}`}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <label className={`flex items-center gap-2 cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <input
+                                type="checkbox"
+                                checked={videoFormData.isRinONOriginal}
+                                onChange={(e) => setVideoFormData({ ...videoFormData, isRinONOriginal: e.target.checked })}
+                                className="rounded"
+                            />
+                            🌟 RinON Original
+                        </label>
+                        <label className={`flex items-center gap-2 cursor-pointer ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <input
+                                type="checkbox"
+                                checked={videoFormData.isFeatured}
+                                onChange={(e) => setVideoFormData({ ...videoFormData, isFeatured: e.target.checked })}
+                                className="rounded"
+                            />
+                            ⭐ Featured
+                        </label>
+                    </div>
+
+                    <button
+                        onClick={submitVideo}
+                        disabled={!videoFormData.youtubeId || !videoFormData.titleAl}
+                        className="w-full py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {t('Shto Video', 'Add Video')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
