@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Globe, Sun, Moon, Bookmark, LogOut } from 'lucide-react';
+import { X, Globe, Sun, Moon, Bookmark } from 'lucide-react';
 
 const MobileMenu = ({
     mobileMenuOpen,

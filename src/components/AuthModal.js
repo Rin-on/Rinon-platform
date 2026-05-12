@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Eye, EyeOff, Globe, ArrowRight, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { validateInput, validatePassword } from '../utils/helpers';
 
 const AuthModal = ({ showAuthModal, setShowAuthModal, authMode, setAuthMode, handleSignup, handleLogin, handleGoogleSignIn, setShowPreferences, darkMode, t }) => {

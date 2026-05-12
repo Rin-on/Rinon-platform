@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, Brain, Film, Award, Play, Leaf, Users, Heart, Star, Calendar, Calendar as CalendarIcon, Share2, Eye, Bookmark, BookmarkCheck, ChevronLeft, ChevronRight, MapPin, Clock, ExternalLink, X, Check, Send, Download, Edit, Trash2 } from 'lucide-react';
+import { TrendingUp, Brain, Film, Award, Play, Leaf, Users, Heart, Star, Calendar, Calendar as CalendarIcon, Share2, Bookmark, BookmarkCheck, ChevronLeft, ChevronRight, MapPin, Clock, ExternalLink, X, Edit, Trash2 } from 'lucide-react';
 
 // Event Calendar Component
 const EventCalendar = React.memo(({ language, darkMode, events, showAdmin, editEvent, deleteEvent, t, openShareModal, openEvent, currentDate, setCurrentDate, eventInterests, userEventInterests, toggleEventInterest }) => {
