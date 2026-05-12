@@ -26,6 +26,11 @@ import ArticleModal from './components/ArticleModal';
 import EventModal from './components/EventModal';
 import Header from './components/Header';
 import FAB from './components/FAB';
+import DraftsModal from './components/DraftsModal';
+import UserActivityModal from './components/UserActivityModal';
+import NativeShareModal from './components/NativeShareModal';
+import HomeSignupPopup from './components/HomeSignupPopup';
+import AdminAnalyticsPanel from './components/AdminAnalyticsPanel';
 
 // Check if running as native app
 const isNativeApp = Capacitor.isNativePlatform();
@@ -2858,384 +2863,50 @@ const RinON = () => {
             {/* ==========================================
                 DRAFTS MODAL - View and manage saved drafts
                ========================================== */}
-            {showDraftsModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowDraftsModal(false)}>
-                    <div className={`absolute inset-0 ${darkMode ? 'bg-black/70' : 'bg-black/50'} backdrop-blur-sm`} />
-                    <div
-                        className={`relative w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-2xl ${darkMode ? 'bg-[#1a1918]' : 'bg-white'
-                            }`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className={`flex items-center justify-between p-5 border-b ${darkMode ? 'border-white/10' : 'border-gray-100'
-                            }`}>
-                            <div>
-                                <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                    {t('Drafts të Mia', 'My Drafts')}
-                                </h2>
-                                <p className={`text-sm mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    {drafts.length} {t('draft të ruajtur', 'saved drafts')}
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => setShowDraftsModal(false)}
-                                className={`p-2 rounded-full ${darkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
-                            >
-                                <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                            </button>
-                        </div>
-
-                        {/* Drafts List */}
-                        <div className="overflow-y-auto max-h-[60vh] p-4">
-                            {drafts.length > 0 ? (
-                                <div className="space-y-3">
-                                    {drafts.map(draft => (
-                                        <div
-                                            key={draft.id}
-                                            className={`p-4 rounded-xl border transition-colors ${darkMode
-                                                ? 'bg-white/5 border-white/10 hover:bg-white/10'
-                                                : 'bg-gray-50 border-gray-100 hover:bg-gray-100'
-                                                }`}
-                                        >
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className={`font-medium line-clamp-1 ${darkMode ? 'text-white' : 'text-gray-900'
-                                                        }`}>
-                                                        {draft.titleAl || t('Pa titull', 'Untitled')}
-                                                    </h4>
-                                                    <p className={`text-sm mt-1 line-clamp-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'
-                                                        }`}>
-                                                        {draft.contentAl?.substring(0, 150) || t('Pa përmbajtje', 'No content')}...
-                                                    </p>
-                                                    <div className={`flex items-center gap-3 mt-2 text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'
-                                                        }`}>
-                                                        <span className={`px-2 py-0.5 rounded-full ${darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-600'
-                                                            }`}>
-                                                            {draft.category}
-                                                        </span>
-                                                        <span>
-                                                            {t('Përditësuar', 'Updated')}: {new Date(draft.updatedAt).toLocaleDateString()}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                {draft.image && (
-                                                    <img
-                                                        src={draft.image}
-                                                        alt=""
-                                                        className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                                                    />
-                                                )}
-                                            </div>
-
-                                            {/* Actions */}
-                                            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-dashed border-gray-200 dark:border-white/10">
-                                                <button
-                                                    onClick={() => editDraft(draft)}
-                                                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${darkMode
-                                                        ? 'bg-white/5 text-gray-300 hover:bg-white/10'
-                                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                                        }`}
-                                                >
-                                                    <Edit className="w-4 h-4 inline mr-1" />
-                                                    {t('Vazhdo', 'Continue')}
-                                                </button>
-                                                <button
-                                                    onClick={() => publishDraft(draft)}
-                                                    className="flex-1 py-2 text-sm font-medium rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600"
-                                                >
-                                                    {t('Publiko', 'Publish')}
-                                                </button>
-                                                <button
-                                                    onClick={() => deleteDraft(draft.id)}
-                                                    className={`p-2 rounded-lg transition-colors ${darkMode
-                                                        ? 'text-red-400 hover:bg-red-500/10'
-                                                        : 'text-red-500 hover:bg-red-50'
-                                                        }`}
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-12">
-                                    <Edit className={`w-16 h-16 mx-auto mb-4 ${darkMode ? 'text-gray-700' : 'text-gray-200'}`} />
-                                    <h3 className={`text-lg font-medium mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        {t('Asnjë draft', 'No drafts yet')}
-                                    </h3>
-                                    <p className={`text-sm mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                        {t('Drafts që ruan do të shfaqen këtu', 'Drafts you save will appear here')}
-                                    </p>
-                                    <button
-                                        onClick={() => { setShowDraftsModal(false); setShowAddForm(true); }}
-                                        className="px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-medium rounded-lg"
-                                    >
-                                        {t('Shkruaj Artikull', 'Write Article')}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DraftsModal
+                showDraftsModal={showDraftsModal}
+                setShowDraftsModal={setShowDraftsModal}
+                darkMode={darkMode}
+                t={t}
+                drafts={drafts}
+                editDraft={editDraft}
+                publishDraft={publishDraft}
+                deleteDraft={deleteDraft}
+                setShowAddForm={setShowAddForm}
+            />
 
             {/* ==========================================
                 USER ACTIVITY BANK - Saved Articles & Events
                ========================================== */}
-            {showUserActivity && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowUserActivity(false)}>
-                    <div className={`absolute inset-0 ${darkMode ? 'bg-black/70' : 'bg-black/50'} backdrop-blur-sm`} />
-                    <div
-                        className={`relative w-full max-w-lg max-h-[80vh] overflow-hidden rounded-2xl ${darkMode ? 'bg-[#1a1918]' : 'bg-white'
-                            }`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className={`flex items-center justify-between p-5 border-b ${darkMode ? 'border-white/10' : 'border-gray-100'
-                            }`}>
-                            <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                {t('Të Ruajturat e Mia', 'My Saved Items')}
-                            </h2>
-                            <button
-                                onClick={() => setShowUserActivity(false)}
-                                className={`p-2 rounded-full ${darkMode ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
-                            >
-                                <X className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                            </button>
-                        </div>
-
-                        {/* Tabs */}
-                        <div className={`flex border-b ${darkMode ? 'border-white/10' : 'border-gray-100'}`}>
-                            <button
-                                onClick={() => setUserActivityTab('saved')}
-                                className={`flex-1 py-3 text-sm font-medium transition-colors ${userActivityTab === 'saved'
-                                    ? 'text-amber-500 border-b-2 border-amber-500'
-                                    : darkMode ? 'text-gray-400' : 'text-gray-500'
-                                    }`}
-                            >
-                                {t('Artikuj', 'Articles')} ({savedArticles.length})
-                            </button>
-                            <button
-                                onClick={() => setUserActivityTab('events')}
-                                className={`flex-1 py-3 text-sm font-medium transition-colors ${userActivityTab === 'events'
-                                    ? 'text-amber-500 border-b-2 border-amber-500'
-                                    : darkMode ? 'text-gray-400' : 'text-gray-500'
-                                    }`}
-                            >
-                                {t('Evente', 'Events')} ({savedEvents.length})
-                            </button>
-                        </div>
-
-                        {/* Content */}
-                        <div className="overflow-y-auto max-h-[50vh] p-4">
-                            {userActivityTab === 'saved' ? (
-                                getSavedArticlesData().length > 0 ? (
-                                    <div className="space-y-3">
-                                        {getSavedArticlesData().map(article => (
-                                            <div
-                                                key={article.id}
-                                                className={`flex gap-3 p-3 rounded-xl cursor-pointer transition-colors ${darkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-50 hover:bg-gray-100'
-                                                    }`}
-                                                onClick={() => { openArticle(article); setShowUserActivity(false); }}
-                                            >
-                                                <img
-                                                    src={article.image}
-                                                    alt={article.titleAl}
-                                                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                                                />
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className={`font-medium text-sm line-clamp-2 ${darkMode ? 'text-white' : 'text-gray-900'
-                                                        }`}>
-                                                        {language === 'al' ? article.titleAl : article.titleEn}
-                                                    </h4>
-                                                    <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                        {article.category}
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); toggleSaveArticle(article.id); }}
-                                                    className="p-2 text-amber-500"
-                                                >
-                                                    <BookmarkCheck className="w-5 h-5" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-10">
-                                        <Bookmark className={`w-12 h-12 mx-auto mb-3 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
-                                        <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                            {t('Nuk ke artikuj të ruajtur', 'No saved articles yet')}
-                                        </p>
-                                    </div>
-                                )
-                            ) : (
-                                getSavedEventsData().length > 0 ? (
-                                    <div className="space-y-3">
-                                        {getSavedEventsData().map(event => (
-                                            <div
-                                                key={event.id}
-                                                className={`flex gap-3 p-3 rounded-xl cursor-pointer transition-colors ${darkMode ? 'bg-white/5 hover:bg-white/10' : 'bg-gray-50 hover:bg-gray-100'
-                                                    }`}
-                                            >
-                                                <div className={`w-16 h-16 rounded-xl flex flex-col items-center justify-center flex-shrink-0 ${darkMode ? 'bg-amber-500/20' : 'bg-amber-100'
-                                                    }`}>
-                                                    <Calendar className="w-5 h-5 text-amber-500" />
-                                                    <span className={`text-xs font-medium mt-1 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                                                        {event.date?.slice(5, 10)}
-                                                    </span>
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className={`font-medium text-sm line-clamp-2 ${darkMode ? 'text-white' : 'text-gray-900'
-                                                        }`}>
-                                                        {language === 'al' ? event.titleAl : event.titleEn}
-                                                    </h4>
-                                                    <p className={`text-xs mt-1 flex items-center gap-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                                        <MapPin className="w-3 h-3" />
-                                                        {event.location}
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); toggleSaveEvent(event.id); }}
-                                                    className="p-2 text-amber-500"
-                                                >
-                                                    <BookmarkCheck className="w-5 h-5" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-10">
-                                        <Calendar className={`w-12 h-12 mx-auto mb-3 ${darkMode ? 'text-gray-600' : 'text-gray-300'}`} />
-                                        <p className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                            {t('Nuk ke evente të ruajtura', 'No saved events yet')}
-                                        </p>
-                                    </div>
-                                )
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            <UserActivityModal
+                showUserActivity={showUserActivity}
+                setShowUserActivity={setShowUserActivity}
+                darkMode={darkMode}
+                t={t}
+                language={language}
+                userActivityTab={userActivityTab}
+                setUserActivityTab={setUserActivityTab}
+                savedArticles={savedArticles}
+                savedEvents={savedEvents}
+                getSavedArticlesData={getSavedArticlesData}
+                getSavedEventsData={getSavedEventsData}
+                openArticle={openArticle}
+                toggleSaveArticle={toggleSaveArticle}
+                toggleSaveEvent={toggleSaveEvent}
+            />
 
             {/* ==========================================
                 NATIVE SHARE MODAL - WhatsApp, Snapchat, etc.
                ========================================== */}
-            {showNativeShare && nativeShareItem && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowNativeShare(false)}>
-                    <div className={`absolute inset-0 ${darkMode ? 'bg-black/70' : 'bg-black/50'}`} />
-                    <div
-                        className={`relative w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden ${darkMode ? 'bg-[#1a1918]' : 'bg-white'
-                            }`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className="flex items-center justify-center pt-3 pb-1">
-                            <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-white/20' : 'bg-gray-300'}`} />
-                        </div>
-                        <div className="p-5 pt-2 text-center">
-                            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                {t('Shpërndaj', 'Share')}
-                            </h3>
-                            <p className={`text-sm mt-1 line-clamp-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                {nativeShareItem.title}
-                            </p>
-                        </div>
-
-                        {/* Share Options - For Everyone */}
-                        <div className="px-5 pb-4">
-                            <div className="grid grid-cols-4 gap-4">
-                                {/* WhatsApp */}
-                                <a
-                                    href={`https://wa.me/?text=${encodeURIComponent(nativeShareItem.title + ' ' + nativeShareItem.url)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex flex-col items-center gap-2"
-                                >
-                                    <div className="w-14 h-14 rounded-2xl bg-green-500 flex items-center justify-center">
-                                        <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                                        </svg>
-                                    </div>
-                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>WhatsApp</span>
-                                </a>
-
-                                {/* Telegram */}
-                                <a
-                                    href={`https://t.me/share/url?url=${encodeURIComponent(nativeShareItem.url)}&text=${encodeURIComponent(nativeShareItem.title)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex flex-col items-center gap-2"
-                                >
-                                    <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center">
-                                        <Send className="w-6 h-6 text-white" />
-                                    </div>
-                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Telegram</span>
-                                </a>
-
-                                {/* Twitter/X */}
-                                <a
-                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(nativeShareItem.title)}&url=${encodeURIComponent(nativeShareItem.url)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex flex-col items-center gap-2"
-                                >
-                                    <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center">
-                                        <span className="text-white font-bold text-xl">𝕏</span>
-                                    </div>
-                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>X</span>
-                                </a>
-
-                                {/* Copy Link */}
-                                <button
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(nativeShareItem.url);
-                                        alert(t('Linku u kopjua!', 'Link copied!'));
-                                    }}
-                                    className="flex flex-col items-center gap-2"
-                                >
-                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${darkMode ? 'bg-white/10' : 'bg-gray-100'
-                                        }`}>
-                                        <Copy className={`w-6 h-6 ${darkMode ? 'text-white' : 'text-gray-700'}`} />
-                                    </div>
-                                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('Kopjo', 'Copy')}</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Instagram Share - Admin Only */}
-                        {userProfile?.is_admin && (
-                            <>
-                                <div className={`mx-5 border-t ${darkMode ? 'border-white/10' : 'border-gray-100'}`} />
-                                <div className="p-5">
-                                    <p className={`text-xs font-medium mb-3 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                        {t('Vetëm për Admin - Shpërndaj në Instagram', 'Admin Only - Share to Instagram')}
-                                    </p>
-                                    <button
-                                        onClick={() => openShareModal(nativeShareItem.item, nativeShareItem.type)}
-                                        className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white font-medium flex items-center justify-center gap-2"
-                                    >
-                                        <Instagram className="w-5 h-5" />
-                                        {t('Krijo Post për Instagram', 'Create Instagram Post')}
-                                    </button>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Cancel */}
-                        <div className="p-5 pt-0">
-                            <button
-                                onClick={() => setShowNativeShare(false)}
-                                className={`w-full py-3 rounded-xl font-medium ${darkMode ? 'bg-white/5 text-gray-300' : 'bg-gray-100 text-gray-700'
-                                    }`}
-                            >
-                                {t('Anulo', 'Cancel')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <NativeShareModal
+                showNativeShare={showNativeShare}
+                setShowNativeShare={setShowNativeShare}
+                nativeShareItem={nativeShareItem}
+                darkMode={darkMode}
+                t={t}
+                userProfile={userProfile}
+                openShareModal={openShareModal}
+            />
 
             <style>{`
         @keyframes fadeIn {
@@ -3724,95 +3395,14 @@ const RinON = () => {
             )}
 
             {/* Youthful Signup Popup */}
-            {showHomeSignupPopup && !user && (
-                <div
-                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-                    onClick={(e) => e.target === e.currentTarget && setShowHomeSignupPopup(false)}
-                >
-                    <div className={`w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden animate-slideUp ${darkMode ? 'bg-[#2D2A26]' : 'bg-[#FFFBF7]'}`}>
-                        {/* Close handle for mobile */}
-                        <div className="flex justify-center pt-3 pb-2 sm:hidden">
-                            <div className={`w-10 h-1 rounded-full ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
-                        </div>
-
-                        {/* Header - simple and clean */}
-                        <div className="px-6 pt-4 pb-6 text-center">
-                            <div className="flex justify-center gap-1 mb-4">
-                                <div className="w-3 h-3 rounded-full bg-[#F97316]"></div>
-                                <div className="w-3 h-3 rounded-full bg-[#0D9488]"></div>
-                                <div className="w-3 h-3 rounded-full bg-[#FBBF24]"></div>
-                            </div>
-                            <h3 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-[#1F2937]'}`}>
-                                {t('Hej! 👋', 'Hey! 👋')}
-                            </h3>
-                            <p className={`${darkMode ? 'text-gray-400' : 'text-[#1F2937]/60'}`}>
-                                {t('Krijo llogari për të mos humbur mundësi të reja', 'Create an account to not miss new opportunities')}
-                            </p>
-                        </div>
-
-                        {/* Benefits - minimal */}
-                        <div className={`mx-6 p-4 rounded-2xl mb-6 ${darkMode ? 'bg-[#3D3A36]' : 'bg-white'}`}>
-                            <div className="flex items-center gap-4 mb-3 last:mb-0">
-                                <div className="w-10 h-10 rounded-xl bg-[#F97316]/10 flex items-center justify-center flex-shrink-0">
-                                    <Star className="w-5 h-5 text-[#F97316]" />
-                                </div>
-                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-[#1F2937]'}`}>
-                                    {t('Zbulo evente & mundësi të reja', 'Discover new events & opportunities')}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-4 mb-3 last:mb-0">
-                                <div className="w-10 h-10 rounded-xl bg-[#0D9488]/10 flex items-center justify-center flex-shrink-0">
-                                    <Bookmark className="w-5 h-5 text-[#0D9488]" />
-                                </div>
-                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-[#1F2937]'}`}>
-                                    {t('Ruaj dhe organizo gjërat e tua', 'Save and organize your stuff')}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-[#FBBF24]/10 flex items-center justify-center flex-shrink-0">
-                                    <Users className="w-5 h-5 text-[#FBBF24]" />
-                                </div>
-                                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-[#1F2937]'}`}>
-                                    {t('Bashkohu me komunitetin', 'Join the community')}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="px-6 pb-6 space-y-3">
-                            <button
-                                onClick={() => {
-                                    setShowHomeSignupPopup(false);
-                                    setAuthMode('register');
-                                    setShowAuthModal(true);
-                                }}
-                                className="w-full py-4 bg-[#F97316] text-white rounded-xl font-semibold hover:bg-[#EA580C] transition-all"
-                            >
-                                {t('Regjistrohu — është falas', 'Sign up — it\'s free')}
-                            </button>
-
-                            <div className="flex items-center gap-4">
-                                <button
-                                    onClick={() => {
-                                        setShowHomeSignupPopup(false);
-                                        setAuthMode('login');
-                                        setShowAuthModal(true);
-                                    }}
-                                    className={`flex-1 py-3 rounded-xl font-medium transition-colors ${darkMode ? 'text-gray-300 hover:bg-white/10' : 'text-[#1F2937] hover:bg-black/5'}`}
-                                >
-                                    {t('Hyr', 'Log in')}
-                                </button>
-                                <button
-                                    onClick={() => setShowHomeSignupPopup(false)}
-                                    className={`flex-1 py-3 rounded-xl font-medium transition-colors ${darkMode ? 'text-gray-500 hover:bg-white/10' : 'text-[#1F2937]/40 hover:bg-black/5'}`}
-                                >
-                                    {t('Më vonë', 'Later')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <HomeSignupPopup
+                showHomeSignupPopup={showHomeSignupPopup}
+                setShowHomeSignupPopup={setShowHomeSignupPopup}
+                darkMode={darkMode}
+                t={t}
+                setAuthMode={setAuthMode}
+                setShowAuthModal={setShowAuthModal}
+            />
 
             {/* Event Modal */}
             {showEventModal && selectedEvent && (
@@ -3874,130 +3464,16 @@ const RinON = () => {
             )}
 
             {/* ── Admin Analytics Panel ───────────────────────────────── */}
-            {showAdmin && userProfile?.is_admin && analyticsOpen && (
-                <div className={`fixed bottom-6 right-24 z-40 w-80 md:w-96 max-h-[80vh] overflow-y-auto rounded-2xl shadow-2xl border animate-fadeIn ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}>
-                    <div className={`sticky top-0 flex items-center justify-between px-5 py-4 border-b ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-100'}`}>
-                        <span className={`font-bold text-base ${darkMode ? 'text-white' : 'text-gray-900'}`}>Analitika — 7 ditët e fundit</span>
-                        <button
-                            onClick={() => { fetchAnalytics(); }}
-                            className={`text-xs px-3 py-1 rounded-lg transition-colors ${darkMode ? 'bg-gray-800 text-gray-400 hover:bg-gray-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                        >
-                            Rifresko
-                        </button>
-                    </div>
-
-                    {analyticsLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : analyticsData ? (() => {
-                        const pvs = analyticsData.pageViews;
-                        const ars = analyticsData.articleReads;
-
-                        const totalViews = pvs.length;
-                        const uniqueSessions = new Set(pvs.map(v => v.session_id)).size;
-                        const totalReads = ars.length;
-                        const durations = ars.map(r => r.read_duration_seconds).filter(d => d > 0);
-                        const avgDuration = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
-                        const avgMin = Math.floor(avgDuration / 60);
-                        const avgSec = Math.round(avgDuration % 60);
-                        const avgLabel = avgMin > 0 ? `${avgMin} min ${avgSec} sek` : `${avgSec} sek`;
-
-                        // Page views by page
-                        const pageCount = {};
-                        pvs.forEach(v => { pageCount[v.page] = (pageCount[v.page] || 0) + 1; });
-                        const pagesSorted = Object.entries(pageCount).sort((a, b) => b[1] - a[1]);
-
-                        // Top articles
-                        const artCount = {};
-                        ars.forEach(r => { artCount[r.article_id] = (artCount[r.article_id] || 0) + 1; });
-                        const artsSorted = Object.entries(artCount).sort((a, b) => b[1] - a[1]).slice(0, 10);
-
-                        // Views per day
-                        const dayCount = {};
-                        pvs.forEach(v => {
-                            const day = v.created_at.slice(0, 10);
-                            dayCount[day] = (dayCount[day] || 0) + 1;
-                        });
-                        const daysSorted = Object.entries(dayCount).sort((a, b) => a[0].localeCompare(b[0]));
-                        const maxDayViews = Math.max(...daysSorted.map(d => d[1]), 1);
-
-                        return (
-                            <div className="p-5 space-y-6">
-                                {/* Stat cards */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    {[
-                                        { value: totalViews, label: 'Vizita gjithsej' },
-                                        { value: uniqueSessions, label: 'Vizitorë unikë' },
-                                        { value: totalReads, label: 'Artikuj të lexuar' },
-                                        { value: avgLabel, label: 'Kohë mesatare' },
-                                    ].map(({ value, label }) => (
-                                        <div key={label} className={`rounded-xl p-4 text-center ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                                            <p className="text-2xl font-bold text-amber-500">{value}</p>
-                                            <p className={`text-xs uppercase tracking-wider mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{label}</p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Pages + Articles side by side */}
-                                <div className="grid grid-cols-1 gap-5">
-                                    {/* Top pages */}
-                                    <div>
-                                        <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Faqet më të vizituara</p>
-                                        {pagesSorted.length === 0 ? (
-                                            <p className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Nuk ka të dhëna.</p>
-                                        ) : pagesSorted.map(([page, count]) => (
-                                            <div key={page} className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                                                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{page}</span>
-                                                <span className="text-sm font-bold text-amber-500">{count}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Top articles */}
-                                    <div>
-                                        <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Artikujt më të lexuar</p>
-                                        {artsSorted.length === 0 ? (
-                                            <p className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Nuk ka të dhëna.</p>
-                                        ) : artsSorted.map(([articleId, count]) => {
-                                            const art = articles.find(a => String(a.id) === String(articleId));
-                                            return (
-                                                <div key={articleId} className={`flex justify-between items-center py-2 border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                                                    <span className={`text-sm font-medium truncate pr-3 max-w-[70%] ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                        {art ? art.titleAl : `Artikull #${articleId}`}
-                                                    </span>
-                                                    <span className="text-sm font-bold text-amber-500 flex-shrink-0">{count}</span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Daily bar chart */}
-                                <div>
-                                    <p className={`text-sm font-semibold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Vizita ditore</p>
-                                    {daysSorted.length === 0 ? (
-                                        <p className={`text-xs italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Nuk ka të dhëna.</p>
-                                    ) : daysSorted.map(([day, count]) => (
-                                        <div key={day} className="flex items-center gap-3 mb-2">
-                                            <span className={`text-xs w-20 flex-shrink-0 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{formatDateAl(day)}</span>
-                                            <div className="flex-1 flex items-center gap-2">
-                                                <div
-                                                    className="h-3 bg-amber-400 rounded-full"
-                                                    style={{ width: `${Math.round((count / maxDayViews) * 100)}%`, minWidth: '4px' }}
-                                                />
-                                                <span className={`text-xs font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{count}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })() : (
-                        <p className={`text-xs text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Nuk ka të dhëna.</p>
-                    )}
-                </div>
-            )}
+            <AdminAnalyticsPanel
+                showAdmin={showAdmin}
+                userProfile={userProfile}
+                analyticsOpen={analyticsOpen}
+                darkMode={darkMode}
+                analyticsLoading={analyticsLoading}
+                analyticsData={analyticsData}
+                fetchAnalytics={fetchAnalytics}
+                articles={articles}
+            />
 
             {/* ==========================================
                 SCROLL TO TOP BUTTON
