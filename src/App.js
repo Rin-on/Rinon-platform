@@ -35,6 +35,9 @@ import MobileMenu from './components/MobileMenu';
 import { AddArticleForm, AddEventForm, AddPartnerForm, AddMemberForm, AddVideoForm } from './components/AdminForms';
 import ShikoPage from './pages/ShikoPage';
 import VideoModal from './components/VideoModal';
+import useDataLoaders from './hooks/useDataLoaders';
+import useAuthHandlers from './hooks/useAuthHandlers';
+import useCrudHandlers from './hooks/useCrudHandlers';
 
 // Check if running as native app
 const isNativeApp = Capacitor.isNativePlatform();
@@ -127,9 +130,6 @@ const RinON = () => {
     const [partners, setPartners] = useState([]);
     const [staffMembers, setStaffMembers] = useState([]);
 
-    // ==========================================
-    // LETRA NGA RINASI — Emigration Letters Archive
-    // ==========================================
     const [letters, setLetters] = useState([]);
     const [pendingLetters, setPendingLetters] = useState([]);
     const [showPendingLetters, setShowPendingLetters] = useState(false);
@@ -144,27 +144,15 @@ const RinON = () => {
     const [analyticsData, setAnalyticsData] = useState(null);
     const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
-    // ==========================================
-    // BASHKOHU — Community Signup Form
-    // ==========================================
     const [signupForm, setSignupForm] = useState({ first_name: '', last_name: '', age: '', email: '', phone: '', reason: '', skills: '', referral_source: '' });
     const [signupSubmitting, setSignupSubmitting] = useState(false);
     const [signupSuccess, setSignupSuccess] = useState(false);
 
-    // ==========================================
-    // EVENT INTERESTS ("Who's Going?")
-    // ==========================================
     const [eventInterests, setEventInterests] = useState({}); // { eventId: count }
     const [userEventInterests, setUserEventInterests] = useState([]); // array of event IDs user is interested in
 
-    // ==========================================
-    // USER BADGES
-    // ==========================================
     const [userBadges, setUserBadges] = useState([]);
 
-    // ==========================================
-    // SHIKO (VIDEOS) FEATURE - STATE VARIABLES
-    // ==========================================
     const [videos, setVideos] = useState([]);
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [showVideoModal, setShowVideoModal] = useState(false);
@@ -374,9 +362,6 @@ const RinON = () => {
     }, [darkMode]);
 
 
-    // ============================================
-    // NATIVE APP - Navigation history for back button
-    // ============================================
     const [navigationHistory, setNavigationHistory] = useState(['home']);
     const [lastBackPress, setLastBackPress] = useState(0);
 
@@ -393,9 +378,6 @@ const RinON = () => {
         }
     }, [currentPage]);
 
-    // ============================================
-    // NATIVE APP - Android Back Button Handler
-    // ============================================
     useEffect(() => {
         if (!isNativeApp) return;
 
@@ -498,9 +480,6 @@ const RinON = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // ==========================================
-    // DRAFTS MANAGEMENT SYSTEM
-    // ==========================================
 
     // Load drafts from localStorage
     const loadDrafts = () => {
@@ -769,945 +748,54 @@ const RinON = () => {
             handleRouting();
         }
     }, [articles, otherEvents, loading]);
-    const loadUserProfile = async (userId) => {
-        try {
-            const { data, error } = await supabase.from('user_profiles').select('*').eq('id', userId).single();
-            if (error) throw error;
-            if (data) {
-                setUserProfile(data);
-                if (data.is_admin) setShowAdmin(true);
-
-                // Check if user has accepted terms (for existing users)
-                if (data.terms_accepted !== true) {
-                    setShowTermsModal(true);
-                }
-            }
-        } catch (err) {
-            console.error(handleError(err, 'loadUserProfile'));
-        }
-    };
-
-    const loadArticles = async () => {
-        try {
-            setLoading(true);
-            const { data, error } = await supabase.from('articles').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
-            if (data && data.length > 0) {
-                const formattedArticles = data.map(a => ({
-                    id: a.id, titleAl: a.title_al, titleEn: a.title_en,
-                    contentAl: a.content_al, contentEn: a.content_en,
-                    category: a.category, image: a.image, source: a.source,
-                    author: a.author || '',
-                    featured: a.featured, postType: a.post_type || 'lajme',
-                    showOnHomepage: a.show_on_homepage || false,
-                    is_head_article: a.is_head_article || false,
-                    date: new Date(a.created_at).toISOString().split('T')[0]
-                }));
-                setArticles(formattedArticles);
-            }
-        } catch (err) {
-            console.error(handleError(err, 'loadArticles'));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-
-    // Load event interests (who's interested counts)
-    const loadEventInterests = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('event_interests')
-                .select('event_id');
-
-            if (error) throw error;
-
-            // Count interests per event
-            const counts = {};
-            data?.forEach(item => {
-                counts[item.event_id] = (counts[item.event_id] || 0) + 1;
-            });
-            setEventInterests(counts);
-
-            // If user is logged in, get their interests
-            if (user) {
-                const { data: userInterests } = await supabase
-                    .from('event_interests')
-                    .select('event_id')
-                    .eq('user_id', user.id);
-
-                setUserEventInterests(userInterests?.map(i => i.event_id) || []);
-            }
-        } catch (err) {
-            console.error(handleError(err, 'loadEventInterests'));
-        }
-    };
-
-    // Toggle interest in event
-    const toggleEventInterest = async (eventId) => {
-        if (!user) {
-            setShowAuthModal(true);
-            setAuthMode('login');
-            return;
-        }
-
-        const isInterested = userEventInterests.includes(eventId);
-
-        try {
-            if (isInterested) {
-                // Remove interest
-                await supabase
-                    .from('event_interests')
-                    .delete()
-                    .eq('event_id', eventId)
-                    .eq('user_id', user.id);
-
-                setUserEventInterests(prev => prev.filter(id => id !== eventId));
-                setEventInterests(prev => ({
-                    ...prev,
-                    [eventId]: Math.max((prev[eventId] || 1) - 1, 0)
-                }));
-            } else {
-                // Add interest
-                await supabase
-                    .from('event_interests')
-                    .insert({ event_id: eventId, user_id: user.id });
-
-                setUserEventInterests(prev => [...prev, eventId]);
-                setEventInterests(prev => ({
-                    ...prev,
-                    [eventId]: (prev[eventId] || 0) + 1
-                }));
-            }
-        } catch (err) {
-            console.error(handleError(err, 'toggleEventInterest'));
-        }
-    };
-
-    // Load user badges
-    const loadUserBadges = async () => {
-        if (!user) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('user_badges')
-                .select('badge_type, earned_at')
-                .eq('user_id', user.id);
-
-            if (error) throw error;
-            setUserBadges(data || []);
-        } catch (err) {
-            console.error(handleError(err, 'loadUserBadges'));
-        }
-    };
-
-    const loadEvents = async () => {
-        try {
-            const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
-            if (data && data.length > 0) {
-                const formattedEvents = data.map(e => ({
-                    id: e.id, titleAl: e.title_al, titleEn: e.title_en,
-                    dateAl: e.date_al, dateEn: e.date_en, type: e.type,
-                    descAl: e.desc_al, descEn: e.desc_en, location: e.location, image: e.image,
-                    date: e.date, time: e.time, endTime: e.end_time, address: e.address,
-                    category: e.category, spots_left: e.spots_left, total_spots: e.total_spots,
-                    is_free: e.is_free, price: e.price, attendees: e.attendees,
-                    partner: e.partner, registration_link: e.registration_link,
-                    is_featured: e.is_featured, is_trending: e.is_trending, tags: e.tags,
-                    showOnHomepage: e.show_on_homepage || false
-                }));
-                setOtherEvents(formattedEvents);
-            }
-        } catch (err) {
-            console.error(handleError(err, 'loadEvents'));
-        }
-    };
-
-    const loadPartners = async () => {
-        try {
-            const { data, error } = await supabase.from('partners').select('*').order('created_at', { ascending: false });
-            if (error) throw error;
-            if (data && data.length > 0) {
-                const formattedPartners = data.map(p => ({
-                    id: p.id, nameAl: p.name_al, nameEn: p.name_en,
-                    descriptionAl: p.description_al, descriptionEn: p.description_en,
-                    visionAl: p.vision_al, visionEn: p.vision_en,
-                    goalsAl: p.goals_al, goalsEn: p.goals_en,
-                    website: p.website, image: p.image
-                }));
-                setPartners(formattedPartners);
-            }
-        } catch (err) {
-            console.error(handleError(err, 'loadPartners'));
-        }
-    };
-
-    const loadTeamMembers = async () => {
-        try {
-            const { data, error } = await supabase.from('team_members').select('*').order('created_at', { ascending: true });
-            if (error) throw error;
-            if (data && data.length > 0) setStaffMembers(data);
-        } catch (err) {
-            console.error(handleError(err, 'loadTeamMembers'));
-        }
-    };
-
-    // ==========================================
-    // LETRA NGA RINASI — DATA LOADING
-    // ==========================================
-    const loadLetters = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('letters')
-                .select('*')
-                .eq('is_approved', true)
-                .order('submitted_at', { ascending: false });
-            if (error) throw error;
-            setLetters(data || []);
-        } catch (err) {
-            console.error(handleError(err, 'loadLetters'));
-        }
-    };
-
-    const loadPendingLetters = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('letters')
-                .select('*')
-                .eq('is_approved', false)
-                .order('submitted_at', { ascending: false });
-            if (error) throw error;
-            setPendingLetters(data || []);
-        } catch (err) {
-            console.error(handleError(err, 'loadPendingLetters'));
-        }
-    };
-
-    // ==========================================
-    // SHIKO (VIDEOS) - DATA LOADING
-    // ==========================================
-    const loadVideos = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('videos')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setVideos(data || []);
-        } catch (err) {
-            console.error(handleError(err, 'loadVideos'));
-        }
-    };
-
-    const loadSavedVideos = async () => {
-        if (!user) return;
-        try {
-            const { data, error } = await supabase
-                .from('video_saves')
-                .select('video_id')
-                .eq('user_id', user.id);
-
-            if (error) throw error;
-            setSavedVideos(data?.map(v => v.video_id) || []);
-        } catch (err) {
-            console.error(handleError(err, 'loadSavedVideos'));
-        }
-    };
-
-    const toggleSaveVideo = async (videoId) => {
-        if (!user) {
-            setShowAuthModal(true);
-            setAuthMode('login');
-            return;
-        }
-
-        const isSaved = savedVideos.includes(videoId);
-
-        try {
-            if (isSaved) {
-                await supabase
-                    .from('video_saves')
-                    .delete()
-                    .eq('video_id', videoId)
-                    .eq('user_id', user.id);
-
-                setSavedVideos(prev => prev.filter(id => id !== videoId));
-            } else {
-                await supabase
-                    .from('video_saves')
-                    .insert({ video_id: videoId, user_id: user.id });
-
-                setSavedVideos(prev => [...prev, videoId]);
-            }
-        } catch (err) {
-            console.error(handleError(err, 'toggleSaveVideo'));
-        }
-    };
-
-    const incrementVideoViews = async (videoId) => {
-        try {
-            const { data } = await supabase
-                .from('videos')
-                .select('view_count')
-                .eq('id', videoId)
-                .single();
-
-            await supabase
-                .from('videos')
-                .update({ view_count: (data?.view_count || 0) + 1 })
-                .eq('id', videoId);
-        } catch (err) {
-            console.error(handleError(err, 'incrementVideoViews'));
-        }
-    };
-
-    const openVideo = (video) => {
-        setSelectedVideo(video);
-        setShowVideoModal(true);
-        incrementVideoViews(video.id);
-    };
-
-    const closeVideo = () => {
-        setSelectedVideo(null);
-        setShowVideoModal(false);
-    };
-
-    const submitVideo = async () => {
-        if (!userProfile?.is_admin) return;
-
-        try {
-            const videoData = {
-                title_al: videoFormData.titleAl,
-                title_en: videoFormData.titleEn || videoFormData.titleAl,
-                description_al: videoFormData.descriptionAl,
-                description_en: videoFormData.descriptionEn,
-                youtube_id: videoFormData.youtubeId,
-                thumbnail: videoFormData.thumbnail || `https://img.youtube.com/vi/${videoFormData.youtubeId}/maxresdefault.jpg`,
-                category: videoFormData.category,
-                duration: videoFormData.duration,
-                is_rinon_original: videoFormData.isRinONOriginal,
-                is_featured: videoFormData.isFeatured
-            };
-
-            const { error } = await supabase.from('videos').insert([videoData]);
-
-            if (error) throw error;
-
-            loadVideos();
-            setShowAddVideoForm(false);
-            setVideoFormData({
-                titleAl: '', titleEn: '', descriptionAl: '', descriptionEn: '',
-                youtubeId: '', thumbnail: '', category: 'podcast',
-                duration: '', isRinONOriginal: true, isFeatured: false
-            });
-        } catch (err) {
-            console.error(handleError(err, 'submitVideo'));
-        }
-    };
-
-    const deleteVideo = async (videoId) => {
-        if (!userProfile?.is_admin) return;
-        if (!window.confirm(t('Je i sigurt?', 'Are you sure?'))) return;
-
-        try {
-            await supabase.from('videos').delete().eq('id', videoId);
-            loadVideos();
-            if (selectedVideo?.id === videoId) {
-                closeVideo();
-            }
-        } catch (err) {
-            console.error(handleError(err, 'deleteVideo'));
-        }
-    };
-
-    const fetchAnalytics = async () => {
-        setAnalyticsLoading(true);
-        try {
-            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-            const [{ data: pageViews }, { data: articleReads }] = await Promise.all([
-                supabase.from('page_views').select('page, session_id, created_at').gte('created_at', sevenDaysAgo),
-                supabase.from('article_reads').select('article_id, read_duration_seconds, created_at').gte('created_at', sevenDaysAgo),
-            ]);
-            setAnalyticsData({ pageViews: pageViews || [], articleReads: articleReads || [] });
-        } catch (e) {}
-        setAnalyticsLoading(false);
-    };
-
-    const deleteArticle = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë artikull?', 'Are you sure you want to delete this article?'))) {
-            try {
-                const { error } = await supabase.from('articles').delete().eq('id', id);
-                if (error) throw error;
-                loadArticles();
-            } catch (err) {
-                alert(handleError(err, 'deleteArticle'));
-            }
-        }
-    };
-
-    const deleteEvent = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë event?', 'Are you sure you want to delete this event?'))) {
-            try {
-                const { error } = await supabase.from('events').delete().eq('id', id);
-                if (error) throw error;
-                loadEvents();
-            } catch (err) {
-                alert(handleError(err, 'deleteEvent'));
-            }
-        }
-    };
-
-    const deletePartner = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë partner?', 'Are you sure you want to delete this partner?'))) {
-            try {
-                const { error } = await supabase.from('partners').delete().eq('id', id);
-                if (error) throw error;
-                loadPartners();
-            } catch (err) {
-                alert(handleError(err, 'deletePartner'));
-            }
-        }
-    };
-
-    const deleteMember = async (id) => {
-        if (window.confirm(t('Jeni i sigurt që dëshironi të fshini këtë anëtar?', 'Are you sure you want to delete this member?'))) {
-            try {
-                const { error } = await supabase.from('team_members').delete().eq('id', id);
-                if (error) throw error;
-                loadTeamMembers();
-            } catch (err) {
-                alert(handleError(err, 'deleteMember'));
-            }
-        }
-    };
-    const handleSignup = async (email, password, displayName, rememberMe = true) => {
-        try {
-            const { data, error } = await supabase.auth.signUp({
-                email, password,
-                options: {
-                    data: { display_name: validateInput.sanitizeHtml(displayName) },
-                    emailRedirectTo: window.location.origin
-                }
-            });
-
-            if (!error && data.user) {
-                await supabase.from('user_profiles').insert([{
-                    id: data.user.id,
-                    display_name: validateInput.sanitizeHtml(displayName),
-                    preferences: [],
-                    terms_accepted: false,
-                    terms_accepted_at: null
-                }]);
-
-                // Set session persistence based on rememberMe
-                if (rememberMe) {
-                    localStorage.setItem('rememberMe', 'true');
-                } else {
-                    localStorage.removeItem('rememberMe');
-                }
-
-                // Store pending user and show terms modal
-                setPendingUser(data.user);
-                setShowTermsModal(true);
-            }
-
-            return { data, error };
-        } catch (err) {
-            return { error: { message: handleError(err, 'handleSignup') } };
-        }
-    };
-
-    // Handle terms acceptance
-    const handleAcceptTerms = async () => {
-        if (!pendingUser && !user) return;
-
-        const userId = pendingUser?.id || user?.id;
-
-        try {
-            await supabase.from('user_profiles').update({
-                terms_accepted: true,
-                terms_accepted_at: new Date().toISOString()
-            }).eq('id', userId);
-
-            setShowTermsModal(false);
-            setPendingUser(null);
-            setShowPreferences(true); // Show preferences after accepting terms
-        } catch (err) {
-            console.error('Error accepting terms:', err);
-        }
-    };
-
-    // Handle terms rejection - log out the user
-    const handleRejectTerms = async () => {
-        setShowTermsModal(false);
-        setPendingUser(null);
-        await supabase.auth.signOut();
-        alert(language === 'sq'
-            ? 'Duhet të pranoni kushtet për të përdorur RinON.'
-            : 'You must accept the terms to use RinON.');
-    };
-
-    const handleLogin = async (email, password, rememberMe = true) => {
-        try {
-            const result = await supabase.auth.signInWithPassword({ email, password });
-
-            if (!result.error) {
-                // Set session persistence based on rememberMe
-                if (rememberMe) {
-                    localStorage.setItem('rememberMe', 'true');
-                } else {
-                    localStorage.removeItem('rememberMe');
-                    // If not remember me, session will be cleared on browser close
-                }
-            }
-
-            return result;
-        } catch (err) {
-            return { error: { message: handleError(err, 'handleLogin') } };
-        }
-    };
-
-    // Google Sign-In
-    const handleGoogleSignIn = async () => {
-        try {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
-                    }
-                }
-            });
-
-            if (error) {
-                return { error };
-            }
-
-            return { data };
-        } catch (err) {
-            return { error: { message: handleError(err, 'handleGoogleSignIn') } };
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            localStorage.removeItem('rememberMe');
-            await supabase.auth.signOut();
-        } catch (err) {
-            console.error(handleError(err, 'handleLogout'));
-        }
-    };
-    const handleDeleteAccount = async () => {
-        if (!user) return;
-
-        const confirmDelete = window.confirm(
-            t(
-                'Jeni i sigurt që dëshironi të fshini llogarinë tuaj? Ky veprim nuk mund të zhbëhet dhe të gjitha të dhënat tuaja do të fshihen përgjithmonë.',
-                'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.'
-            )
-        );
-
-        if (!confirmDelete) return;
-
-        const doubleConfirm = window.confirm(
-            t(
-                'Konfirmoni përsëri: A jeni ABSOLUTISHT i sigurt? Kjo do të fshijë llogarinë tuaj përgjithmonë.',
-                'Confirm again: Are you ABSOLUTELY sure? This will delete your account forever.'
-            )
-        );
-
-        if (!doubleConfirm) return;
-
-        try {
-            // Delete user profile
-            await supabase.from('user_profiles').delete().eq('id', user.id);
-
-            // Note: Deleting from auth.users requires a server-side function or Supabase Edge Function
-            // For now, we'll sign out and show a message
-            await supabase.auth.signOut();
-
-            alert(t(
-                'Llogaria juaj u fshi me sukses. Ju lutem kontaktoni suportin nëse keni nevojë për ndihmë të mëtejshme.',
-                'Your account has been deleted successfully. Please contact support if you need further assistance.'
-            ));
-
-        } catch (err) {
-            alert(handleError(err, 'handleDeleteAccount'));
-        }
-    };
-    const updatePreferences = async (prefs, newDisplayName = null) => {
-        if (!user) return;
-        try {
-            const updateData = {};
-            if (prefs !== null) updateData.preferences = prefs;
-            if (newDisplayName) updateData.display_name = newDisplayName;
-
-            if (Object.keys(updateData).length === 0) return;
-
-            const { error } = await supabase.from('user_profiles').update(updateData).eq('id', user.id);
-            if (error) throw error;
-            loadUserProfile(user.id);
-        } catch (err) {
-            console.error(handleError(err, 'updatePreferences'));
-        }
-    };
-
-
-    const editArticle = (article) => {
-        setEditingItem(article);
-        setEditMode(true);
-        setFormData({
-            titleAl: article.titleAl,
-            titleEn: article.titleEn,
-            contentAl: article.contentAl,
-            contentEn: article.contentEn,
-            category: article.category,
-            image: article.image,
-            imageFile: null,
-            source: article.source,
-            author: article.author || '',
-            featured: article.featured,
-            isHeadArticle: article.is_head_article || false,
-            postType: article.postType || 'lajme',
-            showOnHomepage: article.showOnHomepage || false
-        });
-        setShowAddForm(true);
-    };
-
-    const editEvent = (event) => {
-        setEditingItem(event);
-        setEditMode(true);
-        setEventFormData({
-            titleAl: event.titleAl,
-            titleEn: event.titleEn,
-            dateAl: event.dateAl,
-            dateEn: event.dateEn,
-            type: event.type,
-            descAl: event.descAl,
-            descEn: event.descEn,
-            location: event.location,
-            image: event.image,
-            imageFile: null,
-            date: event.date || '',
-            time: event.time || '',
-            endTime: event.endTime || '',
-            address: event.address || '',
-            category: event.category || 'general',
-            spotsLeft: event.spots_left || 100,
-            totalSpots: event.total_spots || 100,
-            isFree: event.is_free !== false,
-            price: event.price || '',
-            registrationLink: event.registration_link || '',
-            isFeatured: event.is_featured || false,
-            tags: event.tags || [],
-            showOnHomepage: event.showOnHomepage || false
-        });
-        setShowAddEventForm(true);
-    };
-
-    const editPartner = (partner) => {
-        setEditingItem(partner);
-        setEditMode(true);
-        setPartnerFormData({
-            nameAl: partner.nameAl,
-            nameEn: partner.nameEn,
-            descriptionAl: partner.descriptionAl,
-            descriptionEn: partner.descriptionEn,
-            visionAl: partner.visionAl,
-            visionEn: partner.visionEn,
-            goalsAl: partner.goalsAl,
-            goalsEn: partner.goalsEn,
-            website: partner.website,
-            image: partner.image,
-            imageFile: null
-        });
-        setShowAddPartnerForm(true);
-    };
-
-    const editMember = (member) => {
-        setEditingItem(member);
-        setEditMode(true);
-        setMemberFormData({
-            name: member.name,
-            role: member.role
-        });
-        setShowAddMemberForm(true);
-    };
-
-    const handleSubmitArticle = async (saveAsDraft = false) => {
-        if (!formData.titleAl || !formData.contentAl) {
-            alert(t('Ju lutem plotësoni fushat e detyrueshme në shqip', 'Please fill in required Albanian fields'));
-            return;
-        }
-
-        if (!validateInput.text(formData.titleAl, 200)) {
-            alert(t('Titulli duhet të jetë 1-200 karaktere', 'Title must be 1-200 characters'));
-            return;
-        }
-
-        if (!validateInput.text(formData.contentAl, 10000)) {
-            alert(t('Përmbajtja duhet të jetë 1-10000 karaktere', 'Content must be 1-10000 characters'));
-            return;
-        }
-
-        try {
-            let imageUrl = formData.image;
-
-            if (formData.imageFile) {
-                imageUrl = await uploadImage(formData.imageFile);
-            }
-
-            const article = {
-                title_al: validateInput.sanitizeHtml(formData.titleAl),
-                title_en: validateInput.sanitizeHtml(formData.titleEn || formData.titleAl),
-                content_al: validateInput.sanitizeHtml(formData.contentAl),
-                content_en: validateInput.sanitizeHtml(formData.contentEn || formData.contentAl),
-                category: formData.category,
-                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).slice(2, 11)}?w=800`,
-                source: validateInput.sanitizeHtml(formData.source),
-                author: validateInput.sanitizeHtml(formData.author),
-                featured: formData.featured,
-                is_head_article: formData.isHeadArticle || false,
-                post_type: formData.postType || 'lajme',
-                show_on_homepage: formData.showOnHomepage || false,
-                author_id: user?.id
-            };
-
-            let error, data;
-            if (editMode && editingItem) {
-                ({ error } = await supabase.from('articles').update(article).eq('id', editingItem.id));
-                data = [{ id: editingItem.id }]; // Use existing ID
-            } else {
-                ({ data, error } = await supabase.from('articles').insert([article]).select('id'));
-            }
-
-            if (error) throw error;
-
-            // Store the article ID for editing
-            const savedArticleId = data?.[0]?.id;
-            if (savedArticleId) {
-                setEditingItem({ ...editingItem, id: savedArticleId });
-            }
-
-            // If publishing from a draft, delete the draft
-            if (editingDraftId) {
-                setDrafts(prev => {
-                    const updated = prev.filter(d => d.id !== editingDraftId);
-                    localStorage.setItem('rinon_drafts', JSON.stringify(updated));
-                    return updated;
-                });
-                setEditingDraftId(null);
-            }
-
-            loadArticles();
-            setFormData({
-                titleAl: '', titleEn: '', contentAl: '', contentEn: '',
-                category: 'Arsim', image: '', imageFile: null, source: '', author: '', featured: false, postType: 'lajme', showOnHomepage: false, isHeadArticle: false
-            });
-            setShowAddForm(false);
-            setEditMode(false);
-            setEditingItem(null);
-
-            alert(t(editMode ? 'Artikulli u përditësua me sukses!' : 'Artikulli u publikua me sukses!',
-                editMode ? 'Article updated successfully!' : 'Article published successfully!'));
-        } catch (err) {
-            alert(handleError(err, 'handleSubmitArticle'));
-        }
-    };
-
-    const handleSubmitEvent = async () => {
-        if (!eventFormData.titleAl || !eventFormData.dateAl) {
-            alert(t('Ju lutem plotësoni fushat e detyrueshme në shqip', 'Please fill in required Albanian fields'));
-            return;
-        }
-
-        if (!validateInput.text(eventFormData.titleAl, 200)) {
-            alert(t('Titulli duhet të jetë 1-200 karaktere', 'Title must be 1-200 characters'));
-            return;
-        }
-
-        try {
-            let imageUrl = eventFormData.image;
-
-            if (eventFormData.imageFile) {
-                imageUrl = await uploadImage(eventFormData.imageFile);
-            }
-
-            const eventData = {
-                title_al: validateInput.sanitizeHtml(eventFormData.titleAl),
-                title_en: validateInput.sanitizeHtml(eventFormData.titleEn || eventFormData.titleAl),
-                date_al: validateInput.sanitizeHtml(eventFormData.dateAl),
-                date_en: validateInput.sanitizeHtml(eventFormData.dateEn || eventFormData.dateAl),
-                type: validateInput.sanitizeHtml(eventFormData.type || ''),
-                desc_al: validateInput.sanitizeHtml(eventFormData.descAl || ''),
-                desc_en: validateInput.sanitizeHtml(eventFormData.descEn || eventFormData.descAl || ''),
-                location: validateInput.sanitizeHtml(eventFormData.location || ''),
-                image: imageUrl || `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800`,
-                date: eventFormData.date || null,
-                time: eventFormData.time || null,
-                end_time: eventFormData.endTime || null,
-                address: validateInput.sanitizeHtml(eventFormData.address || ''),
-                category: eventFormData.category || 'general',
-                spots_left: parseInt(eventFormData.spotsLeft) || 100,
-                total_spots: parseInt(eventFormData.totalSpots) || 100,
-                is_free: eventFormData.isFree !== false,
-                price: eventFormData.price || null,
-                partner: validateInput.sanitizeHtml(eventFormData.partner || ''),
-                registration_link: eventFormData.registrationLink || null,
-                is_featured: eventFormData.isFeatured || false,
-                show_on_homepage: eventFormData.showOnHomepage || false,
-                tags: eventFormData.tags || []
-            };
-
-            let error, data;
-            if (editMode && editingItem && editingItem.id) {
-                // Update existing event - don't overwrite attendees
-                ({ error } = await supabase.from('events').update(eventData).eq('id', editingItem.id));
-                if (!error) {
-                    data = [{ id: editingItem.id }];
-                }
-            } else {
-                // Insert new event with initial attendees count
-                eventData.attendees = 0;
-                eventData.is_trending = false;
-                ({ data, error } = await supabase.from('events').insert([eventData]).select('id'));
-            }
-
-            if (error) throw error;
-
-            // Store the event ID for editing
-            const savedEventId = data?.[0]?.id;
-            if (savedEventId) {
-                setEditingItem({ ...editingItem, id: savedEventId });
-            }
-
-            loadEvents();
-            setEventFormData({
-                titleAl: '', titleEn: '', dateAl: '', dateEn: '',
-                type: '', descAl: '', descEn: '', location: '', image: '', imageFile: null,
-                date: '', time: '', endTime: '', address: '', category: 'general',
-                spotsLeft: 100, totalSpots: 100, isFree: true, price: '',
-                registrationLink: '', isFeatured: false, tags: [], showOnHomepage: false
-            });
-            setShowAddEventForm(false);
-            setEditMode(false);
-            setEditingItem(null);
-            alert(t(editMode ? 'Eventi u përditësua me sukses!' : 'Eventi u shtua me sukses!',
-                editMode ? 'Event updated successfully!' : 'Event added successfully!'));
-        } catch (err) {
-            console.error('Event submit error:', err);
-            alert(handleError(err, 'handleSubmitEvent'));
-        }
-    };
-
-
-    const handleSubmitPartner = async () => {
-        if (!partnerFormData.nameAl || !partnerFormData.nameEn) {
-            alert(t('Ju lutem plotësoni emrin', 'Please fill in the name'));
-            return;
-        }
-
-        if (!validateInput.text(partnerFormData.nameAl, 100)) {
-            alert(t('Emri duhet të jetë 1-100 karaktere', 'Name must be 1-100 characters'));
-            return;
-        }
-
-        if (partnerFormData.website && !validateInput.url(partnerFormData.website)) {
-            alert(t('URL e website është e pavlefshme', 'Invalid website URL'));
-            return;
-        }
-
-        try {
-            let imageUrl = partnerFormData.image;
-
-            if (partnerFormData.imageFile) {
-                imageUrl = await uploadImage(partnerFormData.imageFile);
-            }
-
-            const partner = {
-                name_al: validateInput.sanitizeHtml(partnerFormData.nameAl),
-                name_en: validateInput.sanitizeHtml(partnerFormData.nameEn),
-                description_al: validateInput.sanitizeHtml(partnerFormData.descriptionAl),
-                description_en: validateInput.sanitizeHtml(partnerFormData.descriptionEn),
-                vision_al: validateInput.sanitizeHtml(partnerFormData.visionAl),
-                vision_en: validateInput.sanitizeHtml(partnerFormData.visionEn),
-                goals_al: validateInput.sanitizeHtml(partnerFormData.goalsAl),
-                goals_en: validateInput.sanitizeHtml(partnerFormData.goalsEn),
-                website: partnerFormData.website,
-                image: imageUrl || `https://images.unsplash.com/photo-${Math.random().toString(36).slice(2, 11)}?w=800`
-            };
-
-            let error;
-            if (editMode && editingItem) {
-                ({ error } = await supabase.from('partners').update(partner).eq('id', editingItem.id));
-            } else {
-                ({ error } = await supabase.from('partners').insert([partner]));
-            }
-
-            if (error) throw error;
-
-            loadPartners();
-            setPartnerFormData({
-                nameAl: '', nameEn: '', descriptionAl: '', descriptionEn: '',
-                visionAl: '', visionEn: '', goalsAl: '', goalsEn: '', website: '', image: '', imageFile: null
-            });
-            setShowAddPartnerForm(false);
-            setEditMode(false);
-            setEditingItem(null);
-            alert(t(editMode ? 'Partneri u përditësua me sukses!' : 'Partneri u shtua me sukses!',
-                editMode ? 'Partner updated successfully!' : 'Partner added successfully!'));
-        } catch (err) {
-            alert(handleError(err, 'handleSubmitPartner'));
-        }
-    };
-
-    const handleSubmitMember = async () => {
-        if (!memberFormData.name || !memberFormData.role) {
-            alert(t('Ju lutem plotësoni të gjitha fushat', 'Please fill in all fields'));
-            return;
-        }
-
-        if (!validateInput.text(memberFormData.name, 100)) {
-            alert(t('Emri duhet të jetë 1-100 karaktere', 'Name must be 1-100 characters'));
-            return;
-        }
-
-        if (!validateInput.text(memberFormData.role, 100)) {
-            alert(t('Roli duhet të jetë 1-100 karaktere', 'Role must be 1-100 characters'));
-            return;
-        }
-
-        try {
-            const member = {
-                name: validateInput.sanitizeHtml(memberFormData.name),
-                role: validateInput.sanitizeHtml(memberFormData.role)
-            };
-
-            let error;
-            if (editMode && editingItem) {
-                ({ error } = await supabase.from('team_members').update(member).eq('id', editingItem.id));
-            } else {
-                ({ error } = await supabase.from('team_members').insert([member]));
-            }
-
-            if (error) throw error;
-
-            loadTeamMembers();
-            setMemberFormData({ name: '', role: '' });
-            setShowAddMemberForm(false);
-            setEditMode(false);
-            setEditingItem(null);
-            alert(t(editMode ? 'Anëtari u përditësua me sukses!' : 'Anëtari u shtua me sukses!',
-                editMode ? 'Member updated successfully!' : 'Member added successfully!'));
-        } catch (err) {
-            alert(handleError(err, 'handleSubmitMember'));
-        }
-    };
-
+    // --- Data loading functions (via custom hook) ---
+    const {
+        loadUserProfile, loadArticles, loadEvents, loadPartners, loadTeamMembers,
+        loadEventInterests, toggleEventInterest, loadUserBadges,
+        loadLetters, loadPendingLetters, loadVideos, loadSavedVideos,
+    } = useDataLoaders({
+        user, setLoading, setArticles, setOtherEvents, setPartners, setStaffMembers,
+        setEventInterests, setUserEventInterests, setUserBadges,
+        setVideos, setSavedVideos, setLetters, setPendingLetters,
+        setUserProfile, setShowAdmin, setShowTermsModal,
+        setShowAuthModal, setAuthMode, userEventInterests,
+    });
+
+    // --- Auth handlers (via custom hook) ---
+    const {
+        handleSignup, handleAcceptTerms, handleRejectTerms,
+        handleLogin, handleGoogleSignIn, handleLogout,
+        handleDeleteAccount, updatePreferences,
+    } = useAuthHandlers({
+        t, language, user, pendingUser, setPendingUser,
+        setShowTermsModal, setShowPreferences, loadUserProfile,
+    });
+
+    // --- CRUD handlers (via custom hook) ---
+    const {
+        editArticle, handleSubmitArticle, deleteArticle,
+        editEvent, handleSubmitEvent, deleteEvent,
+        editPartner, handleSubmitPartner, deletePartner,
+        editMember, handleSubmitMember, deleteMember,
+        toggleSaveVideo, openVideo, closeVideo, submitVideo, deleteVideo,
+        fetchAnalytics,
+    } = useCrudHandlers({
+        t, user, userProfile,
+        formData, setFormData,
+        eventFormData, setEventFormData,
+        partnerFormData, setPartnerFormData,
+        memberFormData, setMemberFormData,
+        videoFormData, setVideoFormData,
+        editMode, setEditMode, editingItem, setEditingItem,
+        editingDraftId, setEditingDraftId, setDrafts,
+        setShowAddForm, setShowAddEventForm, setShowAddPartnerForm,
+        setShowAddMemberForm, setShowAddVideoForm,
+        loadArticles, loadEvents, loadPartners, loadTeamMembers, loadVideos,
+        savedVideos, setSavedVideos,
+        selectedVideo, setSelectedVideo, setShowVideoModal,
+        setShowAuthModal, setAuthMode,
+        setAnalyticsLoading, setAnalyticsData,
+    });
 
     // Filtered articles with both category and search
     const filteredArticles = (() => {
@@ -1759,9 +847,6 @@ const RinON = () => {
         setShowShareModal(true);
     };
 
-    // ==========================================
-    // SHIKO PAGE - Videos, Podcasts, Documentaries
-    // ==========================================
 
     return (
         <div
