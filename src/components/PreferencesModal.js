@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, LogOut, Trash2, Edit, Check, Shield, Star, Award, Globe, User } from 'lucide-react';
+import { X, LogOut, Edit } from 'lucide-react';
 
 const PreferencesModal = ({ showPreferences, setShowPreferences, userProfile, updatePreferences, categories, language, darkMode, t, onDeleteAccount, onLogout, userBadges, user }) => {
     const [editingName, setEditingName] = useState(false);
